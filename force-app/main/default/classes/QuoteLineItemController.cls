@@ -226,6 +226,26 @@ public with sharing class QuoteLineItemController {
         QuoteController.recalculateQuoteTotals(quoteId);
     }
 
+    // ── Delete multiple line items ────────────────────────────────────────
+    @AuraEnabled
+    public static void deleteLineItems(List<Id> itemIds) {
+        if (itemIds == null || itemIds.isEmpty()) return;
+
+        // Get quoteId from the first item to trigger recalculation
+        Quote_Line_Item__c firstItem = [
+            SELECT Quote__c 
+            FROM Quote_Line_Item__c 
+            WHERE Id IN :itemIds 
+            LIMIT 1
+        ];
+        Id quoteId = firstItem.Quote__c;
+
+        delete [SELECT Id FROM Quote_Line_Item__c WHERE Id IN :itemIds];
+
+        // Recalculate quote totals after delete
+        QuoteController.recalculateQuoteTotals(quoteId);
+    }
+
     // ── Get line items grouped by type for summary cards ──────────────────
     @AuraEnabled(cacheable=true)
     public static Map<String, Object> getLineItemSummary(Id quoteId) {

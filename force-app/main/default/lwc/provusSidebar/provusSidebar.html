@@ -23,10 +23,12 @@
         </nav>
 
 
-        <div class="nav-item bottom-item" data-page="settings" onclick={handleNavClick}>
-            <span class="nav-icon">⚙️</span>
-            <span class="nav-label">Settings</span>
-        </div>
+        <template if:true={isManager}>
+            <div class="nav-item bottom-item" data-page="settings" onclick={handleNavClick}>
+                <span class="nav-icon">⚙️</span>
+                <span class="nav-label">Settings</span>
+            </div>
+        </template>
 
     </div>
 </template>

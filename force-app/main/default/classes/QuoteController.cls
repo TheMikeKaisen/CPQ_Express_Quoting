@@ -19,6 +19,11 @@ public with sharing class QuoteController {
 
         List<String> conditions = new List<String>();
 
+        // ── Security Filter ─────────
+        if (!isManagerOrAdmin()) {
+            conditions.add('CreatedById = \'' + UserInfo.getUserId() + '\'');
+        }
+
         // Add status filter if provided
         if (String.isNotBlank(statusFilter) &&
             statusFilter != 'All') {
@@ -40,6 +45,19 @@ public with sharing class QuoteController {
         query += ' ORDER BY CreatedDate DESC';
 
         return Database.query(query);
+    }
+
+    // ── Helper: check if current user is Manager/Admin ────────
+    private static Boolean isManagerOrAdmin() {
+        User currentUser = [
+            SELECT Id, Profile.Name
+            FROM User
+            WHERE Id = :UserInfo.getUserId()
+            LIMIT 1
+        ];
+        String profileName = currentUser.Profile.Name;
+        return profileName == 'System Administrator' ||
+               profileName == 'CPQ Manager';
     }
 
     // ── Get single quote by Id ────────────────────────────────────────────

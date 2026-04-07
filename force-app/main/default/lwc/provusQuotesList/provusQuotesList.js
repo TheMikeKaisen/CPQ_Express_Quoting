@@ -8,6 +8,8 @@ import deleteQuote from
     '@salesforce/apex/QuoteController.deleteQuote';
 import cloneQuote from
     '@salesforce/apex/QuoteController.cloneQuote';
+import getCurrentUserContext from
+    '@salesforce/apex/UserContextController.getCurrentUserContext';
 
 const PAGE_SIZE = 10;
 
@@ -23,6 +25,14 @@ export default class ProvusQuotesList extends LightningElement {
     wiredQuotesResult = undefined;
     @track allQuotes = [];
     @track accountOptions = [];
+    @track canCreateData = false;
+
+    @wire(getCurrentUserContext)
+    wiredContext({ data }) {
+        if (data) {
+            this.canCreateData = data.canCreateData;
+        }
+    }
 
     // ── Wire accounts for filter ──────────────────────────────────────────
     @wire(getAccountsForFilter)

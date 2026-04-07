@@ -4,6 +4,7 @@ public with sharing class UserController {
     @AuraEnabled(cacheable=true)
     public static List<User> getUsers() {
         try {
+            ensureManagerAccess();
             return [
                 SELECT Id, FirstName, LastName, Name,
                        Email, Username, IsActive,
@@ -78,6 +79,7 @@ public with sharing class UserController {
             String username,
             String role) {
         try {
+            ensureManagerAccess();
             // Step 1: Find the correct Profile
             String profileName = getProfileName(role);
             List<Profile> profiles = [
@@ -180,6 +182,7 @@ public with sharing class UserController {
     @AuraEnabled
     public static void deactivateUser(Id userId) {
         try {
+            ensureManagerAccess();
             // Cannot deactivate yourself
             if (userId == UserInfo.getUserId()) {
                 throw new AuraHandledException(
@@ -204,7 +207,7 @@ public with sharing class UserController {
     }
 
     private static void assignPermissionSet(Id userId, String role) {
-        String psName = (role == 'Manager' || role == 'Admin') ? 'CPQ_Manager' : 'CPQ_Salesperson';
+        String psName = (role == 'Manager' || role == 'Admin') ? 'CPQ_Manager_Access' : 'CPQ_Salesperson_Access';
         
         List<PermissionSet> psList = [SELECT Id FROM PermissionSet WHERE Name = :psName LIMIT 1];
         if (psList.isEmpty()) return; // skip if perm set not deployed yet
@@ -213,5 +216,24 @@ public with sharing class UserController {
             AssigneeId = userId, 
             PermissionSetId = psList[0].Id
         );
+    }
+
+    private static void ensureManagerAccess() {
+        // System Admins always have access
+        String profileId = UserInfo.getProfileId();
+        String profileName = [SELECT Name FROM Profile WHERE Id = :profileId].Name;
+        if (profileName == 'System Administrator') return;
+
+        // Otherwise check for the Manager Permission Set
+        Boolean hasManagerPS = [
+            SELECT count() 
+            FROM PermissionSetAssignment 
+            WHERE AssigneeId = :UserInfo.getUserId() 
+            AND PermissionSet.Name = 'CPQ_Manager_Access'
+        ] > 0;
+
+        if (!hasManagerPS) {
+            throw new AuraHandledException('Access Denied: You do not have permission to perform this administrative action.');
+        }
     }
 }

@@ -10,21 +10,25 @@ import createAccount from
     '@salesforce/apex/AccountController.createAccount';
 import deleteAccount from
     '@salesforce/apex/AccountController.deleteAccount';
+import getCurrentUserContext from
+    '@salesforce/apex/UserContextController.getCurrentUserContext';
 
 const PAGE_SIZE = 10;
 
 export default class ProvusAccountsList extends LightningElement {
 
-    @track allAccounts    = [];
-    @track typeOptions    = [];
+    @track allAccounts = [];
+    @track typeOptions = [];
     @track industryOptions = [];
-    @track typeFilter     = 'All';
+    @track isManager = false;
+    @track canCreateData = false;
+    @track typeFilter = 'All';
     @track industryFilter = 'All';
-    @track searchTerm     = '';
-    @track currentPage    = 1;
-    @track showModal      = false;
-    @track isSaving       = false;
-    @track errorMessage   = '';
+    @track searchTerm = '';
+    @track currentPage = 1;
+    @track showModal = false;
+    @track isSaving = false;
+    @track errorMessage = '';
 
     // Form fields
     @track formData = {
@@ -35,8 +39,16 @@ export default class ProvusAccountsList extends LightningElement {
     wiredAccountsResult = undefined;
 
     // ── Wire data ─────────────────────────────────────────────────────────
+    @wire(getCurrentUserContext)
+    wiredContext({ data }) {
+        if (data) {
+            this.isManager = data.isManager;
+            this.canCreateData = data.canCreateData;
+        }
+    }
+
     @wire(getAccounts, {
-        typeFilter:     '$typeFilter',
+        typeFilter: '$typeFilter',
         industryFilter: '$industryFilter'
     })
     wiredAccounts(result) {
@@ -44,9 +56,9 @@ export default class ProvusAccountsList extends LightningElement {
         if (result.data) {
             this.allAccounts = result.data.map((a, i) => ({
                 ...a,
-                rowNumber:      i + 1,
+                rowNumber: i + 1,
                 websiteDisplay: a.Website || '-',
-                phoneDisplay:   a.Phone   || '-'
+                phoneDisplay: a.Phone || '-'
             }));
         }
     }
@@ -66,24 +78,24 @@ export default class ProvusAccountsList extends LightningElement {
         if (!this.searchTerm) return this.allAccounts;
         const term = this.searchTerm.toLowerCase();
         return this.allAccounts.filter(a =>
-            (a.Name    || '').toLowerCase().includes(term) ||
-            (a.Phone   || '').toLowerCase().includes(term) ||
+            (a.Name || '').toLowerCase().includes(term) ||
+            (a.Phone || '').toLowerCase().includes(term) ||
             (a.Website || '').toLowerCase().includes(term)
         );
     }
 
     // ── Pagination ────────────────────────────────────────────────────────
     get totalRecords() { return this.filteredAccounts.length; }
-    get totalPages()   {
+    get totalPages() {
         return Math.max(1,
             Math.ceil(this.totalRecords / PAGE_SIZE));
     }
-    get isFirstPage()  { return this.currentPage === 1; }
-    get isLastPage()   {
+    get isFirstPage() { return this.currentPage === 1; }
+    get isLastPage() {
         return this.currentPage >= this.totalPages;
     }
-    get isEmpty()      { return this.filteredAccounts.length === 0; }
-    get startRecord()  {
+    get isEmpty() { return this.filteredAccounts.length === 0; }
+    get startRecord() {
         return this.totalRecords === 0
             ? 0 : (this.currentPage - 1) * PAGE_SIZE + 1;
     }
@@ -99,18 +111,18 @@ export default class ProvusAccountsList extends LightningElement {
 
     // ── Handlers ──────────────────────────────────────────────────────────
     handleSearch(event) {
-        this.searchTerm  = event.target.value;
+        this.searchTerm = event.target.value;
         this.currentPage = 1;
     }
 
     handleTypeFilter(event) {
-        this.typeFilter  = event.target.value;
+        this.typeFilter = event.target.value;
         this.currentPage = 1;
     }
 
     handleIndustryFilter(event) {
         this.industryFilter = event.target.value;
-        this.currentPage    = 1;
+        this.currentPage = 1;
     }
 
     handleRefresh() {
@@ -122,9 +134,9 @@ export default class ProvusAccountsList extends LightningElement {
     handleNew() { this.showModal = true; }
 
     handleModalClose() {
-        this.showModal    = false;
+        this.showModal = false;
         this.errorMessage = '';
-        this.formData     = {
+        this.formData = {
             name: '', type: '', industry: '',
             website: '', phone: ''
         };
@@ -146,26 +158,26 @@ export default class ProvusAccountsList extends LightningElement {
         this.isSaving = true;
 
         createAccount({
-            name:     this.formData.name,
-            type:     this.formData.type,
+            name: this.formData.name,
+            type: this.formData.type,
             industry: this.formData.industry,
-            website:  this.formData.website,
-            phone:    this.formData.phone
+            website: this.formData.website,
+            phone: this.formData.phone
         })
-        .then(() => {
-            this.handleModalClose();
-            if (this.wiredAccountsResult) {
-                refreshApex(this.wiredAccountsResult);
-            }
-        })
-        .catch(error => {
-            this.errorMessage = error.body
-                ? error.body.message
-                : 'Error creating account.';
-        })
-        .finally(() => {
-            this.isSaving = false;
-        });
+            .then(() => {
+                this.handleModalClose();
+                if (this.wiredAccountsResult) {
+                    refreshApex(this.wiredAccountsResult);
+                }
+            })
+            .catch(error => {
+                this.errorMessage = error.body
+                    ? error.body.message
+                    : 'Error creating account.';
+            })
+            .finally(() => {
+                this.isSaving = false;
+            });
     }
 
     handleDelete(event) {
@@ -174,14 +186,14 @@ export default class ProvusAccountsList extends LightningElement {
         if (!confirm('Delete this account?')) return;
 
         deleteAccount({ accountId: accountId })
-        .then(() => {
-            if (this.wiredAccountsResult) {
-                refreshApex(this.wiredAccountsResult);
-            }
-        })
-        .catch(error => {
-            console.error('Delete error:', error);
-        });
+            .then(() => {
+                if (this.wiredAccountsResult) {
+                    refreshApex(this.wiredAccountsResult);
+                }
+            })
+            .catch(error => {
+                console.error('Delete error:', error);
+            });
     }
 
     handlePrevPage() {

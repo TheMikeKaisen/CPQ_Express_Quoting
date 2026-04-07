@@ -8,9 +8,11 @@
                 </p>
             </div>
             <div class="header-right">
-                <button class="btn-new"
-                        onclick={handleNew}>+ New</button>
-                <button class="btn-icon">⬆ Import</button>
+                <template if:true={isManager}>
+                    <button class="btn-new"
+                            onclick={handleNew}>+ New</button>
+                    <button class="btn-icon">⬆ Import</button>
+                </template>
                 <button class="btn-icon"
                         onclick={handleRefresh}>
                     🔄 Refresh
@@ -42,8 +44,10 @@
                         <th>Price</th>
                         <th>Cost</th>
                         <th>Tags</th>
-                        <th>Active</th>
-                        <th>Actions</th>
+                        <template if:true={isManager}>
+                            <th>Active</th>
+                            <th>Actions</th>
+                        </template>
                     </tr>
                 </thead>
                 <tbody>
@@ -79,26 +83,28 @@
                                 {prod.formattedCost}
                             </td>
                             <td>{prod.tagsDisplay}</td>
-                            <td>
-                                <label class="toggle-wrap">
-                                    <input
-                                        type="checkbox"
-                                        class="toggle-input"
-                                        checked={prod.Is_Active__c}
+                            <template if:true={isManager}>
+                                <td>
+                                    <label class="toggle-wrap">
+                                        <input
+                                            type="checkbox"
+                                            class="toggle-input"
+                                            checked={prod.Is_Active__c}
+                                            data-id={prod.Id}
+                                            onchange={handleToggle} />
+                                        <span class="toggle-slider">
+                                        </span>
+                                    </label>
+                                </td>
+                                <td>
+                                    <button
+                                        class="action-btn"
                                         data-id={prod.Id}
-                                        onchange={handleToggle} />
-                                    <span class="toggle-slider">
-                                    </span>
-                                </label>
-                            </td>
-                            <td>
-                                <button
-                                    class="action-btn"
-                                    data-id={prod.Id}
-                                    onclick={handleDelete}>
-                                    🗑️
-                                </button>
-                            </td>
+                                        onclick={handleDelete}>
+                                        🗑️
+                                    </button>
+                                </td>
+                            </template>
                         </tr>
                     </template>
                 </tbody>

@@ -1,9 +1,18 @@
-import { LightningElement, track } from 'lwc';
+import { LightningElement, track, wire } from 'lwc';
+import getCurrentUserContext from '@salesforce/apex/UserContextController.getCurrentUserContext';
 
 export default class ProvusExpressApp extends LightningElement {
 
     @track activePage = 'dashboard';
     @track selectedQuoteId = null;
+    @track isManager = false;
+
+    @wire(getCurrentUserContext)
+    wiredContext({ data }) {
+        if (data) {
+            this.isManager = data.isManager;
+        }
+    }
 
     // ── Page visibility getters ───────────────────────────────────────────
     get showDashboard() {
@@ -37,7 +46,16 @@ export default class ProvusExpressApp extends LightningElement {
         if (!event || !event.detail || !event.detail.page) {
             return;
         }
-        this.activePage = event.detail.page;
+
+        const targetPage = event.detail.page;
+
+        // Security Guard: Prevent non-managers from accessing settings
+        if (targetPage === 'settings' && !this.isManager) {
+            this.activePage = 'dashboard';
+            return;
+        }
+
+        this.activePage = targetPage;
         this.selectedQuoteId = null;
     }
 

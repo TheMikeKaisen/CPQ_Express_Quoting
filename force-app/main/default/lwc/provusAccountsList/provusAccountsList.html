@@ -11,12 +11,12 @@
                 </p>
             </div>
             <div class="header-right">
-                <button class="btn-new"
-                        onclick={handleNew}>
-                    + New
-                </button>
-                <button class="btn-icon"
-                        onclick={handleRefresh}>
+                <template if:true={canCreateData}>
+                    <button class="btn-new" onclick={handleNew}>
+                        + New
+                    </button>
+                </template>
+                <button class="btn-icon" onclick={handleRefresh}>
                     🔄 Refresh
                 </button>
             </div>
@@ -24,27 +24,19 @@
 
         <!-- FILTERS -->
         <div class="filters-row">
-            <input
-                type="text"
-                class="search-input"
-                placeholder="Search accounts by name,
-                             phone, or email..."
-                onchange={handleSearch} />
-            <select class="filter-select"
-                    onchange={handleTypeFilter}>
+            <input type="text" class="search-input" placeholder="Search accounts by name,
+                             phone, or email..." onchange={handleSearch} />
+            <select class="filter-select" onchange={handleTypeFilter}>
                 <option value="All">All Types</option>
-                <template for:each={typeOptions}
-                          for:item="type">
+                <template for:each={typeOptions} for:item="type">
                     <option key={type} value={type}>
                         {type}
                     </option>
                 </template>
             </select>
-            <select class="filter-select"
-                    onchange={handleIndustryFilter}>
+            <select class="filter-select" onchange={handleIndustryFilter}>
                 <option value="All">All Industries</option>
-                <template for:each={industryOptions}
-                          for:item="ind">
+                <template for:each={industryOptions} for:item="ind">
                     <option key={ind} value={ind}>
                         {ind}
                     </option>
@@ -70,7 +62,9 @@
                         <th>Industry</th>
                         <th>Website</th>
                         <th>Phone</th>
-                        <th>Actions</th>
+                        <template if:true={isManager}>
+                            <th>Actions</th>
+                        </template>
                     </tr>
                 </thead>
                 <tbody>
@@ -81,8 +75,7 @@
                             </td>
                         </tr>
                     </template>
-                    <template for:each={paginatedAccounts}
-                              for:item="acc">
+                    <template for:each={paginatedAccounts} for:item="acc">
                         <tr key={acc.Id} class="table-row">
                             <td>
                                 <input type="checkbox" />
@@ -116,15 +109,13 @@
                             </td>
                             <td>{acc.websiteDisplay}</td>
                             <td>{acc.phoneDisplay}</td>
-                            <td>
-                                <button
-                                    class="action-btn"
-                                    data-id={acc.Id}
-                                    onclick={handleDelete}
-                                    title="Delete">
-                                    🗑️
-                                </button>
-                            </td>
+                            <template if:true={isManager}>
+                                <td>
+                                    <button class="action-btn" data-id={acc.Id} onclick={handleDelete} title="Delete">
+                                        🗑️
+                                    </button>
+                                </td>
+                            </template>
                         </tr>
                     </template>
                 </tbody>
@@ -133,17 +124,13 @@
 
         <!-- PAGINATION -->
         <div class="pagination">
-            <button class="page-btn"
-                    onclick={handlePrevPage}
-                    disabled={isFirstPage}>
+            <button class="page-btn" onclick={handlePrevPage} disabled={isFirstPage}>
                 ‹ Previous
             </button>
             <span class="page-info">
                 Page {currentPage} of {totalPages}
             </span>
-            <button class="page-btn"
-                    onclick={handleNextPage}
-                    disabled={isLastPage}>
+            <button class="page-btn" onclick={handleNextPage} disabled={isLastPage}>
                 Next ›
             </button>
         </div>
@@ -152,14 +139,12 @@
 
     <!-- NEW ACCOUNT MODAL -->
     <template if:true={showModal}>
-        <div class="modal-overlay"
-             onclick={handleModalClose}>
+        <div class="modal-overlay" onclick={handleModalClose}>
         </div>
         <div class="modal-box">
             <div class="modal-header">
                 <h2 class="modal-title">New Account</h2>
-                <button class="close-btn"
-                        onclick={handleModalClose}>
+                <button class="close-btn" onclick={handleModalClose}>
                     ✕
                 </button>
             </div>
@@ -168,17 +153,12 @@
                     <label class="form-label">
                         Name <span class="req">*</span>
                     </label>
-                    <input type="text"
-                           class="form-input"
-                           placeholder="Account name"
-                           onchange={handleFieldChange}
-                           data-field="name" />
+                    <input type="text" class="form-input" placeholder="Account name" onchange={handleFieldChange}
+                        data-field="name" />
                 </div>
                 <div class="form-group">
                     <label class="form-label">Type</label>
-                    <select class="form-select"
-                            onchange={handleFieldChange}
-                            data-field="type">
+                    <select class="form-select" onchange={handleFieldChange} data-field="type">
                         <option value="">Select type...</option>
                         <option value="Prospect">Prospect</option>
                         <option value="Customer">Customer</option>
@@ -188,9 +168,7 @@
                 </div>
                 <div class="form-group">
                     <label class="form-label">Industry</label>
-                    <select class="form-select"
-                            onchange={handleFieldChange}
-                            data-field="industry">
+                    <select class="form-select" onchange={handleFieldChange} data-field="industry">
                         <option value="">
                             Select industry...
                         </option>
@@ -210,32 +188,23 @@
                 </div>
                 <div class="form-group">
                     <label class="form-label">Website</label>
-                    <input type="text"
-                           class="form-input"
-                           placeholder="www.example.com"
-                           onchange={handleFieldChange}
-                           data-field="website" />
+                    <input type="text" class="form-input" placeholder="www.example.com" onchange={handleFieldChange}
+                        data-field="website" />
                 </div>
                 <div class="form-group">
                     <label class="form-label">Phone</label>
-                    <input type="text"
-                           class="form-input"
-                           placeholder="+1 234 567 8900"
-                           onchange={handleFieldChange}
-                           data-field="phone" />
+                    <input type="text" class="form-input" placeholder="+1 234 567 8900" onchange={handleFieldChange}
+                        data-field="phone" />
                 </div>
                 <template if:true={errorMessage}>
                     <div class="error-msg">{errorMessage}</div>
                 </template>
             </div>
             <div class="modal-footer">
-                <button class="btn-cancel"
-                        onclick={handleModalClose}>
+                <button class="btn-cancel" onclick={handleModalClose}>
                     Cancel
                 </button>
-                <button class="btn-save"
-                        onclick={handleSave}
-                        disabled={isSaving}>
+                <button class="btn-save" onclick={handleSave} disabled={isSaving}>
                     <template if:true={isSaving}>
                         Saving...
                     </template>

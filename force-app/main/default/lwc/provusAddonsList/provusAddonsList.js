@@ -8,12 +8,15 @@ import toggleActiveStatus from
     '@salesforce/apex/AddonController.toggleActiveStatus';
 import deleteAddon from
     '@salesforce/apex/AddonController.deleteAddon';
+import getCurrentUserContext from
+    '@salesforce/apex/UserContextController.getCurrentUserContext';
 
 const PAGE_SIZE = 10;
 
 export default class ProvusAddonsList extends LightningElement {
 
     @track allAddons    = [];
+    @track isManager    = false;
     @track searchTerm   = '';
     @track currentPage  = 1;
     @track showModal    = false;
@@ -25,6 +28,13 @@ export default class ProvusAddonsList extends LightningElement {
     };
 
     wiredAddonsResult = undefined;
+
+    @wire(getCurrentUserContext)
+    wiredContext({ data }) {
+        if (data) {
+            this.isManager = data.isManager;
+        }
+    }
 
     @wire(getAddons, { searchTerm: '' })
     wiredAddons(result) {

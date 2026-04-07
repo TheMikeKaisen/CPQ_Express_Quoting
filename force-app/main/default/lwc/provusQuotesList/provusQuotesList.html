@@ -10,9 +10,11 @@
                 </p>
             </div>
             <div class="page-header-right">
-                <button class="btn-new" onclick={handleNew}>
-                    + New
-                </button>
+                <template if:true={canCreateData}>
+                    <button class="btn-new" onclick={handleNew}>
+                        + New
+                    </button>
+                </template>
                 <button class="btn-icon" onclick={handleRefresh}>
                     🔄 Refresh
                 </button>
@@ -22,16 +24,10 @@
         <!-- FILTERS ROW -->
         <div class="filters-row">
             <!-- Search -->
-            <input
-                type="text"
-                class="search-input"
-                placeholder="Search quotes..."
-                onchange={handleSearch} />
+            <input type="text" class="search-input" placeholder="Search quotes..." onchange={handleSearch} />
 
             <!-- Status Filter -->
-            <select
-                class="filter-select"
-                onchange={handleStatusFilter}>
+            <select class="filter-select" onchange={handleStatusFilter}>
                 <option value="All">All Status</option>
                 <option value="Draft">Draft</option>
                 <option value="Pending Approval">Pending Approval</option>
@@ -40,12 +36,9 @@
             </select>
 
             <!-- Account Filter -->
-            <select
-                class="filter-select"
-                onchange={handleAccountFilter}>
+            <select class="filter-select" onchange={handleAccountFilter}>
                 <option value="All">All Accounts</option>
-                <template for:each={accountOptions}
-                          for:item="acc">
+                <template for:each={accountOptions} for:item="acc">
                     <option key={acc.Id} value={acc.Id}>
                         {acc.Name}
                     </option>
@@ -105,14 +98,8 @@
 
                     <!-- Data rows -->
                     <template if:false={isLoading}>
-                        <template for:each={paginatedQuotes}
-                                  for:item="quote"
-                                  for:index="index">
-                            <tr
-                                key={quote.Id}
-                                class="table-row"
-                                data-id={quote.Id}
-                                onclick={handleRowClick}>
+                        <template for:each={paginatedQuotes} for:item="quote" for:index="index">
+                            <tr key={quote.Id} class="table-row" data-id={quote.Id} onclick={handleRowClick}>
                                 <td onclick={stopPropagation}>
                                     <input type="checkbox" />
                                 </td>
@@ -120,18 +107,14 @@
                                     {quote.rowNumber}
                                 </td>
                                 <td class="col-id">
-                                    <span
-                                        class="quote-link"
-                                        data-id={quote.Id}
-                                        onclick={handleQuoteClick}>
+                                    <span class="quote-link" data-id={quote.Id} onclick={handleQuoteClick}>
                                         {quote.QuoteNumber}
                                     </span>
                                 </td>
                                 <td>{quote.opportunityName}</td>
                                 <td>{quote.accountName}</td>
                                 <td>
-                                    <c-provus-status-badge
-                                        status={quote.Status}>
+                                    <c-provus-status-badge status={quote.Status}>
                                     </c-provus-status-badge>
                                 </td>
                                 <td>{quote.createdByName}</td>
@@ -148,18 +131,12 @@
                                 <td onclick={stopPropagation}>
                                     <div class="action-btns">
                                         <!-- Clone -->
-                                        <button
-                                            class="action-btn"
-                                            title="Clone"
-                                            data-id={quote.Id}
+                                        <button class="action-btn" title="Clone" data-id={quote.Id}
                                             onclick={handleClone}>
                                             📋
                                         </button>
                                         <!-- Delete -->
-                                        <button
-                                            class="action-btn action-btn-delete"
-                                            title="Delete"
-                                            data-id={quote.Id}
+                                        <button class="action-btn action-btn-delete" title="Delete" data-id={quote.Id}
                                             onclick={handleDelete}>
                                             🗑️
                                         </button>
@@ -174,19 +151,13 @@
 
         <!-- PAGINATION -->
         <div class="pagination">
-            <button
-                class="page-btn"
-                onclick={handlePrevPage}
-                disabled={isFirstPage}>
+            <button class="page-btn" onclick={handlePrevPage} disabled={isFirstPage}>
                 ‹ Previous
             </button>
             <span class="page-info">
                 Page {currentPage} of {totalPages}
             </span>
-            <button
-                class="page-btn"
-                onclick={handleNextPage}
-                disabled={isLastPage}>
+            <button class="page-btn" onclick={handleNextPage} disabled={isLastPage}>
                 Next ›
             </button>
         </div>
@@ -194,18 +165,12 @@
     </div>
 
     <!-- CLONE QUOTE MODAL -->
-    <c-provus-clone-quote-modal
-        is-open={showCloneModal}
-        quote-id={cloneQuoteId}
-        quote-number={cloneQuoteNumber}
-        onclose={handleCloneModalClose}
-        oncloned={handleQuoteCloned}>
+    <c-provus-clone-quote-modal is-open={showCloneModal} quote-id={cloneQuoteId} quote-number={cloneQuoteNumber}
+        onclose={handleCloneModalClose} oncloned={handleQuoteCloned}>
     </c-provus-clone-quote-modal>
 
     <!-- CREATE QUOTE MODAL -->
-    <c-provus-create-quote-modal
-        is-open={showCreateModal}
-        onclose={handleModalClose}
+    <c-provus-create-quote-modal is-open={showCreateModal} onclose={handleModalClose}
         onquotecreated={handleQuoteCreated}>
     </c-provus-create-quote-modal>
 

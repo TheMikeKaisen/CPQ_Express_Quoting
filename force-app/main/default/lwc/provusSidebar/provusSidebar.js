@@ -1,9 +1,20 @@
-import { LightningElement, api, track } from 'lwc';
+import { LightningElement, api, track, wire } from 'lwc';
+import getCurrentUserContext from
+    '@salesforce/apex/UserContextController.getCurrentUserContext';
 
 export default class ProvusSidebar extends LightningElement {
 
     // activePage is passed from the parent (provusExpressApp)
     @api activePage = 'dashboard';
+
+    @track isManager = false;
+
+    @wire(getCurrentUserContext)
+    wiredContext({ data }) {
+        if (data) {
+            this.isManager = data.isManager;
+        }
+    }
 
     // Nav items definition
     // icon, label, page name all defined here

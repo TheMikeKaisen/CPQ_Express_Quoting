@@ -7,7 +7,7 @@ public with sharing class OpportunityController {
             SELECT Id, Name, AccountId, Account.Name,
                    StageName, CloseDate, Amount
             FROM Opportunity
-            WHERE IsClosed = false  // only open opportunities
+            WHERE IsClosed = false
             ORDER BY Name ASC
         ];
     }

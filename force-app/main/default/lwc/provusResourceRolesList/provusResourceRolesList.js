@@ -8,6 +8,8 @@ import toggleActiveStatus from
     '@salesforce/apex/ResourceRoleController.toggleActiveStatus';
 import deleteResourceRole from
     '@salesforce/apex/ResourceRoleController.deleteResourceRole';
+import getCurrentUserContext from
+    '@salesforce/apex/UserContextController.getCurrentUserContext';
 
 const PAGE_SIZE = 10;
 
@@ -15,6 +17,7 @@ export default class ProvusResourceRolesList
     extends LightningElement {
 
     @track allRoles     = [];
+    @track isManager    = false;
     @track statusFilter = 'All';
     @track searchTerm   = '';
     @track currentPage  = 1;
@@ -27,6 +30,13 @@ export default class ProvusResourceRolesList
     };
 
     wiredRolesResult = undefined;
+
+    @wire(getCurrentUserContext)
+    wiredContext({ data }) {
+        if (data) {
+            this.isManager = data.isManager;
+        }
+    }
 
     @wire(getResourceRoles, { statusFilter: '$statusFilter' })
     wiredRoles(result) {

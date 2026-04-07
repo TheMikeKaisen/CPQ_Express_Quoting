@@ -8,12 +8,15 @@ import toggleActiveStatus from
     '@salesforce/apex/ProductController.toggleActiveStatus';
 import deleteProduct from
     '@salesforce/apex/ProductController.deleteProduct';
+import getCurrentUserContext from
+    '@salesforce/apex/UserContextController.getCurrentUserContext';
 
 const PAGE_SIZE = 10;
 
 export default class ProvusProductsList extends LightningElement {
 
     @track allProducts  = [];
+    @track isManager    = false;
     @track searchTerm   = '';
     @track currentPage  = 1;
     @track showModal    = false;
@@ -25,6 +28,13 @@ export default class ProvusProductsList extends LightningElement {
     };
 
     wiredProductsResult = undefined;
+
+    @wire(getCurrentUserContext)
+    wiredContext({ data }) {
+        if (data) {
+            this.isManager = data.isManager;
+        }
+    }
 
     @wire(getProducts, { searchTerm: '' })
     wiredProducts(result) {
