@@ -1,0 +1,423 @@
+<template>
+    <div class="settings-container">
+
+        <!-- PAGE HEADER -->
+        <div class="settings-header">
+            <div class="header-left">
+                <h1 class="page-title">Settings</h1>
+                <p class="page-subtitle">
+                    Manage your application preferences
+                    and organization settings
+                </p>
+            </div>
+            <div class="header-right">
+                <button class="btn-icon">
+                    ✨ AI Assistant
+                </button>
+            </div>
+        </div>
+
+        <!-- SETTINGS BODY -->
+        <div class="settings-body">
+
+            <!-- LEFT: Settings nav -->
+            <div class="settings-nav">
+                <div
+                    class={generalNavClass}
+                    data-tab="general"
+                    onclick={handleNavClick}>
+                    ⚙️ General
+                </div>
+                <div
+                    class={orgNavClass}
+                    data-tab="organization"
+                    onclick={handleNavClick}>
+                    🏢 Organization
+                </div>
+                <div
+                    class={intNavClass}
+                    data-tab="integrations"
+                    onclick={handleNavClick}>
+                    🔗 Integrations
+                </div>
+                <div
+                    class={usersNavClass}
+                    data-tab="users"
+                    onclick={handleNavClick}>
+                    👥 Users
+                </div>
+            </div>
+
+            <!-- RIGHT: Tab content -->
+            <div class="settings-content">
+
+                <!-- GENERAL tab stub -->
+                <template if:true={showGeneral}>
+                    <div class="stub-tab">
+                        <h2>General Settings</h2>
+                        <p>Coming soon.</p>
+                    </div>
+                </template>
+
+                <!-- ORGANIZATION tab stub -->
+                <template if:true={showOrganization}>
+                    <div class="stub-tab">
+                        <h2>Organization Settings</h2>
+                        <p>Coming soon.</p>
+                    </div>
+                </template>
+
+                <!-- INTEGRATIONS tab stub -->
+                <template if:true={showIntegrations}>
+                    <div class="stub-tab">
+                        <h2>Integrations</h2>
+                        <p>Coming soon.</p>
+                    </div>
+                </template>
+
+                <!-- USERS tab -->
+                <template if:true={showUsers}>
+                    <div class="users-section">
+
+                        <!-- Section header -->
+                        <div class="section-header">
+                            <div class="section-header-left">
+                                <div class="section-icon">👥</div>
+                                <div>
+                                    <h2 class="section-title">
+                                        Manage Your Team
+                                    </h2>
+                                    <p class="section-subtitle">
+                                        Manage user access, roles,
+                                        and permissions.
+                                    </p>
+                                </div>
+                            </div>
+                            <button
+                                class="btn-add-member"
+                                onclick={handleAddMember}>
+                                + Team Member
+                            </button>
+                        </div>
+
+                        <!-- Seat stats -->
+                        <div class="seat-stats">
+                            <div class="stat-item">
+                                <div class="stat-number">
+                                    {totalSeats}
+                                </div>
+                                <div class="stat-label">
+                                    TOTAL SEATS
+                                </div>
+                            </div>
+                            <div class="stat-divider"></div>
+                            <div class="stat-item">
+                                <div class="stat-number">
+                                    {usedSeats}
+                                </div>
+                                <div class="stat-label">
+                                    USED SEATS
+                                </div>
+                            </div>
+                            <div class="stat-divider"></div>
+                            <div class="stat-item">
+                                <div class="stat-number">
+                                    {availableSeats}
+                                </div>
+                                <div class="stat-label">
+                                    AVAILABLE
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Users table -->
+                        <div class="users-table-container">
+                            <table class="users-table">
+                                <thead>
+                                    <tr>
+                                        <th class="col-check">
+                                            <input
+                                                type="checkbox" />
+                                        </th>
+                                        <th>Name</th>
+                                        <th>Email</th>
+                                        <th>Role</th>
+                                        <th>Status</th>
+                                        <th>Last Active</th>
+                                        <th></th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <template if:true={isLoading}>
+                                        <tr>
+                                            <td colspan="7"
+                                                class="loading-cell">
+                                                Loading users...
+                                            </td>
+                                        </tr>
+                                    </template>
+
+                                    <template if:false={isLoading}>
+                                        <template
+                                            for:each={userRows}
+                                            for:item="user">
+                                            <tr key={user.Id}
+                                                class="user-row">
+                                                <td>
+                                                    <input
+                                                        type="checkbox"/>
+                                                </td>
+                                                <td>
+                                                    <div class="user-name-cell">
+                                                        <!-- Avatar -->
+                                                        <div
+                                                            class={user.avatarClass}
+                                                            style={user.avatarStyle}>
+                                                            {user.initials}
+                                                        </div>
+                                                        <span class="user-name">
+                                                            {user.Name}
+                                                        </span>
+                                                    </div>
+                                                </td>
+                                                <td class="email-cell">
+                                                    {user.Email}
+                                                </td>
+                                                <td>
+                                                    <span
+                                                        class={user.roleBadgeClass}>
+                                                        {user.roleDisplay}
+                                                    </span>
+                                                </td>
+                                                <td>
+                                                    <div class="status-cell">
+                                                        <span class="status-dot">
+                                                        </span>
+                                                        Active
+                                                    </div>
+                                                </td>
+                                                <td class="last-active">
+                                                    {user.lastActiveDisplay}
+                                                </td>
+                                                <td>
+                                                    <button
+                                                        class="action-dots"
+                                                        data-id={user.Id}
+                                                        onclick={handleUserAction}>
+                                                        ···
+                                                    </button>
+                                                </td>
+                                            </tr>
+                                        </template>
+                                    </template>
+
+                                </tbody>
+                            </table>
+                        </div>
+
+                    </div>
+                </template>
+
+            </div>
+        </div>
+
+    </div>
+
+    <!-- CREATE TEAM MEMBER MODAL -->
+    <template if:true={showModal}>
+        <div class="modal-overlay"
+             onclick={handleModalClose}>
+        </div>
+        <div class="modal-box">
+
+            <div class="modal-header">
+                <div>
+                    <h2 class="modal-title">
+                        Create Team Member
+                    </h2>
+                    <p class="modal-subtitle">
+                        Add a team member and select
+                        a role before submitting.
+                    </p>
+                    <p class="modal-subtitle">
+                        Email will also be used as
+                        the default username.
+                    </p>
+                </div>
+            </div>
+
+            <div class="modal-body">
+
+                <!-- First Name -->
+                <div class="form-group">
+                    <label class="form-label">
+                        First Name
+                        <span class="req">*</span>
+                    </label>
+                    <input
+                        type="text"
+                        class="form-input"
+                        placeholder="Enter first name"
+                        onchange={handleFieldChange}
+                        data-field="firstName" />
+                </div>
+
+                <!-- Last Name -->
+                <div class="form-group">
+                    <label class="form-label">
+                        Last Name
+                        <span class="req">*</span>
+                    </label>
+                    <input
+                        type="text"
+                        class="form-input"
+                        placeholder="Enter last name"
+                        onchange={handleFieldChange}
+                        data-field="lastName" />
+                </div>
+
+                <!-- Email -->
+                <div class="form-group">
+                    <label class="form-label">
+                        Email
+                        <span class="req">*</span>
+                    </label>
+                    <input
+                        type="email"
+                        class="form-input"
+                        placeholder="Enter email address"
+                        onchange={handleEmailChange}
+                        data-field="email" />
+                    <p class="field-hint">
+                        Email will also be used as
+                        the default username.
+                    </p>
+                </div>
+
+                <!-- Username -->
+                <div class="form-group">
+                    <label class="form-label">
+                        Username
+                        <span class="req">*</span>
+                    </label>
+                    <input
+                        type="text"
+                        class="form-input"
+                        placeholder="Enter username (email format)"
+                        value={formData.username}
+                        onchange={handleFieldChange}
+                        data-field="username" />
+                    <p class="field-hint">
+                        Must be in email format and be unique.
+                        Defaults to the email address
+                        if not edited.
+                    </p>
+                </div>
+
+                <!-- Role -->
+                <div class="form-group">
+                    <label class="form-label">
+                        Role
+                        <span class="req">*</span>
+                    </label>
+                    <p class="field-hint">
+                        Choose a role to control access
+                        and responsibilities.
+                    </p>
+
+                    <!-- Admin option -->
+                    <div
+                        class={adminOptionClass}
+                        onclick={handleRoleSelect}
+                        data-role="Admin">
+                        <input
+                            type="radio"
+                            name="role"
+                            value="Admin"
+                            checked={isAdminSelected}
+                            onchange={handleRoleChange} />
+                        <div class="role-content">
+                            <div class="role-name">Admin</div>
+                            <div class="role-desc">
+                                Full settings access and all
+                                Manager/User capabilities.
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Manager option -->
+                    <div
+                        class={managerOptionClass}
+                        onclick={handleRoleSelect}
+                        data-role="Manager">
+                        <input
+                            type="radio"
+                            name="role"
+                            value="Manager"
+                            checked={isManagerSelected}
+                            onchange={handleRoleChange} />
+                        <div class="role-content">
+                            <div class="role-name">Manager</div>
+                            <div class="role-desc">
+                                Can approve/reject quotes and
+                                manage team data while inheriting
+                                User access.
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- User option -->
+                    <div
+                        class={userOptionClass}
+                        onclick={handleRoleSelect}
+                        data-role="User">
+                        <input
+                            type="radio"
+                            name="role"
+                            value="User"
+                            checked={isUserSelected}
+                            onchange={handleRoleChange} />
+                        <div class="role-content">
+                            <div class="role-name">User</div>
+                            <div class="role-desc">
+                                Can edit own quotes, view others
+                                read-only, and manage
+                                catalog/account data.
+                            </div>
+                        </div>
+                    </div>
+
+                </div>
+
+                <!-- Error -->
+                <template if:true={errorMessage}>
+                    <div class="error-msg">
+                        {errorMessage}
+                    </div>
+                </template>
+
+            </div>
+
+            <div class="modal-footer">
+                <button
+                    class="btn-cancel"
+                    onclick={handleModalClose}>
+                    Cancel
+                </button>
+                <button
+                    class="btn-create"
+                    onclick={handleCreate}
+                    disabled={isCreating}>
+                    <template if:true={isCreating}>
+                        Creating...
+                    </template>
+                    <template if:false={isCreating}>
+                        Create
+                    </template>
+                </button>
+            </div>
+
+        </div>
+    </template>
+
+</template>
