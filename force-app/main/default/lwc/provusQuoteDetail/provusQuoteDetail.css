@@ -1,0 +1,258 @@
+.detail-container {
+    padding: 0;
+    background: #f3f4f6;
+    min-height: 100vh;
+}
+
+.loading {
+    padding: 40px;
+    text-align: center;
+    color: #6b7280;
+    font-size: 14px;
+}
+
+/* Header */
+.detail-header {
+    background: white;
+    padding: 16px 24px;
+    border-bottom: 1px solid #e5e7eb;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+/* Breadcrumb */
+.breadcrumb {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 13px;
+}
+
+.breadcrumb-link {
+    color: #1d4ed8;
+    cursor: pointer;
+    font-weight: 500;
+}
+.breadcrumb-link:hover { text-decoration: underline; }
+
+.breadcrumb-sep { color: #9ca3af; }
+
+.breadcrumb-current {
+    color: #374151;
+    font-weight: 600;
+}
+
+/* Quote name */
+.quote-name-row {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.quote-name {
+    font-size: 14px;
+    color: #374151;
+    font-weight: 500;
+}
+
+.edit-name-btn {
+    background: none;
+    border: none;
+    cursor: pointer;
+    font-size: 13px;
+    padding: 2px 6px;
+    border-radius: 4px;
+    color: #6b7280;
+}
+.edit-name-btn:hover { background: #f3f4f6; }
+
+.name-input {
+    padding: 6px 10px;
+    border: 1px solid #3b82f6;
+    border-radius: 6px;
+    font-size: 14px;
+    outline: none;
+    width: 300px;
+}
+
+/* Action buttons */
+.action-buttons {
+    display: flex;
+    gap: 8px;
+    align-items: center;
+    flex-wrap: wrap;
+}
+
+.btn-submit {
+    padding: 8px 16px;
+    background: white;
+    border: 1px solid #d1d5db;
+    border-radius: 8px;
+    font-size: 13px;
+    font-weight: 600;
+    cursor: pointer;
+    color: #374151;
+}
+.btn-submit:hover { background: #f9fafb; }
+
+.btn-recall {
+    padding: 8px 16px;
+    background: white;
+    border: 1px solid #d1d5db;
+    border-radius: 8px;
+    font-size: 13px;
+    font-weight: 600;
+    cursor: pointer;
+    color: #374151;
+}
+.btn-recall:hover { background: #f9fafb; }
+
+.btn-approve {
+    padding: 8px 16px;
+    background: #10b981;
+    border: none;
+    border-radius: 8px;
+    font-size: 13px;
+    font-weight: 600;
+    cursor: pointer;
+    color: white;
+}
+.btn-approve:hover { background: #059669; }
+
+.btn-reject {
+    padding: 8px 16px;
+    background: #ef4444;
+    border: none;
+    border-radius: 8px;
+    font-size: 13px;
+    font-weight: 600;
+    cursor: pointer;
+    color: white;
+}
+.btn-reject:hover { background: #dc2626; }
+
+.btn-pdf {
+    padding: 8px 16px;
+    background: #1d4ed8;
+    border: none;
+    border-radius: 8px;
+    font-size: 13px;
+    font-weight: 600;
+    cursor: pointer;
+    color: white;
+}
+.btn-pdf:hover { background: #1e40af; }
+
+.btn-save {
+    padding: 8px 20px;
+    background: #1d4ed8;
+    border: none;
+    border-radius: 8px;
+    font-size: 13px;
+    font-weight: 600;
+    cursor: pointer;
+    color: white;
+}
+.btn-save:hover { background: #1e40af; }
+
+.btn-icon {
+    padding: 8px 12px;
+    background: white;
+    border: 1px solid #d1d5db;
+    border-radius: 8px;
+    font-size: 12px;
+    cursor: pointer;
+    color: #374151;
+}
+.btn-icon:hover { background: #f9fafb; }
+
+/* Metric strip */
+.metric-strip {
+    background: white;
+    padding: 12px 24px;
+    display: flex;
+    gap: 32px;
+    flex-wrap: wrap;
+    border-bottom: 1px solid #e5e7eb;
+    font-size: 13px;
+}
+
+.metric {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+}
+
+.metric-label {
+    font-size: 11px;
+    color: #6b7280;
+    text-transform: lowercase;
+}
+
+.metric-value {
+    font-size: 13px;
+    font-weight: 600;
+    color: #111827;
+}
+
+.metric-total {
+    font-size: 16px;
+    color: #111827;
+}
+
+/* Tabs */
+.tabs-container {
+    background: white;
+    margin: 16px;
+    border-radius: 10px;
+    border: 1px solid #e5e7eb;
+    overflow: hidden;
+}
+
+.tabs-header {
+    display: flex;
+    border-bottom: 1px solid #e5e7eb;
+    padding: 0 16px;
+    background: white;
+}
+
+.tab-btn {
+    padding: 14px 16px;
+    background: none;
+    border: none;
+    border-bottom: 2px solid transparent;
+    font-size: 13px;
+    font-weight: 500;
+    color: #6b7280;
+    cursor: pointer;
+    margin-bottom: -1px;
+    transition: all 0.15s;
+}
+
+.tab-btn:hover { color: #374151; }
+
+.tab-btn-active {
+    color: #1d4ed8;
+    border-bottom-color: #1d4ed8;
+    font-weight: 600;
+}
+
+.tab-content {
+    padding: 0;
+    min-height: 400px;
+}
+
+.tab-stub {
+    padding: 60px;
+    text-align: center;
+    color: #9ca3af;
+    font-size: 14px;
+}
+
+.error-state {
+    padding: 40px;
+    text-align: center;
+    color: #ef4444;
+    font-size: 14px;
+}

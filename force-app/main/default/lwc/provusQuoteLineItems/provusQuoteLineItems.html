@@ -1,0 +1,167 @@
+<template>
+    <div class="line-items-container">
+
+        <!-- TOP BAR -->
+        <div class="line-items-header">
+            <div class="header-left">
+                <button
+                    class="btn-collapse"
+                    onclick={handleCollapseAll}>
+                    › Collapse All
+                </button>
+            </div>
+            <div class="header-right">
+                <button
+                    class="btn-add-phase"
+                    onclick={handleAddPhase}>
+                    + Add Phase
+                </button>
+                <button
+                    class="btn-add-item"
+                    onclick={handleAddItem}>
+                    + Add Item
+                </button>
+            </div>
+        </div>
+
+        <!-- LINE ITEMS TABLE -->
+        <div class="table-wrapper">
+            <table class="items-table">
+                <thead>
+                    <tr>
+                        <th class="col-check">
+                            <input type="checkbox" />
+                        </th>
+                        <th class="col-drag"></th>
+                        <th class="col-name">Name</th>
+                        <th class="col-task">Task</th>
+                        <th class="col-date">Start Date</th>
+                        <th class="col-date">End Date</th>
+                        <th class="col-qty">Quantity</th>
+                        <th class="col-rate">Base Rate</th>
+                        <th class="col-price">Unit Price</th>
+                        <th class="col-disc">Discount %</th>
+                        <th class="col-total">Total Price</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <!-- Empty state -->
+                    <template if:true={isEmpty}>
+                        <tr>
+                            <td colspan="11" class="empty-cell">
+                                No line items found.
+                                Click "+ Add Item" to get started.
+                            </td>
+                        </tr>
+                    </template>
+
+                    <!-- Line item rows -->
+                    <template for:each={lineItems}
+                              for:item="item">
+                        <tr key={item.Id} class="item-row">
+                            <td>
+                                <input type="checkbox" />
+                            </td>
+                            <td class="drag-cell">⠿</td>
+                            <td class="name-cell">
+                                <!-- Type icon -->
+                                <span class={item.typeIconClass}>
+                                    {item.typeIcon}
+                                </span>
+                                {item.Name}
+                            </td>
+                            <td>
+                                <input
+                                    type="text"
+                                    class="inline-input"
+                                    placeholder="Add task..."
+                                    value={item.Task__c}
+                                    data-id={item.Id}
+                                    data-field="Task__c"
+                                    onchange={handleFieldChange} />
+                            </td>
+                            <td>
+                                <input
+                                    type="date"
+                                    class="inline-input"
+                                    value={item.Start_Date__c}
+                                    data-id={item.Id}
+                                    data-field="Start_Date__c"
+                                    onchange={handleFieldChange} />
+                            </td>
+                            <td>
+                                <input
+                                    type="date"
+                                    class="inline-input"
+                                    value={item.End_Date__c}
+                                    data-id={item.Id}
+                                    data-field="End_Date__c"
+                                    onchange={handleFieldChange} />
+                            </td>
+                            <td>
+                                <input
+                                    type="number"
+                                    class="inline-input num-input"
+                                    value={item.Quantity__c}
+                                    min="1"
+                                    data-id={item.Id}
+                                    data-field="Quantity__c"
+                                    onchange={handleFieldChange} />
+                            </td>
+                            <td class="rate-cell">
+                                {item.formattedBaseRate}
+                            </td>
+                            <td>
+                                <span
+                                    class="unit-price-link"
+                                    data-id={item.Id}
+                                    onclick={handleUnitPriceClick}>
+                                    {item.formattedUnitPrice}
+                                </span>
+                            </td>
+                            <td>
+                                <div class="discount-input-wrap">
+                                    <input
+                                        type="number"
+                                        class="inline-input num-input"
+                                        value={item.Discount_Percent__c}
+                                        min="0"
+                                        max="100"
+                                        data-id={item.Id}
+                                        data-field="Discount_Percent__c"
+                                        onchange={handleFieldChange} />
+                                    <span class="pct-sign">%</span>
+                                </div>
+                            </td>
+                            <td class="total-cell">
+                                {item.formattedTotal}
+                            </td>
+                        </tr>
+                    </template>
+                </tbody>
+
+                <!-- TOTAL ROW -->
+                <tfoot>
+                    <tr class="total-row">
+                        <td colspan="10" class="total-label">
+                            <strong>Total</strong>
+                        </td>
+                        <td class="total-amount">
+                            <strong>{grandTotal}</strong>
+                        </td>
+                    </tr>
+                </tfoot>
+            </table>
+        </div>
+
+    </div>
+
+    <!-- ADD ITEMS MODAL -->
+    <c-provus-add-items-modal
+        is-open={showAddModal}
+        quote-id={quoteId}
+        onclose={handleModalClose}
+        onitemsadded={handleItemsAdded}>
+    </c-provus-add-items-modal>
+
+</template>

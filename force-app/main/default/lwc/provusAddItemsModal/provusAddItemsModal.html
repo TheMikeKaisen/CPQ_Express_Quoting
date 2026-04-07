@@ -1,0 +1,206 @@
+<template>
+    <template if:true={isOpen}>
+
+        <!-- Overlay -->
+        <div class="modal-overlay"
+             onclick={handleOverlayClick}>
+        </div>
+
+        <!-- Modal -->
+        <div class="modal-box">
+
+            <!-- Header -->
+            <div class="modal-header">
+                <div class="modal-header-left">
+                    <h2 class="modal-title">
+                        Add Quote Line Items
+                    </h2>
+                    <p class="modal-subtitle">
+                        Select Products, Add-ons,
+                        Resource Roles to add to your quote.
+                    </p>
+                </div>
+                <button class="close-btn"
+                        onclick={handleClose}>✕
+                </button>
+            </div>
+
+            <!-- 3 Tabs -->
+            <div class="modal-tabs">
+                <button
+                    class={rrTabClass}
+                    data-tab="resourceRoles"
+                    onclick={handleTabClick}>
+                    👤 Resource Roles ({selectedRRCount})
+                </button>
+                <button
+                    class={prodTabClass}
+                    data-tab="products"
+                    onclick={handleTabClick}>
+                    📦 Products ({selectedProdCount})
+                </button>
+                <button
+                    class={addonTabClass}
+                    data-tab="addons"
+                    onclick={handleTabClick}>
+                    ✨ Add-ons ({selectedAddonCount})
+                </button>
+            </div>
+
+            <!-- Search + Sort -->
+            <div class="search-bar">
+                <input
+                    type="text"
+                    class="search-input"
+                    placeholder="Search by name, description, or ID..."
+                    onchange={handleSearch} />
+            </div>
+
+            <!-- Sort buttons -->
+            <div class="sort-bar">
+                <button
+                    class={nameSortClass}
+                    data-sort="name"
+                    onclick={handleSort}>
+                    Name ↑
+                </button>
+                <button
+                    class={priceSortClass}
+                    data-sort="price"
+                    onclick={handleSort}>
+                    Price
+                </button>
+            </div>
+
+            <!-- Item List -->
+            <div class="item-list">
+
+                <!-- Loading -->
+                <template if:true={isLoadingItems}>
+                    <div class="list-loading">
+                        Loading...
+                    </div>
+                </template>
+
+                <!-- Empty -->
+                <template if:true={isListEmpty}>
+                    <div class="list-empty">
+                        No items found.
+                    </div>
+                </template>
+
+                <!-- Resource Roles tab -->
+                <template if:true={showRRTab}>
+                    <template for:each={filteredRoles}
+                              for:item="role">
+                        <div key={role.Id}
+                             class={role.itemClass}
+                             data-id={role.Id}
+                             data-type="resourceRole"
+                             onclick={handleItemClick}>
+                            <input
+                                type="checkbox"
+                                checked={role.isSelected}
+                                data-id={role.Id}
+                                data-type="resourceRole"
+                                onclick={handleCheckboxClick} />
+                            <div class="item-info">
+                                <div class="item-name">
+                                    {role.Name}
+                                </div>
+                                <div class="item-desc">
+                                    {role.descriptionText}
+                                </div>
+                            </div>
+                            <div class="item-price">
+                                ${role.Price__c}/{role.Billing_Unit__c}
+                            </div>
+                        </div>
+                    </template>
+                </template>
+
+                <!-- Products tab -->
+                <template if:true={showProdTab}>
+                    <template for:each={filteredProducts}
+                              for:item="prod">
+                        <div key={prod.Id}
+                             class={prod.itemClass}
+                             data-id={prod.Id}
+                             data-type="product"
+                             onclick={handleItemClick}>
+                            <input
+                                type="checkbox"
+                                checked={prod.isSelected}
+                                data-id={prod.Id}
+                                data-type="product"
+                                onclick={handleCheckboxClick} />
+                            <div class="item-info">
+                                <div class="item-name">
+                                    {prod.Name}
+                                </div>
+                                <div class="item-desc">
+                                    {prod.descriptionText}
+                                </div>
+                            </div>
+                            <div class="item-price">
+                                ${prod.Price__c}/{prod.Billing_Unit__c}
+                            </div>
+                        </div>
+                    </template>
+                </template>
+
+                <!-- Add-ons tab -->
+                <template if:true={showAddonTab}>
+                    <template for:each={filteredAddons}
+                              for:item="addon">
+                        <div key={addon.Id}
+                             class={addon.itemClass}
+                             data-id={addon.Id}
+                             data-type="addon"
+                             onclick={handleItemClick}>
+                            <input
+                                type="checkbox"
+                                checked={addon.isSelected}
+                                data-id={addon.Id}
+                                data-type="addon"
+                                onclick={handleCheckboxClick} />
+                            <div class="item-info">
+                                <div class="item-name">
+                                    {addon.Name}
+                                </div>
+                                <div class="item-desc">
+                                    {addon.descriptionText}
+                                </div>
+                            </div>
+                            <div class="item-price">
+                                ${addon.Price__c}/{addon.Billing_Unit__c}
+                            </div>
+                        </div>
+                    </template>
+                </template>
+
+                <div class="all-loaded">All items loaded</div>
+            </div>
+
+            <!-- Footer -->
+            <div class="modal-footer">
+                <button class="btn-cancel"
+                        onclick={handleClose}>
+                    Cancel
+                </button>
+                <button
+                    class="btn-add"
+                    onclick={handleAddItems}
+                    disabled={isAdding}>
+                    <template if:true={isAdding}>
+                        Adding...
+                    </template>
+                    <template if:false={isAdding}>
+                        Add {totalSelected} Items
+                    </template>
+                </button>
+            </div>
+
+        </div>
+    </template>
+</template>
