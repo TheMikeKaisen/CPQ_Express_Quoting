@@ -11,7 +11,7 @@ public with sharing class UserController {
                        CreatedDate
                 FROM User
                 WHERE IsActive = true
-                AND UserType = 'Standard'
+                AND Profile.UserLicense.Name = 'Salesforce'
                 ORDER BY Name ASC
             ];
         } catch (Exception e) {
@@ -23,16 +23,26 @@ public with sharing class UserController {
     @AuraEnabled(cacheable=true)
     public static Map<String, Integer> getUserStats() {
         try {
-            Integer usedSeats = [
-                SELECT COUNT() FROM User
-                WHERE IsActive = true
-                AND UserType = 'Standard'
+            // Query actual Salesforce license usage
+            List<UserLicense> licenses = [
+                SELECT TotalLicenses, UsedLicenses
+                FROM UserLicense
+                WHERE Name = 'Salesforce'
+                LIMIT 1
             ];
-            Integer totalSeats = 20;
+
+            Integer totalSeats = 5; // Default fallback
+            Integer usedSeats = 0;
+
+            if (!licenses.isEmpty()) {
+                totalSeats = licenses[0].TotalLicenses;
+                usedSeats = licenses[0].UsedLicenses;
+            }
+
             return new Map<String, Integer>{
                 'totalSeats' => totalSeats,
                 'usedSeats'  => usedSeats,
-                'available'  => totalSeats - usedSeats
+                'available'  => Math.max(0, totalSeats - usedSeats)
             };
         } catch (Exception e) {
             throw new AuraHandledException(e.getMessage());

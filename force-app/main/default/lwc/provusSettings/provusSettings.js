@@ -17,24 +17,24 @@ const AVATAR_COLORS = [
 
 export default class ProvusSettings extends LightningElement {
 
-    @track activeTab     = 'users';
-    @track showModal     = false;
-    @track isLoading     = true;
-    @track isCreating    = false;
-    @track errorMessage  = '';
+    @track activeTab = 'users';
+    @track showModal = false;
+    @track isLoading = true;
+    @track isCreating = false;
+    @track errorMessage = '';
     @track successMessage = '';
 
-    @track totalSeats     = 20;
-    @track usedSeats      = 0;
-    @track availableSeats = 20;
-    @track allUsers       = [];
+    @track totalSeats = 5;
+    @track usedSeats = 0;
+    @track availableSeats = 5;
+    @track allUsers = [];
 
     @track formData = {
         firstName: '',
-        lastName:  '',
-        email:     '',
-        username:  '',
-        role:      'User'
+        lastName: '',
+        email: '',
+        username: '',
+        role: 'User'
     };
 
     wiredUsersResult = undefined;
@@ -45,10 +45,10 @@ export default class ProvusSettings extends LightningElement {
         this.wiredUsersResult = result;
         this.isLoading = false;
         if (result.data) {
-            this.allUsers       = result.data;
-            this.usedSeats      = result.data.length;
+            this.allUsers = result.data;
+            this.usedSeats = result.data.length;
             this.availableSeats = this.totalSeats -
-                                  this.usedSeats;
+                this.usedSeats;
         }
         if (result.error) {
             console.error('Users error:', result.error);
@@ -58,8 +58,8 @@ export default class ProvusSettings extends LightningElement {
     @wire(getUserStats)
     wiredStats({ data }) {
         if (data) {
-            this.totalSeats     = data.totalSeats;
-            this.usedSeats      = data.usedSeats;
+            this.totalSeats = data.totalSeats;
+            this.usedSeats = data.usedSeats;
             this.availableSeats = data.available;
         }
     }
@@ -69,17 +69,17 @@ export default class ProvusSettings extends LightningElement {
         return this.allUsers.map((u, index) => {
             const initials = this.getInitials(
                 u.FirstName, u.LastName);
-            const color    = AVATAR_COLORS[
+            const color = AVATAR_COLORS[
                 index % AVATAR_COLORS.length];
-            const role     = this.getRoleFromProfile(
+            const role = this.getRoleFromProfile(
                 u.Profile ? u.Profile.Name : '');
             return {
                 ...u,
                 initials,
-                avatarClass:  'user-avatar',
-                avatarStyle:  `background-color:${color}`,
-                roleDisplay:      role,
-                roleBadgeClass:   this.getRoleBadgeClass(role),
+                avatarClass: 'user-avatar',
+                avatarStyle: `background-color:${color}`,
+                roleDisplay: role,
+                roleBadgeClass: this.getRoleBadgeClass(role),
                 lastActiveDisplay: this.getLastActive(
                     u.LastLoginDate)
             };
@@ -88,7 +88,7 @@ export default class ProvusSettings extends LightningElement {
 
     getInitials(firstName, lastName) {
         const f = firstName ? firstName.charAt(0) : '';
-        const l = lastName  ? lastName.charAt(0)  : '';
+        const l = lastName ? lastName.charAt(0) : '';
         return (f + l).toUpperCase();
     }
 
@@ -103,28 +103,28 @@ export default class ProvusSettings extends LightningElement {
     }
 
     getRoleBadgeClass(role) {
-        if (role === 'Admin')   return 'role-badge badge-admin';
+        if (role === 'Admin') return 'role-badge badge-admin';
         if (role === 'Manager') return 'role-badge badge-manager';
         return 'role-badge badge-user';
     }
 
     getLastActive(lastLoginDate) {
         if (!lastLoginDate) return 'Never';
-        const now      = new Date();
-        const login    = new Date(lastLoginDate);
-        const diffMs   = now - login;
+        const now = new Date();
+        const login = new Date(lastLoginDate);
+        const diffMs = now - login;
         const diffMins = Math.floor(diffMs / 60000);
-        const diffHrs  = Math.floor(diffMins / 60);
+        const diffHrs = Math.floor(diffMins / 60);
         const diffDays = Math.floor(diffHrs / 24);
-        if (diffMins < 2)   return 'Just now';
-        if (diffMins < 60)  return diffMins + ' mins ago';
-        if (diffHrs < 24)   return diffHrs + ' hours ago';
+        if (diffMins < 2) return 'Just now';
+        if (diffMins < 60) return diffMins + ' mins ago';
+        if (diffHrs < 24) return diffHrs + ' hours ago';
         if (diffDays === 1) return '1 day ago';
         return diffDays + ' days ago';
     }
 
     // ── Tab visibility ────────────────────────────────────────────────────
-    get showGeneral()      { return this.activeTab === 'general'; }
+    get showGeneral() { return this.activeTab === 'general'; }
     get showOrganization() {
         return this.activeTab === 'organization';
     }
@@ -151,11 +151,11 @@ export default class ProvusSettings extends LightningElement {
     }
 
     // ── Role selection ────────────────────────────────────────────────────
-    get isAdminSelected()   { return this.formData.role === 'Admin'; }
+    get isAdminSelected() { return this.formData.role === 'Admin'; }
     get isManagerSelected() {
         return this.formData.role === 'Manager';
     }
-    get isUserSelected()    { return this.formData.role === 'User'; }
+    get isUserSelected() { return this.formData.role === 'User'; }
 
     get adminOptionClass() {
         return this.formData.role === 'Admin'
@@ -176,14 +176,14 @@ export default class ProvusSettings extends LightningElement {
     }
 
     handleAddMember() {
-        this.showModal      = true;
-        this.errorMessage   = '';
+        this.showModal = true;
+        this.errorMessage = '';
         this.successMessage = '';
     }
 
     handleModalClose() {
-        this.showModal      = false;
-        this.errorMessage   = '';
+        this.showModal = false;
+        this.errorMessage = '';
         this.successMessage = '';
         this.formData = {
             firstName: '', lastName: '',
@@ -211,7 +211,7 @@ export default class ProvusSettings extends LightningElement {
 
         this.formData = {
             ...this.formData,
-            email:    email,
+            email: email,
             username: username
         };
     }
@@ -269,38 +269,38 @@ export default class ProvusSettings extends LightningElement {
     // ── Create ────────────────────────────────────────────────────────────
     handleCreate() {
         if (!this.validate()) return;
-        this.isCreating     = true;
-        this.errorMessage   = '';
+        this.isCreating = true;
+        this.errorMessage = '';
         this.successMessage = '';
 
         createUser({
             firstName: this.formData.firstName,
-            lastName:  this.formData.lastName,
-            email:     this.formData.email,
-            username:  this.formData.username,
-            role:      this.formData.role
+            lastName: this.formData.lastName,
+            email: this.formData.email,
+            username: this.formData.username,
+            role: this.formData.role
         })
-        .then(result => {
-            // Show success message
-            this.successMessage = result;
-            // Refresh user list
-            if (this.wiredUsersResult) {
-                refreshApex(this.wiredUsersResult);
-            }
-            // Close modal after 2 seconds
-            setTimeout(() => {
-                this.handleModalClose();
-            }, 2000);
-        })
-        .catch(error => {
-            console.error('Create user error:', error);
-            this.errorMessage = error.body
-                ? error.body.message
-                : 'Error creating user.';
-        })
-        .finally(() => {
-            this.isCreating = false;
-        });
+            .then(result => {
+                // Show success message
+                this.successMessage = result;
+                // Refresh user list
+                if (this.wiredUsersResult) {
+                    refreshApex(this.wiredUsersResult);
+                }
+                // Close modal after 2 seconds
+                setTimeout(() => {
+                    this.handleModalClose();
+                }, 2000);
+            })
+            .catch(error => {
+                console.error('Create user error:', error);
+                this.errorMessage = error.body
+                    ? error.body.message
+                    : 'Error creating user.';
+            })
+            .finally(() => {
+                this.isCreating = false;
+            });
     }
 
     // ── Deactivate ────────────────────────────────────────────────────────
@@ -313,16 +313,16 @@ export default class ProvusSettings extends LightningElement {
             return;
         }
         deactivateUser({ userId: userId })
-        .then(() => {
-            if (this.wiredUsersResult) {
-                refreshApex(this.wiredUsersResult);
-            }
-        })
-        .catch(error => {
-            console.error('Deactivate error:', error);
-            // eslint-disable-next-line no-alert
-            alert('Error: ' + (error.body
-                ? error.body.message : error));
-        });
+            .then(() => {
+                if (this.wiredUsersResult) {
+                    refreshApex(this.wiredUsersResult);
+                }
+            })
+            .catch(error => {
+                console.error('Deactivate error:', error);
+                // eslint-disable-next-line no-alert
+                alert('Error: ' + (error.body
+                    ? error.body.message : error));
+            });
     }
 }
