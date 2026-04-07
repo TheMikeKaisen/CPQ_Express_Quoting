@@ -124,6 +124,11 @@ public with sharing class UserController {
             u.ProfileId            = profiles[0].Id;
             u.IsActive             = true;
 
+            // Trigger welcome email with password reset path
+            Database.DMLOptions dlo = new Database.DMLOptions();
+            dlo.EmailHeader.triggerUserEmail = true;
+            u.setOptions(dlo);
+
             insert u;
 
             return 'Success: User ' + firstName + ' ' +
