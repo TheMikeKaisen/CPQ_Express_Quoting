@@ -1,0 +1,345 @@
+/* ═══════════════════════════════════════════════════════════
+   provusQuoteSummary — matches Provus CPQ Express design
+   ═══════════════════════════════════════════════════════════ */
+
+.summary-container {
+    padding: 20px;
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+    background: #f3f4f6;
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+}
+
+.loading {
+    padding: 60px;
+    text-align: center;
+    color: #6b7280;
+    font-size: 14px;
+}
+
+/* ── Metadata Card ──────────────────────────────────────── */
+.metadata-card {
+    background: white;
+    border: 1px solid #e5e7eb;
+    border-radius: 10px;
+    padding: 20px 24px;
+}
+
+.meta-grid {
+    display: grid;
+    grid-template-columns: repeat(7, 1fr);
+    gap: 16px;
+}
+
+.meta-item {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+
+.meta-label {
+    font-size: 11px;
+    color: #c88a3a;
+    font-weight: 500;
+}
+
+.meta-value {
+    font-size: 13px;
+    font-weight: 600;
+    color: #111827;
+}
+
+.meta-editable {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.edit-icon {
+    font-size: 11px;
+}
+
+/* ── Main Layout: Content + Sidebar ─────────────────────── */
+.main-layout {
+    display: flex;
+    gap: 16px;
+    align-items: flex-start;
+}
+
+.main-content {
+    flex: 3;
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+    min-width: 0;
+}
+
+.sidebar {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+    min-width: 240px;
+    max-width: 300px;
+}
+
+/* ── Revenue Cards Row ──────────────────────────────────── */
+.revenue-cards-row {
+    display: flex;
+    gap: 12px;
+}
+
+/* ── Charts Row ─────────────────────────────────────────── */
+.charts-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 16px;
+}
+
+.chart-card {
+    background: white;
+    border: 1px solid #e5e7eb;
+    border-radius: 10px;
+    padding: 20px;
+}
+
+.chart-title {
+    font-size: 14px;
+    font-weight: 700;
+    color: #111827;
+    margin: 0 0 4px;
+}
+
+.chart-subtitle {
+    font-size: 12px;
+    color: #9ca3af;
+    margin: 0 0 20px;
+}
+
+/* ── Chart Wrapper (Y-axis + Bars) ──────────────────────── */
+.chart-wrapper {
+    display: flex;
+    gap: 8px;
+    align-items: stretch;
+}
+
+.y-axis {
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    align-items: flex-end;
+    padding-bottom: 24px; /* space for bar labels below */
+    min-width: 32px;
+}
+
+.y-label {
+    font-size: 10px;
+    color: #9ca3af;
+    line-height: 1;
+}
+
+.chart-area {
+    display: flex;
+    gap: 24px;
+    align-items: flex-end;
+    flex: 1;
+    height: 220px;
+    border-bottom: 1px solid #e5e7eb;
+    border-left: 1px solid #e5e7eb;
+    padding: 8px 16px 0 16px;
+    position: relative;
+}
+
+.bar-group {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 6px;
+    flex: 1;
+}
+
+.bars-container {
+    display: flex;
+    gap: 4px;
+    align-items: flex-end;
+    flex: 1;
+}
+
+.bar {
+    width: 22px;
+    border-radius: 3px 3px 0 0;
+    min-height: 4px;
+    transition: height 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+    cursor: pointer;
+}
+
+.bar:hover {
+    opacity: 0.85;
+}
+
+.bar-cost {
+    background: #bfdbfe;
+}
+
+.bar-margin {
+    background: #1d4ed8;
+}
+
+.bar-label {
+    font-size: 11px;
+    color: #374151;
+    text-align: center;
+    font-weight: 500;
+    white-space: nowrap;
+}
+
+/* ── Chart Legend ────────────────────────────────────────── */
+.chart-legend {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-top: 12px;
+    font-size: 11px;
+    color: #6b7280;
+}
+
+.legend-dot {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+}
+
+.dot-cost {
+    background: #bfdbfe;
+}
+
+.dot-margin {
+    background: #1d4ed8;
+}
+
+/* ── Phase Table Card ───────────────────────────────────── */
+.phase-table-card {
+    background: white;
+    border: 1px solid #e5e7eb;
+    border-radius: 10px;
+    overflow: hidden;
+}
+
+.phase-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 13px;
+}
+
+.phase-table th {
+    padding: 12px 16px;
+    text-align: left;
+    font-size: 12px;
+    font-weight: 600;
+    color: #374151;
+    background: #f9fafb;
+    border-bottom: 1px solid #e5e7eb;
+}
+
+.phase-table td {
+    padding: 12px 16px;
+    border-bottom: 1px solid #f3f4f6;
+}
+
+.phase-table tr:last-child td {
+    border-bottom: none;
+}
+
+.phase-name {
+    font-weight: 600;
+    color: #111827;
+}
+
+.phase-amt {
+    color: #6b7280;
+}
+
+.phase-labor {
+    color: #059669;
+    font-weight: 600;
+}
+
+.phase-product {
+    color: #059669;
+    font-weight: 600;
+}
+
+.phase-total {
+    font-weight: 700;
+    color: #111827;
+}
+
+.phase-items {
+    color: #6b7280;
+    text-align: center;
+}
+
+.phase-empty {
+    text-align: center;
+    padding: 40px;
+    color: #9ca3af;
+    font-size: 13px;
+}
+
+/* ── Cost Change Audit Card ─────────────────────────────── */
+.audit-card {
+    background: white;
+    border: 1px solid #e5e7eb;
+    border-radius: 10px;
+    padding: 16px;
+}
+
+.audit-title {
+    font-size: 14px;
+    font-weight: 700;
+    color: #111827;
+    margin: 0 0 4px;
+}
+
+.audit-subtitle {
+    font-size: 12px;
+    color: #6b7280;
+    margin: 0 0 16px;
+}
+
+.audit-history-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    cursor: pointer;
+    padding: 8px 0;
+    border-top: 1px solid #e5e7eb;
+}
+
+.audit-history-label {
+    font-size: 13px;
+    font-weight: 600;
+    color: #111827;
+}
+
+.chevron {
+    font-size: 16px;
+    color: #6b7280;
+    transition: transform 0.2s ease;
+}
+
+.chevron-up {
+    transform: rotate(180deg);
+}
+
+.audit-empty {
+    padding: 12px 0;
+    text-align: center;
+}
+
+.audit-empty p {
+    font-size: 12px;
+    color: #9ca3af;
+    margin: 0;
+}

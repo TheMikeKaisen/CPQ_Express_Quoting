@@ -18,6 +18,20 @@ public with sharing class QuoteLineItemController {
             ORDER BY CreatedDate ASC
         ];
     }
+    // ── Get empty phases stored on the Quote ──────────────────────────────
+    @AuraEnabled(cacheable=true)
+    public static String getPhaseList(Id quoteId) {
+        Quote q = [SELECT Phase_List__c FROM Quote WHERE Id = :quoteId LIMIT 1];
+        return q.Phase_List__c;
+    }
+
+    // ── Save empty phases back to the Quote ───────────────────────────────
+    @AuraEnabled
+    public static void savePhaseList(Id quoteId, String phaseList) {
+        Quote q = new Quote(Id = quoteId);
+        q.Phase_List__c = phaseList;
+        update q;
+    }
 
     // ── Add line items from modal selection ───────────────────────────────
     @AuraEnabled
@@ -26,6 +40,13 @@ public with sharing class QuoteLineItemController {
             List<Id> resourceRoleIds,
             List<Id> productIds,
             List<Id> addonIds) {
+
+        Quote parentQuote = [
+            SELECT Start_Date__c, End_Date__c, Time_Period__c 
+            FROM Quote 
+            WHERE Id = :quoteId 
+            LIMIT 1
+        ];
 
         List<Quote_Line_Item__c> itemsToInsert =
             new List<Quote_Line_Item__c>();
@@ -49,6 +70,7 @@ public with sharing class QuoteLineItemController {
                 item.Cost__c             = role.Cost__c;
                 item.Quantity__c         = 1;
                 item.Discount_Percent__c = 0;
+                populateDates(item, parentQuote);
                 itemsToInsert.add(item);
             }
         }
@@ -72,6 +94,7 @@ public with sharing class QuoteLineItemController {
                 item.Cost__c             = product.Cost__c;
                 item.Quantity__c         = 1;
                 item.Discount_Percent__c = 0;
+                populateDates(item, parentQuote);
                 itemsToInsert.add(item);
             }
         }
@@ -95,6 +118,7 @@ public with sharing class QuoteLineItemController {
                 item.Cost__c             = addon.Cost__c;
                 item.Quantity__c         = 1;
                 item.Discount_Percent__c = 0;
+                populateDates(item, parentQuote);
                 itemsToInsert.add(item);
             }
         }
@@ -109,15 +133,75 @@ public with sharing class QuoteLineItemController {
     // ── Update a single line item ─────────────────────────────────────────
     @AuraEnabled
     public static void updateLineItem(Quote_Line_Item__c item) {
-        update item;
-        // Recalculate quote totals after update
+        // Query existing to get context for date recalculation
         Quote_Line_Item__c existing = [
-            SELECT Quote__c
+            SELECT Quantity__c, Start_Date__c, End_Date__c, Quote__c,
+                   Quote__r.Start_Date__c, Quote__r.End_Date__c, Quote__r.Time_Period__c
             FROM Quote_Line_Item__c
             WHERE Id = :item.Id
             LIMIT 1
         ];
+
+        // Force recalculation if Quantity OR Start Date is present in the update
+        // (Even if they haven't changed, we want to ensure the End Date stays in sync if Quote allows)
+        if (existing.Quote__r.End_Date__c == null && existing.Quote__r.Time_Period__c != null) {
+            Boolean hasChange = false;
+            // Check if quantity or start date is being updated
+            if (item.Quantity__c != null) hasChange = true;
+            if (item.Start_Date__c != null) hasChange = true;
+
+            if (hasChange) {
+                Decimal qty = item.Quantity__c != null ? item.Quantity__c : existing.Quantity__c;
+                Date start = item.Start_Date__c != null ? item.Start_Date__c : existing.Start_Date__c;
+                item.End_Date__c = calculateEndDate(start, qty, existing.Quote__r.Time_Period__c);
+            }
+        }
+
+        update item;
+        // Recalculate quote totals after update
         QuoteController.recalculateQuoteTotals(existing.Quote__c);
+    }
+
+    private static void populateDates(Quote_Line_Item__c item, Quote parentQuote) {
+        if (parentQuote.Start_Date__c != null) {
+            item.Start_Date__c = parentQuote.Start_Date__c;
+            if (parentQuote.End_Date__c != null) {
+                item.End_Date__c = parentQuote.End_Date__c;
+            } else if (parentQuote.Time_Period__c != null) {
+                item.End_Date__c = calculateEndDate(parentQuote.Start_Date__c, item.Quantity__c, parentQuote.Time_Period__c);
+            }
+        }
+    }
+
+    private static Date calculateEndDate(Date startDate, Decimal quantity, String timePeriod) {
+        if (startDate == null || quantity == null || String.isBlank(timePeriod)) {
+            return null;
+        }
+
+        if (timePeriod == 'Days') {
+            return startDate.addDays((Integer)Math.round(quantity));
+        } else if (timePeriod == 'Weeks') {
+            return startDate.addDays((Integer)Math.round(quantity * 7));
+        } else if (timePeriod == 'Months' || timePeriod == 'Quarters' || timePeriod == 'Years') {
+            // Calculate total months based on period
+            Decimal totalMonths = (timePeriod == 'Months') ? quantity 
+                                 : (timePeriod == 'Quarters') ? quantity * 3 
+                                 : quantity * 12; // Years
+
+            Integer wholeMonths = (Integer)Math.floor(totalMonths);
+            Decimal fraction = totalMonths - wholeMonths;
+            
+            Date d = startDate.addMonths(wholeMonths);
+            if (fraction > 0) {
+                d = d.addDays((Integer)Math.round(fraction * 30));
+            }
+            // Typically end date is inclusive duration, but standard addDays logic 
+            // often needs a -1 adjustment if we count the start day as Day 1.
+            // However, user said "2 months ahead", so we'll stick to clear addMonths logic.
+            return d;
+        }
+        
+        return null;
     }
 
     // ── Delete a single line item ─────────────────────────────────────────

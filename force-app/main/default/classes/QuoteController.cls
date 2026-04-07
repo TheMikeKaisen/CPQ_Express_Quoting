@@ -154,54 +154,72 @@ public with sharing class QuoteController {
     // ── Submit for approval ───────────────────────────────────────────────
     @AuraEnabled
     public static void submitForApproval(Id quoteId, String comment) {
-        // Change status to Pending Approval
-        Quote q = new Quote(Id = quoteId);
-        q.Status = 'Pending Approval';
-        update q;
-
-        // Submit to Salesforce Approval Process
-        Approval.ProcessSubmitRequest req =
-            new Approval.ProcessSubmitRequest();
-        req.setObjectId(quoteId);
-        req.setComments(comment);
-        req.setProcessDefinitionNameOrId('Quote_Approval');
-        // ↑ this is your Approval Process API name
-        // Set this up in Setup → Approval Processes
-
-        Approval.ProcessResult result = Approval.process(req);
-
-        if (!result.isSuccess()) {
-            // If approval process fails, revert status
-            q.Status = 'Draft';
+        try {
+            // Change status to Pending Approval
+            Quote q = new Quote(Id = quoteId);
+            q.Status = 'Pending Approval';
             update q;
-            throw new AuraHandledException(
-                'Approval submission failed: ' + result.getErrors()
-            );
+
+            // Submit to Salesforce Approval Process
+            // NOTE: Uncomment the code below once you have created the
+            // 'Quote_Approval' Approval Process in Salesforce Setup.
+            /*
+            Approval.ProcessSubmitRequest req =
+                new Approval.ProcessSubmitRequest();
+            req.setObjectId(quoteId);
+            req.setComments(comment);
+            req.setProcessDefinitionNameOrId('Quote_Approval');
+
+            Approval.ProcessResult result = Approval.process(req);
+
+            if (!result.isSuccess()) {
+                // If approval process fails, revert status
+                q.Status = 'Draft';
+                update q;
+                throw new AuraHandledException(
+                    'Approval submission failed: ' + result.getErrors()
+                );
+            }
+            */
+        } catch (Exception e) {
+            throw new AuraHandledException('Approval error. Ensure the "Pending Approval" status is added to the Quote Status picklist: ' + e.getMessage());
         }
     }
 
     // ── Approve quote ─────────────────────────────────────────────────────
     @AuraEnabled
     public static void approveQuote(Id quoteId) {
-        Quote q = new Quote(Id = quoteId);
-        q.Status = 'Approved';
-        update q;
+        try {
+            Quote q = new Quote(Id = quoteId);
+            q.Status = 'Approved';
+            update q;
+        } catch (Exception e) {
+            throw new AuraHandledException('Failed to approve: ' + e.getMessage());
+        }
     }
 
     // ── Reject quote ──────────────────────────────────────────────────────
     @AuraEnabled
     public static void rejectQuote(Id quoteId, String reason) {
-        Quote q = new Quote(Id = quoteId);
-        q.Status = 'Rejected';
-        update q;
+        try {
+            Quote q = new Quote(Id = quoteId);
+            q.Status = 'Rejected';
+            update q;
+        } catch (Exception e) {
+            throw new AuraHandledException('Failed to reject: ' + e.getMessage());
+        }
     }
 
     // ── Recall quote back to Draft ────────────────────────────────────────
     @AuraEnabled
     public static void recallQuote(Id quoteId) {
-        Quote q = new Quote(Id = quoteId);
-        q.Status = 'Draft';
-        update q;
+        try {
+            Quote q = new Quote(Id = quoteId);
+            q.Status = 'Draft';
+            update q;
+        } catch (Exception e) {
+            throw new AuraHandledException('Failed to recall: ' + e.getMessage());
+        }
     }
 
     // ── Get all accounts for filter dropdown ──────────────────────────────

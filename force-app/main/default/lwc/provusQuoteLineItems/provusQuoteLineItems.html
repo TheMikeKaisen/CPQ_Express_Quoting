@@ -4,21 +4,15 @@
         <!-- TOP BAR -->
         <div class="line-items-header">
             <div class="header-left">
-                <button
-                    class="btn-collapse"
-                    onclick={handleCollapseAll}>
+                <button class="btn-collapse" onclick={handleCollapseAll}>
                     › Collapse All
                 </button>
             </div>
             <div class="header-right">
-                <button
-                    class="btn-add-phase"
-                    onclick={handleAddPhase}>
+                <button class="btn-add-phase" onclick={handleAddPhase}>
                     + Add Phase
                 </button>
-                <button
-                    class="btn-add-item"
-                    onclick={handleAddItem}>
+                <button class="btn-add-item" onclick={handleAddItem}>
                     + Add Item
                 </button>
             </div>
@@ -29,9 +23,7 @@
             <table class="items-table">
                 <thead>
                     <tr>
-                        <th class="col-check">
-                            <input type="checkbox" />
-                        </th>
+                        <th class="col-check"><input type="checkbox" /></th>
                         <th class="col-drag"></th>
                         <th class="col-name">Name</th>
                         <th class="col-task">Task</th>
@@ -44,105 +36,114 @@
                         <th class="col-total">Total Price</th>
                     </tr>
                 </thead>
-                <tbody>
-                    <!-- Empty state -->
+                <!-- ROOT DROP TARGET (Out of Phases) -->
+                <tbody 
+                    class="root-drop-zone"
+                    data-phase=""
+                    ondragover={handleDragOver}
+                    ondragleave={handleDragLeave}
+                    ondrop={handleDrop}>
                     <template if:true={isEmpty}>
                         <tr>
                             <td colspan="11" class="empty-cell">
-                                No line items found.
-                                Click "+ Add Item" to get started.
-                            </td>
-                        </tr>
-                    </template>
-
-                    <!-- Line item rows -->
-                    <template for:each={lineItems}
-                              for:item="item">
-                        <tr key={item.Id} class="item-row">
-                            <td>
-                                <input type="checkbox" />
-                            </td>
-                            <td class="drag-cell">⠿</td>
-                            <td class="name-cell">
-                                <!-- Type icon -->
-                                <span class={item.typeIconClass}>
-                                    {item.typeIcon}
-                                </span>
-                                {item.Name}
-                            </td>
-                            <td>
-                                <input
-                                    type="text"
-                                    class="inline-input"
-                                    placeholder="Add task..."
-                                    value={item.Task__c}
-                                    data-id={item.Id}
-                                    data-field="Task__c"
-                                    onchange={handleFieldChange} />
-                            </td>
-                            <td>
-                                <input
-                                    type="date"
-                                    class="inline-input"
-                                    value={item.Start_Date__c}
-                                    data-id={item.Id}
-                                    data-field="Start_Date__c"
-                                    onchange={handleFieldChange} />
-                            </td>
-                            <td>
-                                <input
-                                    type="date"
-                                    class="inline-input"
-                                    value={item.End_Date__c}
-                                    data-id={item.Id}
-                                    data-field="End_Date__c"
-                                    onchange={handleFieldChange} />
-                            </td>
-                            <td>
-                                <input
-                                    type="number"
-                                    class="inline-input num-input"
-                                    value={item.Quantity__c}
-                                    min="1"
-                                    data-id={item.Id}
-                                    data-field="Quantity__c"
-                                    onchange={handleFieldChange} />
-                            </td>
-                            <td class="rate-cell">
-                                {item.formattedBaseRate}
-                            </td>
-                            <td>
-                                <span
-                                    class="unit-price-link"
-                                    data-id={item.Id}
-                                    onclick={handleUnitPriceClick}>
-                                    {item.formattedUnitPrice}
-                                </span>
-                            </td>
-                            <td>
-                                <div class="discount-input-wrap">
-                                    <input
-                                        type="number"
-                                        class="inline-input num-input"
-                                        value={item.Discount_Percent__c}
-                                        min="0"
-                                        max="100"
-                                        data-id={item.Id}
-                                        data-field="Discount_Percent__c"
-                                        onchange={handleFieldChange} />
-                                    <span class="pct-sign">%</span>
-                                </div>
-                            </td>
-                            <td class="total-cell">
-                                {item.formattedTotal}
+                                No line items found. Click "+ Add Item" to get started.
                             </td>
                         </tr>
                     </template>
                 </tbody>
 
+                <!-- Iterate over Computed displayRows which contains both Phase Headers & Items -->
+                <tbody>
+                    <template for:each={displayRows} for:item="row" for:index="index">
+                        
+                        <!-- PHASE HEADER ROW -->
+                        <template if:true={row.isPhase}>
+                            <tr key={row.phaseName} 
+                                class={row.dragOverClass}
+                                data-phase={row.phaseName}
+                                ondragover={handleDragOver}
+                                ondragleave={handleDragLeave}
+                                ondrop={handleDrop}>
+                                
+                                <td><input type="checkbox" /></td>
+                                <td class="drag-cell">⠿</td>
+                                <td colspan="9" class="phase-name-cell">
+                                    <span class="chevron-btn" data-phase={row.phaseName} onclick={handleTogglePhase}>
+                                        {row.chevron}
+                                    </span>
+                                    <span class="phase-title">{row.phaseName}</span>
+                                    <button class="btn-add-to-phase" onclick={handleAddItem}>+ ADD ITEM</button>
+                                </td>
+                            </tr>
+                        </template>
+
+                        <!-- LINE ITEM ROW -->
+                        <template if:true={row.isItem}>
+                            <tr key={row.record.Id} 
+                                class={row.rowClass}
+                                draggable="true"
+                                data-id={row.record.Id}
+                                ondragstart={handleDragStart}>
+                                
+                                <td class="check-col"><input type="checkbox" /></td>
+                                <td class="drag-cell">⠿</td>
+                                <td class="name-cell">
+                                    <div class="name-content">
+                                        <span class={row.record.typeIconClass}>{row.record.typeIcon}</span>
+                                        <span class="name-text">{row.record.Name}</span>
+                                        <span class="info-icon">ℹ️</span>
+                                    </div>
+                                </td>
+                                <td>
+                                    <input type="text" class="inline-input" placeholder="Add task..." 
+                                           value={row.record.Task__c} data-id={row.record.Id} 
+                                           data-field="Task__c" onchange={handleFieldChange} />
+                                </td>
+                                <td>
+                                    <input type="date" class="inline-input" 
+                                           value={row.record.Start_Date__c} data-id={row.record.Id} 
+                                           data-field="Start_Date__c" onchange={handleFieldChange} />
+                                </td>
+                                <td>
+                                    <input type="date" class="inline-input" 
+                                           value={row.record.End_Date__c} data-id={row.record.Id} 
+                                           data-field="End_Date__c" onchange={handleFieldChange} />
+                                </td>
+                                <td>
+                                    <input type="number" class="inline-input num-input" 
+                                           value={row.record.Quantity__c} min="0" step="0.01"
+                                           data-id={row.record.Id} data-field="Quantity__c" 
+                                           onchange={handleFieldChange} />
+                                </td>
+                                <td class="rate-cell">{row.record.formattedBaseRate}</td>
+                                <td>
+                                    <span class="unit-price-link" data-id={row.record.Id} onclick={handleUnitPriceClick}>
+                                        {row.record.formattedUnitPrice}
+                                    </span>
+                                </td>
+                                <td>
+                                    <div class="discount-input-wrap">
+                                        <input type="number" class="inline-input num-input" 
+                                               value={row.record.Discount_Percent__c} min="0" max="100" 
+                                               data-id={row.record.Id} data-field="Discount_Percent__c" 
+                                               onchange={handleFieldChange} />
+                                        <span class="pct-sign">%</span>
+                                    </div>
+                                </td>
+                                <td class="total-cell">{row.record.formattedTotal}</td>
+                            </tr>
+                        </template>
+
+                    </template>
+                </tbody>
+
                 <!-- TOTAL ROW -->
                 <tfoot>
-                    <tr class="total-row">
+                    <tr class="total-row root-drop-zone"
+                        data-phase=""
+                        ondragover={handleDragOver}
+                        ondragleave={handleDragLeave}
+                        ondrop={handleDrop}>
                         <td colspan="10" class="total-label">
                             <strong>Total</strong>
                         </td>

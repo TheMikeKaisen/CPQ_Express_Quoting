@@ -14,17 +14,14 @@
 
                     <!-- Breadcrumb -->
                     <div class="breadcrumb">
-                        <span
-                            class="breadcrumb-link"
-                            onclick={handleBack}>
+                        <span class="breadcrumb-link" onclick={handleBack}>
                             Quotes
                         </span>
                         <span class="breadcrumb-sep">›</span>
                         <span class="breadcrumb-current">
                             {quote.QuoteNumber}
                         </span>
-                        <c-provus-status-badge
-                            status={quote.Status}>
+                        <c-provus-status-badge status={quote.Status}>
                         </c-provus-status-badge>
                     </div>
 
@@ -34,20 +31,13 @@
                             <span class="quote-name">
                                 {quote.Name}
                             </span>
-                            <button
-                                class="edit-name-btn"
-                                onclick={handleEditName}>
+                            <button class="edit-name-btn" onclick={handleEditName}>
                                 ✏️
                             </button>
                         </template>
                         <template if:true={isEditingName}>
-                            <input
-                                type="text"
-                                class="name-input"
-                                value={quote.Name}
-                                onchange={handleNameChange}
-                                onblur={handleNameSave}
-                                onkeydown={handleNameKeyDown} />
+                            <input type="text" class="name-input" value={quote.Name} onchange={handleNameChange}
+                                onblur={handleNameSave} onkeydown={handleNameKeyDown} />
                         </template>
                     </div>
 
@@ -56,36 +46,28 @@
 
                         <!-- Submit — only when Draft -->
                         <template if:true={isDraft}>
-                            <button
-                                class="btn-submit"
-                                onclick={handleSubmit}>
+                            <button class="btn-submit" onclick={handleSubmit}>
                                 Submit for Approval
                             </button>
                         </template>
 
                         <!-- Recall — only when Pending -->
                         <template if:true={isPending}>
-                            <button
-                                class="btn-recall"
-                                onclick={handleRecall}>
+                            <button class="btn-recall" onclick={handleRecall}>
                                 🔄 Recall
                             </button>
                         </template>
 
                         <!-- Approve — only when Pending -->
                         <template if:true={isPending}>
-                            <button
-                                class="btn-approve"
-                                onclick={handleApprove}>
+                            <button class="btn-approve" onclick={handleApprove}>
                                 ✓ Approve
                             </button>
                         </template>
 
                         <!-- Reject — only when Pending -->
                         <template if:true={isPending}>
-                            <button
-                                class="btn-reject"
-                                onclick={handleReject}>
+                            <button class="btn-reject" onclick={handleReject}>
                                 ✕ Reject
                             </button>
                         </template>
@@ -96,16 +78,12 @@
                         </button>
 
                         <!-- Save -->
-                        <button
-                            class="btn-save"
-                            onclick={handleSave}>
+                        <button class="btn-save" onclick={handleSave}>
                             Save
                         </button>
 
                         <!-- Refresh -->
-                        <button
-                            class="btn-icon"
-                            onclick={handleRefresh}>
+                        <button class="btn-icon" onclick={handleRefresh}>
                             🔄 Refresh
                         </button>
 
@@ -165,28 +143,16 @@
                 <!-- TABS -->
                 <div class="tabs-container">
                     <div class="tabs-header">
-                        <button
-                            class={summaryTabClass}
-                            data-tab="summary"
-                            onclick={handleTabClick}>
+                        <button class={summaryTabClass} data-tab="summary" onclick={handleTabClick}>
                             Summary
                         </button>
-                        <button
-                            class={lineItemsTabClass}
-                            data-tab="lineItems"
-                            onclick={handleTabClick}>
+                        <button class={lineItemsTabClass} data-tab="lineItems" onclick={handleTabClick}>
                             Line Items
                         </button>
-                        <button
-                            class={timelineTabClass}
-                            data-tab="timeline"
-                            onclick={handleTabClick}>
+                        <button class={timelineTabClass} data-tab="timeline" onclick={handleTabClick}>
                             Timeline
                         </button>
-                        <button
-                            class={pdfsTabClass}
-                            data-tab="pdfs"
-                            onclick={handleTabClick}>
+                        <button class={pdfsTabClass} data-tab="pdfs" onclick={handleTabClick}>
                             Generated PDFs
                         </button>
                     </div>
@@ -196,16 +162,13 @@
 
                         <!-- SUMMARY TAB — stub for now -->
                         <template if:true={showSummary}>
-                            <div class="tab-stub">
-                                <p>Summary — Coming Day 4</p>
-                            </div>
+                            <c-provus-quote-summary quote={quote} quote-id={quoteId}>
+                            </c-provus-quote-summary>
                         </template>
 
                         <!-- LINE ITEMS TAB -->
                         <template if:true={showLineItems}>
-                            <c-provus-quote-line-items
-                                quote-id={quoteId}
-                                quote-status={quote.Status}
+                            <c-provus-quote-line-items quote-id={quoteId} quote-status={quote.Status}
                                 onlineitemsupdated={handleLineItemsUpdated}>
                             </c-provus-quote-line-items>
                         </template>

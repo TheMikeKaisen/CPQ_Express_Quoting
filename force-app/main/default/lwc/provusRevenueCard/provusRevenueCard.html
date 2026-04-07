@@ -1,0 +1,25 @@
+<template>
+    <div class="revenue-card">
+
+        <!-- Card Header -->
+        <div class="card-header">
+            <span class="card-icon">{icon}</span>
+            <span class="card-label">{label}</span>
+            <span class={percentageClass}>{percentageDisplay}</span>
+        </div>
+
+        <!-- Main Amount -->
+        <div class="card-amount">{formattedRevenue}</div>
+
+        <!-- Cost + Margin -->
+        <div class="card-details">
+            <span>Cost: {formattedCost}</span>
+            <span class="dot">•</span>
+            <span>Margin: {formattedMargin}</span>
+        </div>
+
+        <!-- Item Count -->
+        <div class="card-count">{itemCount} {countLabel}</div>
+
+    </div>
+</template>

@@ -1,0 +1,234 @@
+<template>
+    <div class="summary-container">
+
+        <template if:true={isLoading}>
+            <div class="loading">Loading summary...</div>
+        </template>
+
+        <template if:false={isLoading}>
+
+            <!-- ROW 1: Metadata Card -->
+            <div class="metadata-card">
+                <div class="meta-grid">
+
+                    <div class="meta-item">
+                        <span class="meta-label">Opportunity</span>
+                        <span class="meta-value">{opportunityName}</span>
+                    </div>
+
+                    <div class="meta-item">
+                        <span class="meta-label">Account</span>
+                        <div class="meta-value meta-editable">
+                            <span class="edit-icon">✏️</span>
+                            {accountName}
+                        </div>
+                    </div>
+
+                    <div class="meta-item">
+                        <span class="meta-label">Valid Until</span>
+                        <span class="meta-value">{formattedValidUntil}</span>
+                    </div>
+
+                    <div class="meta-item">
+                        <span class="meta-label">Quote Time Period</span>
+                        <span class="meta-value">{timePeriod}</span>
+                    </div>
+
+                    <div class="meta-item">
+                        <span class="meta-label">Created Date</span>
+                        <span class="meta-value">{formattedCreatedDate}</span>
+                    </div>
+
+                    <div class="meta-item">
+                        <span class="meta-label">Created By</span>
+                        <span class="meta-value">{createdByName}</span>
+                    </div>
+
+                    <div class="meta-item">
+                        <span class="meta-label">Last Modified By</span>
+                        <span class="meta-value">{lastModifiedByName}</span>
+                    </div>
+
+                </div>
+            </div>
+
+            <!-- MAIN LAYOUT: Content + Sidebar -->
+            <div class="main-layout">
+
+                <!-- LEFT: Main Content -->
+                <div class="main-content">
+
+                    <!-- Revenue Cards Row -->
+                    <div class="revenue-cards-row">
+
+                        <c-provus-revenue-card
+                            label="Labor Revenue"
+                            icon="👤"
+                            revenue={laborRevenue}
+                            cost={laborCost}
+                            margin={laborMargin}
+                            percentage={laborPercentage}
+                            item-count={laborCount}
+                            count-label="Resource Roles">
+                        </c-provus-revenue-card>
+
+                        <c-provus-revenue-card
+                            label="Products Revenue"
+                            icon="📦"
+                            revenue={productRevenue}
+                            cost={productCost}
+                            margin={productMargin}
+                            percentage={productPercentage}
+                            item-count={productCount}
+                            count-label="Products">
+                        </c-provus-revenue-card>
+
+                        <c-provus-revenue-card
+                            label="Add-ons Revenue"
+                            icon="✨"
+                            revenue={addonRevenue}
+                            cost={addonCost}
+                            margin={addonMargin}
+                            percentage={addonPercentage}
+                            item-count={addonCount}
+                            count-label="Add-on items">
+                        </c-provus-revenue-card>
+
+                    </div>
+
+                    <!-- Charts Row -->
+                    <div class="charts-row">
+
+                        <!-- Item Type Breakdown -->
+                        <div class="chart-card">
+                            <h3 class="chart-title">Item Type Breakdown</h3>
+                            <p class="chart-subtitle">Cost and margin distribution by item type</p>
+                            <div class="chart-wrapper">
+                                <!-- Y-axis -->
+                                <div class="y-axis">
+                                    <template for:each={typeYLabels} for:item="lbl">
+                                        <span key={lbl.key} class="y-label">{lbl.text}</span>
+                                    </template>
+                                </div>
+                                <!-- Bars area -->
+                                <div class="chart-area">
+                                    <template for:each={chartData} for:item="bar">
+                                        <div key={bar.label} class="bar-group">
+                                            <div class="bars-container">
+                                                <div class="bar bar-cost" style={bar.costStyle} title={bar.costLabel}></div>
+                                                <div class="bar bar-margin" style={bar.marginStyle} title={bar.marginLabel}></div>
+                                            </div>
+                                            <div class="bar-label">{bar.label}</div>
+                                        </div>
+                                    </template>
+                                </div>
+                            </div>
+                            <div class="chart-legend">
+                                <span class="legend-dot dot-cost"></span>
+                                <span>Cost</span>
+                                <span class="legend-dot dot-margin"></span>
+                                <span>Margin</span>
+                            </div>
+                        </div>
+
+                        <!-- Phase Breakdown -->
+                        <div class="chart-card">
+                            <h3 class="chart-title">Phase Breakdown</h3>
+                            <p class="chart-subtitle">Cost and margin distribution by project phase</p>
+                            <div class="chart-wrapper">
+                                <!-- Y-axis -->
+                                <div class="y-axis">
+                                    <template for:each={phaseYLabels} for:item="lbl">
+                                        <span key={lbl.key} class="y-label">{lbl.text}</span>
+                                    </template>
+                                </div>
+                                <!-- Bars area -->
+                                <div class="chart-area">
+                                    <template for:each={phaseChartData} for:item="bar">
+                                        <div key={bar.label} class="bar-group">
+                                            <div class="bars-container">
+                                                <div class="bar bar-cost" style={bar.costStyle} title={bar.costLabel}></div>
+                                                <div class="bar bar-margin" style={bar.marginStyle} title={bar.marginLabel}></div>
+                                            </div>
+                                            <div class="bar-label">{bar.label}</div>
+                                        </div>
+                                    </template>
+                                </div>
+                            </div>
+                            <div class="chart-legend">
+                                <span class="legend-dot dot-cost"></span>
+                                <span>Cost</span>
+                                <span class="legend-dot dot-margin"></span>
+                                <span>Margin</span>
+                            </div>
+                        </div>
+
+                    </div>
+
+                    <!-- Phase Table -->
+                    <div class="phase-table-card">
+                        <table class="phase-table">
+                            <thead>
+                                <tr>
+                                    <th>Phase</th>
+                                    <th>Labor</th>
+                                    <th>Products</th>
+                                    <th>Add-ons</th>
+                                    <th>Total</th>
+                                    <th>Items</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <template if:true={hasPhases}>
+                                    <template for:each={phaseRows} for:item="row">
+                                        <tr key={row.phase}>
+                                            <td class="phase-name">{row.phase}</td>
+                                            <td class="phase-amt phase-labor">{row.laborFormatted}</td>
+                                            <td class="phase-amt phase-product">{row.productsFormatted}</td>
+                                            <td class="phase-amt">{row.addonsFormatted}</td>
+                                            <td class="phase-total">{row.totalFormatted}</td>
+                                            <td class="phase-items">{row.items}</td>
+                                        </tr>
+                                    </template>
+                                </template>
+                                <template if:false={hasPhases}>
+                                    <tr>
+                                        <td colspan="6" class="phase-empty">
+                                            No phases defined. Add line items to see phase breakdown.
+                                        </td>
+                                    </tr>
+                                </template>
+                            </tbody>
+                        </table>
+                    </div>
+
+                </div>
+
+                <!-- RIGHT: Sidebar -->
+                <div class="sidebar">
+
+                    <!-- Approval History -->
+                    <c-provus-approval-history quote={quote}></c-provus-approval-history>
+
+                    <!-- Cost Change Audit -->
+                    <div class="audit-card">
+                        <h3 class="audit-title">Cost Change Audit</h3>
+                        <p class="audit-subtitle">Track cost changes for line items in this quote.</p>
+                        <div class="audit-history-header" onclick={toggleAuditHistory}>
+                            <span class="audit-history-label">History ({auditCount})</span>
+                            <span class={auditChevronClass}>⌄</span>
+                        </div>
+                        <template if:true={showAuditHistory}>
+                            <div class="audit-empty">
+                                <p>No cost changes recorded yet.</p>
+                            </div>
+                        </template>
+                    </div>
+
+                </div>
+
+            </div>
+
+        </template>
+    </div>
+</template>

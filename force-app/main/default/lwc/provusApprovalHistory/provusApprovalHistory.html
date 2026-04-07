@@ -1,0 +1,57 @@
+<template>
+    <div class="approval-card">
+
+        <h3 class="approval-title">Approval History</h3>
+        <p class="approval-subtitle">
+            Track the approval process for this quote.
+        </p>
+
+        <!-- Empty state -->
+        <template if:true={isEmpty}>
+            <div class="empty-state">
+                <div class="empty-icon">📄</div>
+                <p class="empty-text">
+                    No approval history yet.
+                </p>
+                <p class="empty-subtext">
+                    Submit this quote for approval
+                    to see the approval process.
+                </p>
+            </div>
+        </template>
+
+        <!-- History entries -->
+        <template if:false={isEmpty}>
+            <div class="history-list">
+                <template for:each={historyEntries}
+                          for:item="entry">
+                    <div key={entry.id} class="history-entry">
+                        <div class="entry-dot-wrap">
+                            <div class={entry.dotClass}></div>
+                            <div class="entry-line"></div>
+                        </div>
+                        <div class="entry-content">
+                            <div class="entry-header">
+                                <span class="entry-user">
+                                    {entry.userName}
+                                </span>
+                                <span class="entry-action">
+                                    {entry.action}
+                                </span>
+                            </div>
+                            <template if:true={entry.comment}>
+                                <div class="entry-comment">
+                                    {entry.comment}
+                                </div>
+                            </template>
+                            <div class="entry-time">
+                                {entry.timeDisplay}
+                            </div>
+                        </div>
+                    </div>
+                </template>
+            </div>
+        </template>
+
+    </div>
+</template>
