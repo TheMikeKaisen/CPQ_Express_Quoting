@@ -5,22 +5,27 @@ public with sharing class ResourceRoleController {
     public static List<Resource_Role__c> getResourceRoles(
             String statusFilter) {
 
-        String query = 'SELECT Id, Name, Location__c, ' +
+        String query = 'SELECT Id, Name, Name__c, Location__c, ' +
                        'Billing_Unit__c, Price__c, Cost__c, ' +
                        'Tags__c, Is_Active__c ' +
-                       'FROM Resource_Role__c WHERE Id != null';
+                       'FROM Resource_Role__c';
 
-        // Filter by active status
+        List<String> conditions = new List<String>();
+
         if (String.isNotBlank(statusFilter)) {
             if (statusFilter == 'Active') {
-                query += ' AND Is_Active__c = true';
+                conditions.add('Is_Active__c = true');
             } else if (statusFilter == 'Inactive') {
-                query += ' AND Is_Active__c = false';
+                conditions.add('Is_Active__c = false');
             }
             // 'All' = no filter
         }
 
-        query += ' ORDER BY Name ASC';
+        if (!conditions.isEmpty()) {
+            query += ' WHERE ' + String.join(conditions, ' AND ');
+        }
+
+        query += ' ORDER BY Name__c ASC';
         return Database.query(query);
     }
 
@@ -35,13 +40,13 @@ public with sharing class ResourceRoleController {
             String tags) {
 
         Resource_Role__c role  = new Resource_Role__c();
-        role.Name              = name;
+        role.Name__c           = name;
         role.Location__c       = location;
         role.Billing_Unit__c   = billingUnit;
         role.Price__c          = price;
         role.Cost__c           = cost;
         role.Tags__c           = tags;
-        role.Is_Active__c      = true; // new roles active by default
+        role.Is_Active__c      = true;
 
         insert role;
         return role.Id;
@@ -53,7 +58,8 @@ public with sharing class ResourceRoleController {
             Id roleId,
             Boolean isActive) {
 
-        Resource_Role__c role = new Resource_Role__c(Id = roleId);
+        Resource_Role__c role = new Resource_Role__c();
+        role.Id = roleId;
         role.Is_Active__c = isActive;
         update role;
     }
@@ -61,6 +67,8 @@ public with sharing class ResourceRoleController {
     // ── Delete resource role ──────────────────────────────────────────────
     @AuraEnabled
     public static void deleteResourceRole(Id roleId) {
-        delete new Resource_Role__c(Id = roleId);
+        Resource_Role__c role = new Resource_Role__c();
+        role.Id = roleId;
+        delete role;
     }
 }

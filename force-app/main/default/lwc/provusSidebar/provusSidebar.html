@@ -1,0 +1,46 @@
+<template>
+    <div class="sidebar">
+
+        <!-- APP NAME -->
+        <div class="sidebar-header">
+            <div class="app-icon">⚡</div>
+            <div class="app-name">
+                <div class="app-title">Provus Express</div>
+                <div class="app-subtitle">Quoting</div>
+            </div>
+        </div>
+
+        <!-- MAIN NAV ITEMS -->
+        <nav class="sidebar-nav">
+            <template for:each={navItems} for:item="item">
+                <div
+                    key={item.id}
+                    class={item.cssClass}
+                    data-page={item.page}
+                    onclick={handleNavClick}>
+                    <!-- Icon -->
+                    <span class="nav-icon">{item.icon}</span>
+                    <!-- Label -->
+                    <span class="nav-label">{item.label}</span>
+                </div>
+            </template>
+        </nav>
+
+        <!-- BOTTOM LINKS -->
+        <div class="sidebar-bottom">
+            <div class="nav-item bottom-item">
+                <span class="nav-icon">💬</span>
+                <span class="nav-label">Feedback</span>
+            </div>
+            <div class="nav-item bottom-item">
+                <span class="nav-icon">🎯</span>
+                <span class="nav-label">Take a Tour</span>
+            </div>
+            <div class="nav-item bottom-item">
+                <span class="nav-icon">⚙️</span>
+                <span class="nav-label">Settings</span>
+            </div>
+        </div>
+
+    </div>
+</template>

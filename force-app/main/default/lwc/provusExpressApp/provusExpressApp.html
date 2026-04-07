@@ -1,0 +1,59 @@
+<template>
+    <div class="app-container">
+
+        <!-- LEFT SIDEBAR -->
+        <c-provus-sidebar
+            active-page={activePage}
+            onnavigation={handleNavigation}>
+        </c-provus-sidebar>
+
+        <!-- RIGHT CONTENT AREA -->
+        <div class="main-content">
+
+            <!-- DASHBOARD PAGE -->
+            <template if:true={showDashboard}>
+                <c-provus-dashboard></c-provus-dashboard>
+            </template>
+
+            <!-- QUOTES LIST PAGE -->
+            <template if:true={showQuotes}>
+                <c-provus-quotes-list
+                    onviewquote={handleViewQuote}>
+                </c-provus-quotes-list>
+            </template>
+
+            <!-- QUOTE DETAIL PAGE -->
+            <template if:true={showQuoteDetail}>
+                <c-provus-quote-detail
+                    quote-id={selectedQuoteId}
+                    onback={handleBackToQuotes}>
+                </c-provus-quote-detail>
+            </template>
+
+            <!-- ACCOUNTS PAGE -->
+            <template if:true={showAccounts}>
+                <c-provus-accounts-list>
+                </c-provus-accounts-list>
+            </template>
+
+            <!-- RESOURCE ROLES PAGE -->
+            <template if:true={showResourceRoles}>
+                <c-provus-resource-roles-list>
+                </c-provus-resource-roles-list>
+            </template>
+
+            <!-- PRODUCTS PAGE -->
+            <template if:true={showProducts}>
+                <c-provus-products-list>
+                </c-provus-products-list>
+            </template>
+
+            <!-- ADD-ONS PAGE -->
+            <template if:true={showAddons}>
+                <c-provus-addons-list>
+                </c-provus-addons-list>
+            </template>
+
+        </div>
+    </div>
+</template>

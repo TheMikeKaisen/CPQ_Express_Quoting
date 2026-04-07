@@ -5,9 +5,9 @@ public with sharing class QuoteLineItemController {
     public static List<Quote_Line_Item__c> getLineItems(Id quoteId) {
         return [
             SELECT Id, Name, Item_Type__c,
-                   Resource_Role__c, Resource_Role__r.Name,
-                   Product__c, Product__r.Name,
-                   Add_On__c, Add_On__r.Name,
+                   Resource_Role__c, Resource_Role__r.Name, Resource_Role__r.Name__c,
+                   Product__c, Product__r.Name, Product__r.Name__c,
+                   Add_On__c, Add_On__r.Name, Add_On__r.Name__c,
                    Phase__c, Task__c,
                    Start_Date__c, End_Date__c,
                    Quantity__c, Base_Rate__c,
@@ -33,7 +33,7 @@ public with sharing class QuoteLineItemController {
         // Add Resource Roles
         if (resourceRoleIds != null && !resourceRoleIds.isEmpty()) {
             List<Resource_Role__c> roles = [
-                SELECT Id, Name, Price__c, Cost__c, Billing_Unit__c
+                SELECT Id, Name, Name__c, Price__c, Cost__c, Billing_Unit__c
                 FROM Resource_Role__c
                 WHERE Id IN :resourceRoleIds
             ];
@@ -41,11 +41,10 @@ public with sharing class QuoteLineItemController {
             for (Resource_Role__c role : roles) {
                 Quote_Line_Item__c item = new Quote_Line_Item__c();
                 item.Quote__c            = quoteId;
-                item.Name                = role.Name;
+                item.Name                = role.Name__c;
                 item.Item_Type__c        = 'Resource Role';
                 item.Resource_Role__c    = role.Id;
                 item.Base_Rate__c        = role.Price__c;
-                // Unit Price defaults to Base Rate
                 item.Unit_Price__c       = role.Price__c;
                 item.Cost__c             = role.Cost__c;
                 item.Quantity__c         = 1;
@@ -57,7 +56,7 @@ public with sharing class QuoteLineItemController {
         // Add Products
         if (productIds != null && !productIds.isEmpty()) {
             List<Product__c> products = [
-                SELECT Id, Name, Price__c, Cost__c
+                SELECT Id, Name, Name__c, Price__c, Cost__c
                 FROM Product__c
                 WHERE Id IN :productIds
             ];
@@ -65,7 +64,7 @@ public with sharing class QuoteLineItemController {
             for (Product__c product : products) {
                 Quote_Line_Item__c item = new Quote_Line_Item__c();
                 item.Quote__c            = quoteId;
-                item.Name                = product.Name;
+                item.Name                = product.Name__c;
                 item.Item_Type__c        = 'Product';
                 item.Product__c          = product.Id;
                 item.Base_Rate__c        = product.Price__c;
@@ -80,7 +79,7 @@ public with sharing class QuoteLineItemController {
         // Add Add-ons
         if (addonIds != null && !addonIds.isEmpty()) {
             List<Add_On__c> addons = [
-                SELECT Id, Name, Price__c, Cost__c
+                SELECT Id, Name, Name__c, Price__c, Cost__c
                 FROM Add_On__c
                 WHERE Id IN :addonIds
             ];
@@ -88,7 +87,7 @@ public with sharing class QuoteLineItemController {
             for (Add_On__c addon : addons) {
                 Quote_Line_Item__c item = new Quote_Line_Item__c();
                 item.Quote__c            = quoteId;
-                item.Name                = addon.Name;
+                item.Name                = addon.Name__c;
                 item.Item_Type__c        = 'Add-on';
                 item.Add_On__c           = addon.Id;
                 item.Base_Rate__c        = addon.Price__c;
@@ -140,52 +139,51 @@ public with sharing class QuoteLineItemController {
     }
 
     // ── Get line items grouped by type for summary cards ──────────────────
-   @AuraEnabled(cacheable=true)
-public static Map<String, Object> getLineItemSummary(Id quoteId) {
-    // Query Margin__c instead of trying to calculate cost inside the SUM()
-    AggregateResult[] results = [
-        SELECT Item_Type__c type,
-               SUM(Total_Price__c) totalRevenue,
-               SUM(Margin__c) totalMargin,
-               COUNT(Id) itemCount
-        FROM Quote_Line_Item__c
-        WHERE Quote__c = :quoteId
-        GROUP BY Item_Type__c
-    ];
+    @AuraEnabled(cacheable=true)
+    public static Map<String, Object> getLineItemSummary(Id quoteId) {
+        AggregateResult[] results = [
+            SELECT Item_Type__c type,
+                   SUM(Total_Price__c) totalRevenue,
+                   SUM(Margin__c) totalMargin,
+                   COUNT(Id) itemCount
+            FROM Quote_Line_Item__c
+            WHERE Quote__c = :quoteId
+            GROUP BY Item_Type__c
+        ];
 
-    Map<String, Object> summary = new Map<String, Object>();
-    Decimal grandTotal = 0;
+        Map<String, Object> summary = new Map<String, Object>();
+        Decimal grandTotal = 0;
 
-    for (AggregateResult r : results) {
-        Decimal rev = (Decimal) r.get('totalRevenue');
-        if (rev != null) grandTotal += rev;
+        for (AggregateResult r : results) {
+            Decimal rev = (Decimal) r.get('totalRevenue');
+            if (rev != null) grandTotal += rev;
+        }
+
+        for (AggregateResult r : results) {
+            String type = (String) r.get('type');
+            Decimal revenue = (Decimal) r.get('totalRevenue') != null ? (Decimal) r.get('totalRevenue') : 0;
+            Decimal margin = (Decimal) r.get('totalMargin') != null ? (Decimal) r.get('totalMargin') : 0;
+            Integer count = (Integer) r.get('itemCount');
+
+            // Derive cost: Revenue - Margin = Total Cost
+            Decimal cost = revenue - margin;
+
+            Decimal percentage = grandTotal > 0
+                ? (revenue / grandTotal * 100).setScale(1)
+                : 0;
+
+            summary.put(type, new Map<String, Object>{
+                'revenue'    => revenue,
+                'cost'       => cost,
+                'margin'     => margin,
+                'count'      => count,
+                'percentage' => percentage
+            });
+        }
+
+        summary.put('grandTotal', grandTotal);
+        return summary;
     }
-
-    for (AggregateResult r : results) {
-        String type = (String) r.get('type');
-        Decimal revenue = (Decimal) r.get('totalRevenue') != null ? (Decimal) r.get('totalRevenue') : 0;
-        Decimal margin = (Decimal) r.get('totalMargin') != null ? (Decimal) r.get('totalMargin') : 0;
-        Integer count = (Integer) r.get('itemCount');
-
-        // Derive cost: Revenue - Margin = Total Cost
-        Decimal cost = revenue - margin;
-        
-        Decimal percentage = grandTotal > 0
-            ? (revenue / grandTotal * 100).setScale(1)
-            : 0;
-
-        summary.put(type, new Map<String, Object>{
-            'revenue'    => revenue,
-            'cost'       => cost,
-            'margin'     => margin,
-            'count'      => count,
-            'percentage' => percentage
-        });
-    }
-
-    summary.put('grandTotal', grandTotal);
-    return summary;
-}
 
     // ── Get line items grouped by phase for phase table ───────────────────
     @AuraEnabled(cacheable=true)

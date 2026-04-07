@@ -1,0 +1,142 @@
+<template>
+    <template if:true={isOpen}>
+
+        <!-- Overlay -->
+        <div class="modal-overlay"
+             onclick={handleOverlayClick}>
+        </div>
+
+        <!-- Modal -->
+        <div class="modal-box">
+
+            <!-- Header -->
+            <div class="modal-header">
+                <h2 class="modal-title">Create New Quote</h2>
+                <button class="close-btn"
+                        onclick={handleClose}>✕
+                </button>
+            </div>
+
+            <!-- Body -->
+            <div class="modal-body">
+
+                <!-- Opportunity REQUIRED -->
+                <div class="form-group">
+                    <label class="form-label">
+                        Opportunity
+                        <span class="required">*</span>
+                    </label>
+                    <select
+                        class="form-select"
+                        onchange={handleOpportunityChange}>
+                        <option value="">
+                            Select an opportunity...
+                        </option>
+                        <!-- FIX: use opportunityList not opportunities -->
+                        <template for:each={opportunityList}
+                                  for:item="opp">
+                            <option
+                                key={opp.Id}
+                                value={opp.Id}>
+                                {opp.Name}
+                            </option>
+                        </template>
+                    </select>
+                </div>
+
+                <!-- Account auto-filled -->
+                <div class="form-group">
+                    <label class="form-label">Account</label>
+                    <input
+                        type="text"
+                        class="form-input form-input-readonly"
+                        value={accountName}
+                        placeholder="Auto-filled from Opportunity"
+                        readonly />
+                </div>
+
+                <!-- Description -->
+                <div class="form-group">
+                    <label class="form-label">Description</label>
+                    <textarea
+                        class="form-textarea"
+                        placeholder="Enter quote description (optional)..."
+                        maxlength="255"
+                        onchange={handleDescriptionChange}>
+                    </textarea>
+                    <span class="char-count">
+                        {descriptionLength}/255 characters
+                    </span>
+                </div>
+
+                <!-- Dates -->
+                <div class="form-row">
+                    <div class="form-group form-group-half">
+                        <label class="form-label">
+                            Start Date
+                            <span class="required">*</span>
+                        </label>
+                        <input
+                            type="date"
+                            class="form-input"
+                            value={startDate}
+                            onchange={handleStartDateChange} />
+                    </div>
+                    <div class="form-group form-group-half">
+                        <label class="form-label">
+                            End Date
+                        </label>
+                        <input
+                            type="date"
+                            class="form-input"
+                            value={endDate}
+                            onchange={handleEndDateChange} />
+                    </div>
+                </div>
+
+                <!-- Time Period -->
+                <div class="form-group">
+                    <label class="form-label">
+                        Time Period
+                        <span class="required">*</span>
+                    </label>
+                    <select
+                        class="form-select"
+                        onchange={handleTimePeriodChange}>
+                        <option value="Months">Months</option>
+                        <option value="Quarters">Quarters</option>
+                        <option value="Years">Years</option>
+                    </select>
+                </div>
+
+                <!-- Error -->
+                <template if:true={errorMessage}>
+                    <div class="error-msg">
+                        {errorMessage}
+                    </div>
+                </template>
+
+            </div>
+
+            <!-- Footer -->
+            <div class="modal-footer">
+                <button class="btn-cancel"
+                        onclick={handleClose}>
+                    Cancel
+                </button>
+                <button
+                    class="btn-create"
+                    onclick={handleCreate}
+                    disabled={isCreating}>
+                    <template if:true={isCreating}>
+                        Creating...
+                    </template>
+                    <template if:false={isCreating}>
+                        Create
+                    </template>
+                </button>
+            </div>
+
+        </div>
+    </template>
+</template>

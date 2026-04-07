@@ -15,20 +15,26 @@ public with sharing class QuoteController {
                        'Subtotal, ExpirationDate, ' +
                        'Start_Date__c, End_Date__c, Time_Period__c, ' +
                        'Margin_Amount__c, Margin_Percent__c ' +
-                       'FROM Quote WHERE Id != null';
+                       'FROM Quote';
+
+        List<String> conditions = new List<String>();
 
         // Add status filter if provided
         if (String.isNotBlank(statusFilter) &&
             statusFilter != 'All') {
-            query += ' AND Status = \'' +
-                     String.escapeSingleQuotes(statusFilter) + '\'';
+            conditions.add('Status = \'' +
+                     String.escapeSingleQuotes(statusFilter) + '\'');
         }
 
         // Add account filter if provided
         if (String.isNotBlank(accountFilter) &&
             accountFilter != 'All') {
-            query += ' AND AccountId = \'' +
-                     String.escapeSingleQuotes(accountFilter) + '\'';
+            conditions.add('AccountId = \'' +
+                     String.escapeSingleQuotes(accountFilter) + '\'');
+        }
+
+        if (!conditions.isEmpty()) {
+            query += ' WHERE ' + String.join(conditions, ' AND ');
         }
 
         query += ' ORDER BY CreatedDate DESC';
@@ -76,7 +82,7 @@ public with sharing class QuoteController {
 
         Quote q = new Quote();
         q.OpportunityId  = opportunityId;
-        q.AccountId      = opp.AccountId; // auto from opportunity
+        // AccountId is auto-derived from Opportunity — don't set manually
         q.Name           = 'New Quote';   // user can rename later
         q.Description    = description;
         q.Status         = 'Draft';       // always starts as Draft
@@ -122,7 +128,7 @@ public with sharing class QuoteController {
 
         // Clone line items too
         List<Quote_Line_Item__c> originalItems = [
-            SELECT Item_Type__c, Resource_Role__c, Product__c,
+            SELECT Name, Item_Type__c, Resource_Role__c, Product__c,
                    Add_On__c, Phase__c, Task__c,
                    Start_Date__c, End_Date__c, Quantity__c,
                    Base_Rate__c, Unit_Price__c,

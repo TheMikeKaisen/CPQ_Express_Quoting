@@ -4,16 +4,23 @@ public with sharing class ProductController {
     @AuraEnabled(cacheable=true)
     public static List<Product__c> getProducts(String searchTerm) {
 
-        String query = 'SELECT Id, Name, Billing_Unit__c, ' +
-                       'Price__c, Cost__c, Tags__c, Is_Active__c ' +
-                       'FROM Product__c WHERE Id != null';
+        String query = 'SELECT Id, Name__c, Description__c, ' +
+                       'Billing_Unit__c, Price__c, Cost__c, ' +
+                       'Tags__c, Is_Active__c ' +
+                       'FROM Product__c';
+
+        List<String> conditions = new List<String>();
 
         if (String.isNotBlank(searchTerm)) {
-            query += ' AND Name LIKE \'%' +
-                     String.escapeSingleQuotes(searchTerm) + '%\'';
+            conditions.add('Name__c LIKE \'%' +
+                     String.escapeSingleQuotes(searchTerm) + '%\'');
         }
 
-        query += ' ORDER BY Name ASC';
+        if (!conditions.isEmpty()) {
+            query += ' WHERE ' + String.join(conditions, ' AND ');
+        }
+
+        query += ' ORDER BY Name__c ASC';
         return Database.query(query);
     }
 
@@ -26,13 +33,13 @@ public with sharing class ProductController {
             Decimal cost,
             String tags) {
 
-        Product__c p    = new Product__c();
-        p.Name          = name;
+        Product__c p      = new Product__c();
+        p.Name__c         = name;
         p.Billing_Unit__c = billingUnit;
-        p.Price__c      = price;
-        p.Cost__c       = cost;
-        p.Tags__c       = tags;
-        p.Is_Active__c  = true;
+        p.Price__c        = price;
+        p.Cost__c         = cost;
+        p.Tags__c         = tags;
+        p.Is_Active__c    = true;
 
         insert p;
         return p.Id;
@@ -44,14 +51,17 @@ public with sharing class ProductController {
             Id productId,
             Boolean isActive) {
 
-        Product__c p    = new Product__c(Id = productId);
-        p.Is_Active__c  = isActive;
+        Product__c p   = new Product__c();
+        p.Id           = productId;
+        p.Is_Active__c = isActive;
         update p;
     }
 
     // ── Delete product ────────────────────────────────────────────────────
     @AuraEnabled
     public static void deleteProduct(Id productId) {
-        delete new Product__c(Id = productId);
+        Product__c p = new Product__c();
+        p.Id = productId;
+        delete p;
     }
 }
