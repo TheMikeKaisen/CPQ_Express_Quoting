@@ -33,6 +33,8 @@ export default class ProvusAddonsList extends LightningElement {
             this.allAddons = result.data.map((a, i) => ({
                 ...a,
                 rowNumber:      i + 1,
+                autoName:       a.Name,
+                displayName:    a.Name__c,
                 formattedPrice: this.fmt(a.Price__c),
                 formattedCost:  a.Cost__c
                     ? this.fmt(a.Cost__c) : '—',

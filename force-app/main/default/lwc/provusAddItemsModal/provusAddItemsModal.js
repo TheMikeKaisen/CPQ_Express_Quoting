@@ -34,6 +34,7 @@ export default class ProvusAddItemsModal extends LightningElement {
         if (data) {
             this.allRoles = data.map(r => ({
                 ...r,
+                displayName:     r.Name__c,
                 descriptionText: 'No description available',
                 isSelected: false,
                 itemClass: 'item-row'
@@ -47,6 +48,7 @@ export default class ProvusAddItemsModal extends LightningElement {
         if (data) {
             this.allProducts = data.map(p => ({
                 ...p,
+                displayName:     p.Name__c,
                 descriptionText: 'No description available',
                 isSelected: false,
                 itemClass: 'item-row'
@@ -60,6 +62,7 @@ export default class ProvusAddItemsModal extends LightningElement {
         if (data) {
             this.allAddons = data.map(a => ({
                 ...a,
+                displayName:     a.Name__c,
                 descriptionText: 'No description available',
                 isSelected: false,
                 itemClass: 'item-row'
@@ -116,7 +119,7 @@ export default class ProvusAddItemsModal extends LightningElement {
         if (this.searchTerm) {
             const term = this.searchTerm.toLowerCase();
             filtered = filtered.filter(i =>
-                (i.Name || '').toLowerCase().includes(term)
+                (i.displayName || '').toLowerCase().includes(term)
             );
         }
 
@@ -125,7 +128,7 @@ export default class ProvusAddItemsModal extends LightningElement {
             if (this.sortBy === 'price') {
                 return (a.Price__c || 0) - (b.Price__c || 0);
             }
-            return (a.Name || '').localeCompare(b.Name || '');
+            return (a.displayName || '').localeCompare(b.displayName || '');
         });
 
         // Add selection state

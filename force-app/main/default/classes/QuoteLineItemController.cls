@@ -143,8 +143,8 @@ public with sharing class QuoteLineItemController {
         ];
 
         // Force recalculation if Quantity OR Start Date is present in the update
-        // (Even if they haven't changed, we want to ensure the End Date stays in sync if Quote allows)
-        if (existing.Quote__r.End_Date__c == null && existing.Quote__r.Time_Period__c != null) {
+        // (QLIs drive their own duration based on quantity if the Quote has a Time Period)
+        if (existing.Quote__r.Time_Period__c != null) {
             Boolean hasChange = false;
             // Check if quantity or start date is being updated
             if (item.Quantity__c != null) hasChange = true;
@@ -165,10 +165,14 @@ public with sharing class QuoteLineItemController {
     private static void populateDates(Quote_Line_Item__c item, Quote parentQuote) {
         if (parentQuote.Start_Date__c != null) {
             item.Start_Date__c = parentQuote.Start_Date__c;
-            if (parentQuote.End_Date__c != null) {
-                item.End_Date__c = parentQuote.End_Date__c;
-            } else if (parentQuote.Time_Period__c != null) {
+            
+            // 1. If Time Period exists, quantity drives the end date
+            if (parentQuote.Time_Period__c != null) {
                 item.End_Date__c = calculateEndDate(parentQuote.Start_Date__c, item.Quantity__c, parentQuote.Time_Period__c);
+            } 
+            // 2. Fallback to fixed Quote End Date if no Time Period
+            else if (parentQuote.End_Date__c != null) {
+                item.End_Date__c = parentQuote.End_Date__c;
             }
         }
     }

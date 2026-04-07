@@ -17,7 +17,7 @@ export default class ProvusCreateQuoteModal extends LightningElement {
     @track description    = '';
     @track startDate      = new Date().toISOString().split('T')[0];
     @track endDate        = '';
-    @track timePeriod     = 'Months';
+    @track timePeriod     = 'Days';
 
     // UI state
     @track errorMessage   = '';
@@ -148,7 +148,7 @@ export default class ProvusCreateQuoteModal extends LightningElement {
         this.description   = '';
         this.startDate     = new Date().toISOString().split('T')[0];
         this.endDate       = '';
-        this.timePeriod    = 'Months';
+        this.timePeriod    = 'Days';
         this.errorMessage  = '';
     }
 }

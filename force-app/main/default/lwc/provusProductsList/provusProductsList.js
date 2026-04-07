@@ -33,6 +33,8 @@ export default class ProvusProductsList extends LightningElement {
             this.allProducts = result.data.map((p, i) => ({
                 ...p,
                 rowNumber:      i + 1,
+                autoName:       p.Name,
+                displayName:    p.Name__c,
                 formattedPrice: this.fmt(p.Price__c),
                 formattedCost:  p.Cost__c
                     ? this.fmt(p.Cost__c) : '—',

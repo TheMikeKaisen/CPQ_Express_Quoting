@@ -13,7 +13,7 @@
         <name>one:utilityBarTemplateDesktop</name>
         <properties>
             <name>isLeftAligned</name>
-            <value>true</value>
+            <value>false</value>
         </properties>
     </template>
     <type>UtilityBar</type>

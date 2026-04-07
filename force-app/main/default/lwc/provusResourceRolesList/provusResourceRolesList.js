@@ -35,7 +35,7 @@ export default class ProvusResourceRolesList
             this.allRoles = result.data.map((r, i) => ({
                 ...r,
                 rowNumber:       i + 1,
-                displayName:     r.Name,
+                displayName:     r.Name__c,
                 locationDisplay: r.Location__c || '—',
                 formattedPrice:  this.fmt(r.Price__c),
                 formattedCost:   r.Cost__c

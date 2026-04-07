@@ -236,29 +236,35 @@ public with sharing class QuoteController {
 @AuraEnabled
 public static void recalculateQuoteTotals(Id quoteId) {
     List<Quote_Line_Item__c> qlis = [
-        SELECT Total_Price__c, Cost__c, Quantity__c 
+        SELECT Total_Price__c, Cost__c, Quantity__c, End_Date__c 
         FROM Quote_Line_Item__c 
         WHERE Quote__c = :quoteId
     ];
 
     Decimal revenue = 0;
     Decimal totalCost = 0;
+    Date maxEnd = null;
 
     for(Quote_Line_Item__c item : qlis) {
         if(item.Total_Price__c != null) revenue += item.Total_Price__c;
         if(item.Cost__c != null && item.Quantity__c != null) {
             totalCost += (item.Cost__c * item.Quantity__c);
         }
+        if(item.End_Date__c != null) {
+            if(maxEnd == null || item.End_Date__c > maxEnd) maxEnd = item.End_Date__c;
+        }
     }
 
-    Quote q = new Quote(Id = quoteId);
-    // We store the revenue in Margin_Amount__c + Cost, 
-    // but we need a place to store the actual Total Revenue.
+    // Query to get current End_Date__c for comparison
+    Quote q = [SELECT Id, End_Date__c FROM Quote WHERE Id = :quoteId LIMIT 1];
+    
     q.Margin_Amount__c = revenue - totalCost;
     q.Margin_Percent__c = (revenue > 0) ? (q.Margin_Amount__c / revenue) * 100 : 0;
     
-    // IMPORTANT: If you have custom fields for Total/Subtotal, map them here:
-    // q.Custom_Total_Amount__c = revenue; 
+    // Automatically extend quote end date if a line item exceeds it
+    if (maxEnd != null && (q.End_Date__c == null || maxEnd > q.End_Date__c)) {
+        q.End_Date__c = maxEnd;
+    }
     
     update q;
 }

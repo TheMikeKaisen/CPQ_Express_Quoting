@@ -131,14 +131,21 @@ export default class ProvusQuoteDetail extends LightningElement {
 
     get formattedStartDate() {
         if (!this.quote || !this.quote.Start_Date__c) return '-';
-        return new Date(this.quote.Start_Date__c)
-            .toLocaleDateString('en-US');
+        const d = new Date(this.quote.Start_Date__c);
+        return this.formatDate(d);
     }
 
     get formattedEndDate() {
         if (!this.quote || !this.quote.End_Date__c) return '-';
-        return new Date(this.quote.End_Date__c)
-            .toLocaleDateString('en-US');
+        const d = new Date(this.quote.End_Date__c);
+        return this.formatDate(d);
+    }
+
+    formatDate(date) {
+        const d = String(date.getDate()).padStart(2, '0');
+        const m = String(date.getMonth() + 1).padStart(2, '0');
+        const y = date.getFullYear();
+        return `${d}-${m}-${y}`;
     }
 
     // ── Tab click ─────────────────────────────────────────────────────────

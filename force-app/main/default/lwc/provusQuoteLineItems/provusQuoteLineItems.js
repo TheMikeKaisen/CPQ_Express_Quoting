@@ -202,7 +202,16 @@ export default class ProvusQuoteLineItems extends LightningElement {
     handleFieldChange(event) {
         const itemId = event.currentTarget.dataset.id;
         const field  = event.currentTarget.dataset.field;
-        const value  = event.target.value;
+        let value    = event.target.value;
+
+        if (field === 'Quantity__c') {
+            const qty = parseFloat(value);
+            if (!isNaN(qty)) {
+                // Round to 1 decimal place
+                value = Math.round(qty * 10) / 10;
+                event.target.value = value;
+            }
+        }
 
         if (field === 'Discount_Percent__c') {
             const discount = parseFloat(value);

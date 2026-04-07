@@ -4,7 +4,7 @@ public with sharing class ProductController {
     @AuraEnabled(cacheable=true)
     public static List<Product__c> getProducts(String searchTerm) {
 
-        String query = 'SELECT Id, Name__c, Description__c, ' +
+        String query = 'SELECT Id, Name, Name__c, Description__c, ' +
                        'Billing_Unit__c, Price__c, Cost__c, ' +
                        'Tags__c, Is_Active__c ' +
                        'FROM Product__c';
