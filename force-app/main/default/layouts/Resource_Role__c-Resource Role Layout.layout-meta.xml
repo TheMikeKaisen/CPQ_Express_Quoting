@@ -8,6 +8,10 @@
         <layoutColumns>
             <layoutItems>
                 <behavior>Required</behavior>
+                <field>Name__c</field>
+            </layoutItems>
+            <layoutItems>
+                <behavior>Required</behavior>
                 <field>Billing_Unit__c</field>
             </layoutItems>
             <layoutItems>
@@ -63,6 +67,7 @@
         <fields>Billing_Unit__c</fields>
         <fields>Price__c</fields>
         <fields>Cost__c</fields>
+        <fields>Name__c</fields>
     </miniLayout>
     <relatedLists>
         <fields>NAME</fields>
@@ -73,4 +78,10 @@
     <showInteractionLogPanel>false</showInteractionLogPanel>
     <showRunAssignmentRulesCheckbox>false</showRunAssignmentRulesCheckbox>
     <showSubmitAndAttachButton>false</showSubmitAndAttachButton>
+    <summaryLayout>
+        <masterLabel>00hEm00000DegST</masterLabel>
+        <sizeX>4</sizeX>
+        <sizeY>0</sizeY>
+        <summaryLayoutStyle>Default</summaryLayoutStyle>
+    </summaryLayout>
 </Layout>

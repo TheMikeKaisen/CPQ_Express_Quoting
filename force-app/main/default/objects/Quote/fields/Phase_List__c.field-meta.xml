@@ -2,7 +2,6 @@
 <CustomField xmlns="http://soap.sforce.com/2006/04/metadata">
     <fullName>Phase_List__c</fullName>
     <description>Stores a comma-separated list of phase names created by the user, preserving empty phases.</description>
-    <externalId>false</externalId>
     <label>Phase List</label>
     <length>32768</length>
     <trackHistory>false</trackHistory>
