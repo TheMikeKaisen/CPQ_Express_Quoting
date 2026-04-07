@@ -72,7 +72,9 @@
                                         {row.chevron}
                                     </span>
                                     <span class="phase-title">{row.phaseName}</span>
-                                    <button class="btn-add-to-phase" onclick={handleAddItem}>+ ADD ITEM</button>
+                                    <button class="btn-add-to-phase" 
+                                            data-phase={row.phaseName} 
+                                            onclick={handleAddItem}>+ ADD ITEM</button>
                                 </td>
                             </tr>
                         </template>
@@ -161,6 +163,7 @@
     <c-provus-add-items-modal
         is-open={showAddModal}
         quote-id={quoteId}
+        target-phase={targetPhase}
         onclose={handleModalClose}
         onitemsadded={handleItemsAdded}>
     </c-provus-add-items-modal>

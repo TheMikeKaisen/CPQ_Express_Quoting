@@ -22,6 +22,7 @@ export default class ProvusQuoteLineItems extends LightningElement {
     // Drag state
     draggedItemId = null;
     @track dragOverPhase = null;
+    @track targetPhase = ''; // Phase for adding new items
 
     wiredItemsResult = undefined;
     wiredPhaseListResult = undefined;
@@ -262,7 +263,8 @@ export default class ProvusQuoteLineItems extends LightningElement {
         }
     }
 
-    handleAddItem() {
+    handleAddItem(event) {
+        this.targetPhase = event.currentTarget.dataset.phase || '';
         this.showAddModal = true;
     }
 

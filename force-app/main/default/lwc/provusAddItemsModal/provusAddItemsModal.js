@@ -10,8 +10,9 @@ import addLineItems from
 
 export default class ProvusAddItemsModal extends LightningElement {
 
-    @api isOpen  = false;
-    @api quoteId = '';
+    @api isOpen      = false;
+    @api quoteId     = '';
+    @api targetPhase = ''; // The phase items will be added to
 
     @track activeTab    = 'resourceRoles';
     @track searchTerm   = '';
@@ -217,7 +218,8 @@ export default class ProvusAddItemsModal extends LightningElement {
             quoteId:         this.quoteId,
             resourceRoleIds: [...this.selectedRRIds],
             productIds:      [...this.selectedProdIds],
-            addonIds:        [...this.selectedAddonIds]
+            addonIds:        [...this.selectedAddonIds],
+            phaseName:       this.targetPhase
         })
         .then(() => {
             this.resetSelections();
