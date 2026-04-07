@@ -1,6 +1,203 @@
 <template>
-    <div class="slds-box slds-theme_default">
-        <h1 class="slds-text-heading_medium">Dashboard Placeholder</h1>
-        <p>This is a stub for a future feature. Content coming in Day 3-5.</p>
+    <div class="dashboard-container">
+
+        <!-- PAGE HEADER -->
+        <div class="page-header">
+            <div class="header-left">
+                <div class="greeting-row">
+                    <span class="greeting-emoji">🌅</span>
+                    <h1 class="greeting">
+                        Good morning, {currentUserName}!
+                    </h1>
+                </div>
+            </div>
+            <div class="header-right">
+                <button class="btn-icon" onclick={handleRefresh}>
+                    🔄 Refresh
+                </button>
+            </div>
+        </div>
+
+        <!-- AI BAR (stub) -->
+        <div class="ai-bar">
+            <div class="ai-icon">✨</div>
+            <input
+                type="text"
+                class="ai-input"
+                placeholder="Ask AI anything about your quotes,
+                             resources, products..." />
+            <button class="btn-ask-ai">Ask AI →</button>
+        </div>
+
+        <!-- QUICK CHIPS -->
+        <div class="chips-row">
+            <span class="chip-label">💡 Try:</span>
+            <button class="chip"
+                    onclick={handleChipClick}
+                    data-action="createQuote">
+                Help me create quote
+            </button>
+            <button class="chip"
+                    onclick={handleChipClick}
+                    data-action="showQuotes">
+                Show all quotes
+            </button>
+            <button class="chip"
+                    onclick={handleChipClick}
+                    data-action="listAccounts">
+                List accounts
+            </button>
+            <button class="chip"
+                    onclick={handleChipClick}
+                    data-action="showRoles">
+                Show all resource roles
+            </button>
+        </div>
+
+        <!-- MAIN CONTENT -->
+        <div class="dashboard-body">
+
+            <!-- LEFT: Insight Cards -->
+            <div class="insights-section">
+
+                <h2 class="section-title">Quote Insights</h2>
+
+                <div class="insight-cards">
+
+                    <!-- Draft Pipeline -->
+                    <div class="insight-card card-blue">
+                        <div class="card-top">
+                            <span class="card-info">ℹ</span>
+                        </div>
+                        <div class="card-count blue-count">
+                            {draftCount}
+                        </div>
+                        <div class="card-label blue-label">
+                            Draft Pipeline
+                        </div>
+                        <div class="card-sub">
+                            {draftAmount} potential revenue
+                            in drafts
+                        </div>
+                        <button
+                            class="card-link"
+                            onclick={handleViewDrafts}>
+                            View Drafts →
+                        </button>
+                    </div>
+
+                    <!-- High Margin Deals -->
+                    <div class="insight-card card-teal">
+                        <div class="card-top">
+                            <span class="card-info">ℹ</span>
+                        </div>
+                        <div class="card-count teal-count">
+                            {highMarginCount}
+                        </div>
+                        <div class="card-label teal-label">
+                            High Margin Deals
+                        </div>
+                        <div class="card-sub">
+                            {highMarginAmount} with
+                            35%+ profit margin
+                        </div>
+                        <button
+                            class="card-link"
+                            onclick={handleViewHighMargin}>
+                            View Opportunities →
+                        </button>
+                    </div>
+
+                    <!-- Won This Month -->
+                    <div class="insight-card card-green">
+                        <div class="card-top">
+                            <span class="card-info">ℹ</span>
+                        </div>
+                        <div class="card-count green-count">
+                            {wonCount}
+                        </div>
+                        <div class="card-label green-label">
+                            Won This Month
+                        </div>
+                        <div class="card-sub">
+                            {wonAmount} closed won
+                            this month
+                        </div>
+                        <button
+                            class="card-link"
+                            onclick={handleViewWon}>
+                            View Wins →
+                        </button>
+                    </div>
+
+                </div>
+            </div>
+
+            <!-- RIGHT: Recent Quotes -->
+            <div class="recent-section">
+                <div class="recent-header">
+                    <h3 class="recent-title">
+                        Your Recent Quotes
+                    </h3>
+                    <span class="recent-count">
+                        {totalQuoteCount} quotes total
+                    </span>
+                </div>
+
+                <!-- Create New Quote button -->
+                <button
+                    class="btn-create-quote"
+                    onclick={handleCreateQuote}>
+                    + Create New Quote
+                </button>
+
+                <!-- Recent quotes list -->
+                <div class="recent-list">
+                    <template if:true={hasRecentQuotes}>
+                        <template for:each={recentQuotes}
+                                  for:item="quote">
+                            <div key={quote.Id}
+                                 class="recent-item"
+                                 data-id={quote.Id}
+                                 onclick={handleRecentQuoteClick}>
+                                <div class="recent-item-left">
+                                    <div class="recent-quote-num">
+                                        {quote.QuoteNumber}
+                                    </div>
+                                    <div class="recent-account">
+                                        {quote.accountName}
+                                    </div>
+                                </div>
+                                <div class="recent-item-right">
+                                    <div class="recent-amount">
+                                        {quote.formattedAmount}
+                                    </div>
+                                    <c-provus-status-badge
+                                        status={quote.Status}>
+                                    </c-provus-status-badge>
+                                </div>
+                            </div>
+                        </template>
+                    </template>
+
+                    <template if:false={hasRecentQuotes}>
+                        <div class="recent-empty">
+                            <div class="empty-icon">📄</div>
+                            <p>No recent quote activity.</p>
+                        </div>
+                    </template>
+                </div>
+
+            </div>
+        </div>
+
     </div>
+
+    <!-- Create Quote Modal -->
+    <c-provus-create-quote-modal
+        is-open={showCreateModal}
+        onclose={handleModalClose}
+        onquotecreated={handleQuoteCreated}>
+    </c-provus-create-quote-modal>
+
 </template>

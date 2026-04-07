@@ -1,6 +1,207 @@
 <template>
-    <div class="slds-box slds-theme_default">
-        <h1 class="slds-text-heading_medium">Add-ons List Placeholder</h1>
-        <p>This is a stub for a future feature. Content coming in Day 3-5.</p>
+    <div class="page-container">
+        <div class="page-header">
+            <div>
+                <h1 class="page-title">Add-ons</h1>
+                <p class="page-subtitle">
+                    Manage your Add-ons
+                </p>
+            </div>
+            <div class="header-right">
+                <button class="btn-new"
+                        onclick={handleNew}>+ New</button>
+                <button class="btn-icon">⬆ Import</button>
+                <button class="btn-icon"
+                        onclick={handleRefresh}>
+                    🔄 Refresh
+                </button>
+            </div>
+        </div>
+
+        <div class="filters-row">
+            <input type="text"
+                   class="search-input"
+                   placeholder="Search Add-ons..."
+                   onchange={handleSearch} />
+        </div>
+
+        <div class="showing-count">
+            Showing {startRecord}-{endRecord}
+            of {totalRecords}
+        </div>
+
+        <div class="table-container">
+            <table class="data-table">
+                <thead>
+                    <tr>
+                        <th><input type="checkbox" /></th>
+                        <th>#</th>
+                        <th>ID</th>
+                        <th>Name</th>
+                        <th>Billing Unit</th>
+                        <th>Price</th>
+                        <th>Cost</th>
+                        <th>Tags</th>
+                        <th>Active</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <template if:true={isEmpty}>
+                        <tr>
+                            <td colspan="10" class="empty-cell">
+                                No add-ons found.
+                            </td>
+                        </tr>
+                    </template>
+                    <template for:each={paginatedAddons}
+                              for:item="addon">
+                        <tr key={addon.Id} class="table-row">
+                            <td>
+                                <input type="checkbox" />
+                            </td>
+                            <td>{addon.rowNumber}</td>
+                            <td>
+                                <span class="id-link">
+                                    {addon.Name}
+                                </span>
+                            </td>
+                            <td>{addon.Name}</td>
+                            <td>
+                                <span class="billing-badge">
+                                    {addon.Billing_Unit__c}
+                                </span>
+                            </td>
+                            <td class="price-cell">
+                                {addon.formattedPrice}
+                            </td>
+                            <td class="price-cell">
+                                {addon.formattedCost}
+                            </td>
+                            <td>{addon.tagsDisplay}</td>
+                            <td>
+                                <label class="toggle-wrap">
+                                    <input
+                                        type="checkbox"
+                                        class="toggle-input"
+                                        checked={addon.Is_Active__c}
+                                        data-id={addon.Id}
+                                        onchange={handleToggle} />
+                                    <span class="toggle-slider">
+                                    </span>
+                                </label>
+                            </td>
+                            <td>
+                                <button
+                                    class="action-btn"
+                                    data-id={addon.Id}
+                                    onclick={handleDelete}>
+                                    🗑️
+                                </button>
+                            </td>
+                        </tr>
+                    </template>
+                </tbody>
+            </table>
+        </div>
+
+        <div class="pagination">
+            <button class="page-btn"
+                    onclick={handlePrevPage}
+                    disabled={isFirstPage}>
+                ‹ Previous
+            </button>
+            <span class="page-info">
+                Page {currentPage} of {totalPages}
+            </span>
+            <button class="page-btn"
+                    onclick={handleNextPage}
+                    disabled={isLastPage}>
+                Next ›
+            </button>
+        </div>
     </div>
+
+    <!-- NEW ADDON MODAL -->
+    <template if:true={showModal}>
+        <div class="modal-overlay"
+             onclick={handleModalClose}></div>
+        <div class="modal-box">
+            <div class="modal-header">
+                <h2 class="modal-title">New Add-on</h2>
+                <button class="close-btn"
+                        onclick={handleModalClose}>✕
+                </button>
+            </div>
+            <div class="modal-body">
+                <div class="form-group">
+                    <label class="form-label">
+                        Name <span class="req">*</span>
+                    </label>
+                    <input type="text"
+                           class="form-input"
+                           placeholder="Add-on name"
+                           onchange={handleFieldChange}
+                           data-field="name" />
+                </div>
+                <div class="form-group">
+                    <label class="form-label">
+                        Billing Unit
+                    </label>
+                    <select class="form-select"
+                            onchange={handleFieldChange}
+                            data-field="billingUnit">
+                        <option value="Each">Each</option>
+                    </select>
+                </div>
+                <div class="form-row">
+                    <div class="form-group form-half">
+                        <label class="form-label">
+                            Price <span class="req">*</span>
+                        </label>
+                        <input type="number"
+                               class="form-input"
+                               placeholder="0.00"
+                               onchange={handleFieldChange}
+                               data-field="price" />
+                    </div>
+                    <div class="form-group form-half">
+                        <label class="form-label">Cost</label>
+                        <input type="number"
+                               class="form-input"
+                               placeholder="0.00"
+                               onchange={handleFieldChange}
+                               data-field="cost" />
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Tags</label>
+                    <input type="text"
+                           class="form-input"
+                           placeholder="e.g. Testing, Performance"
+                           onchange={handleFieldChange}
+                           data-field="tags" />
+                </div>
+                <template if:true={errorMessage}>
+                    <div class="error-msg">{errorMessage}</div>
+                </template>
+            </div>
+            <div class="modal-footer">
+                <button class="btn-cancel"
+                        onclick={handleModalClose}>
+                    Cancel
+                </button>
+                <button class="btn-save"
+                        onclick={handleSave}
+                        disabled={isSaving}>
+                    <template if:true={isSaving}>
+                        Saving...
+                    </template>
+                    <template if:false={isSaving}>
+                        Save
+                    </template>
+                </button>
+            </div>
+        </div>
+    </template>
 </template>

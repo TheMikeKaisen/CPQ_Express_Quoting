@@ -1,6 +1,239 @@
 <template>
-    <div class="slds-box slds-theme_default">
-        <h1 class="slds-text-heading_medium">Resource Roles List Placeholder</h1>
-        <p>This is a stub for a future feature. Content coming in Day 3-5.</p>
+    <div class="page-container">
+
+        <!-- HEADER -->
+        <div class="page-header">
+            <div>
+                <h1 class="page-title">Resource Roles</h1>
+                <p class="page-subtitle">
+                    Manage Resource Roles and
+                    billing prices for your organization
+                </p>
+            </div>
+            <div class="header-right">
+                <button class="btn-new"
+                        onclick={handleNew}>
+                    + New
+                </button>
+                <button class="btn-icon">
+                    ⬆ Import
+                </button>
+                <button class="btn-icon"
+                        onclick={handleRefresh}>
+                    🔄 Refresh
+                </button>
+            </div>
+        </div>
+
+        <!-- FILTERS -->
+        <div class="filters-row">
+            <input
+                type="text"
+                class="search-input"
+                placeholder="Search Resource Roles
+                             by name or location..."
+                onchange={handleSearch} />
+            <select class="filter-select"
+                    onchange={handleStatusFilter}>
+                <option value="All">All Status</option>
+                <option value="Active">Active</option>
+                <option value="Inactive">Inactive</option>
+            </select>
+        </div>
+
+        <div class="showing-count">
+            Showing {startRecord}-{endRecord}
+            of {totalRecords}
+        </div>
+
+        <!-- TABLE -->
+        <div class="table-container">
+            <table class="data-table">
+                <thead>
+                    <tr>
+                        <th><input type="checkbox" /></th>
+                        <th>#</th>
+                        <th>ID</th>
+                        <th>Name</th>
+                        <th>Location</th>
+                        <th>Billing Unit</th>
+                        <th>Price</th>
+                        <th>Cost</th>
+                        <th>Active</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <template if:true={isEmpty}>
+                        <tr>
+                            <td colspan="10" class="empty-cell">
+                                No resource roles found.
+                            </td>
+                        </tr>
+                    </template>
+                    <template for:each={paginatedRoles}
+                              for:item="role">
+                        <tr key={role.Id} class="table-row">
+                            <td>
+                                <input type="checkbox" />
+                            </td>
+                            <td>{role.rowNumber}</td>
+                            <td>
+                                <span class="id-link">
+                                    {role.Name}
+                                </span>
+                            </td>
+                            <td>{role.displayName}</td>
+                            <td>{role.locationDisplay}</td>
+                            <td>
+                                <span class="billing-badge">
+                                    {role.Billing_Unit__c}
+                                </span>
+                            </td>
+                            <td class="price-cell">
+                                {role.formattedPrice}
+                            </td>
+                            <td class="price-cell">
+                                {role.formattedCost}
+                            </td>
+                            <td>
+                                <label class="toggle-wrap">
+                                    <input
+                                        type="checkbox"
+                                        class="toggle-input"
+                                        checked={role.Is_Active__c}
+                                        data-id={role.Id}
+                                        onchange={handleToggle} />
+                                    <span class="toggle-slider">
+                                    </span>
+                                </label>
+                            </td>
+                            <td>
+                                <button
+                                    class="action-btn"
+                                    data-id={role.Id}
+                                    onclick={handleDelete}
+                                    title="Delete">
+                                    🗑️
+                                </button>
+                            </td>
+                        </tr>
+                    </template>
+                </tbody>
+            </table>
+        </div>
+
+        <!-- PAGINATION -->
+        <div class="pagination">
+            <button class="page-btn"
+                    onclick={handlePrevPage}
+                    disabled={isFirstPage}>
+                ‹ Previous
+            </button>
+            <span class="page-info">
+                Page {currentPage} of {totalPages}
+            </span>
+            <button class="page-btn"
+                    onclick={handleNextPage}
+                    disabled={isLastPage}>
+                Next ›
+            </button>
+        </div>
+
     </div>
+
+    <!-- NEW ROLE MODAL -->
+    <template if:true={showModal}>
+        <div class="modal-overlay"
+             onclick={handleModalClose}>
+        </div>
+        <div class="modal-box">
+            <div class="modal-header">
+                <h2 class="modal-title">New Resource Role</h2>
+                <button class="close-btn"
+                        onclick={handleModalClose}>✕
+                </button>
+            </div>
+            <div class="modal-body">
+                <div class="form-group">
+                    <label class="form-label">
+                        Name <span class="req">*</span>
+                    </label>
+                    <input type="text"
+                           class="form-input"
+                           placeholder="e.g. QA Lead"
+                           onchange={handleFieldChange}
+                           data-field="name" />
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Location</label>
+                    <input type="text"
+                           class="form-input"
+                           placeholder="e.g. Remote"
+                           onchange={handleFieldChange}
+                           data-field="location" />
+                </div>
+                <div class="form-group">
+                    <label class="form-label">
+                        Billing Unit <span class="req">*</span>
+                    </label>
+                    <select class="form-select"
+                            onchange={handleFieldChange}
+                            data-field="billingUnit">
+                        <option value="Hour">Hour</option>
+                        <option value="Day">Day</option>
+                        <option value="Each">Each</option>
+                    </select>
+                </div>
+                <div class="form-row">
+                    <div class="form-group form-half">
+                        <label class="form-label">
+                            Price <span class="req">*</span>
+                        </label>
+                        <input type="number"
+                               class="form-input"
+                               placeholder="0.00"
+                               onchange={handleFieldChange}
+                               data-field="price" />
+                    </div>
+                    <div class="form-group form-half">
+                        <label class="form-label">Cost</label>
+                        <input type="number"
+                               class="form-input"
+                               placeholder="0.00"
+                               onchange={handleFieldChange}
+                               data-field="cost" />
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Tags</label>
+                    <input type="text"
+                           class="form-input"
+                           placeholder="e.g. QA, Testing"
+                           onchange={handleFieldChange}
+                           data-field="tags" />
+                </div>
+                <template if:true={errorMessage}>
+                    <div class="error-msg">{errorMessage}</div>
+                </template>
+            </div>
+            <div class="modal-footer">
+                <button class="btn-cancel"
+                        onclick={handleModalClose}>
+                    Cancel
+                </button>
+                <button class="btn-save"
+                        onclick={handleSave}
+                        disabled={isSaving}>
+                    <template if:true={isSaving}>
+                        Saving...
+                    </template>
+                    <template if:false={isSaving}>
+                        Save
+                    </template>
+                </button>
+            </div>
+        </div>
+    </template>
+
 </template>

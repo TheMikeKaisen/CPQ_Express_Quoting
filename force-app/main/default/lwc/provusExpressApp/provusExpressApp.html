@@ -2,9 +2,7 @@
     <div class="app-container">
 
         <!-- LEFT SIDEBAR -->
-        <c-provus-sidebar
-            active-page={activePage}
-            onnavigation={handleNavigation}>
+        <c-provus-sidebar active-page={activePage} onnavigation={handleNavigation}>
         </c-provus-sidebar>
 
         <!-- RIGHT CONTENT AREA -->
@@ -12,21 +10,19 @@
 
             <!-- DASHBOARD PAGE -->
             <template if:true={showDashboard}>
-                <c-provus-dashboard></c-provus-dashboard>
+                <c-provus-dashboard onnavigation={handleNavigation} onviewquote={handleViewQuote}>
+                </c-provus-dashboard>
             </template>
 
             <!-- QUOTES LIST PAGE -->
             <template if:true={showQuotes}>
-                <c-provus-quotes-list
-                    onviewquote={handleViewQuote}>
+                <c-provus-quotes-list onviewquote={handleViewQuote}>
                 </c-provus-quotes-list>
             </template>
 
             <!-- QUOTE DETAIL PAGE -->
             <template if:true={showQuoteDetail}>
-                <c-provus-quote-detail
-                    quote-id={selectedQuoteId}
-                    onback={handleBackToQuotes}>
+                <c-provus-quote-detail quote-id={selectedQuoteId} onback={handleBackToQuotes}>
                 </c-provus-quote-detail>
             </template>
 

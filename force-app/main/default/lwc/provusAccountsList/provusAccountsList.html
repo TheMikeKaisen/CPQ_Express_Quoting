@@ -1,6 +1,250 @@
 <template>
-    <div class="slds-box slds-theme_default">
-        <h1 class="slds-text-heading_medium">Accounts List Placeholder</h1>
-        <p>This is a stub for a future feature. Content coming in Day 3-5.</p>
+    <div class="page-container">
+
+        <!-- HEADER -->
+        <div class="page-header">
+            <div>
+                <h1 class="page-title">Accounts</h1>
+                <p class="page-subtitle">
+                    Manage your customer accounts
+                    and relationships
+                </p>
+            </div>
+            <div class="header-right">
+                <button class="btn-new"
+                        onclick={handleNew}>
+                    + New
+                </button>
+                <button class="btn-icon"
+                        onclick={handleRefresh}>
+                    🔄 Refresh
+                </button>
+            </div>
+        </div>
+
+        <!-- FILTERS -->
+        <div class="filters-row">
+            <input
+                type="text"
+                class="search-input"
+                placeholder="Search accounts by name,
+                             phone, or email..."
+                onchange={handleSearch} />
+            <select class="filter-select"
+                    onchange={handleTypeFilter}>
+                <option value="All">All Types</option>
+                <template for:each={typeOptions}
+                          for:item="type">
+                    <option key={type} value={type}>
+                        {type}
+                    </option>
+                </template>
+            </select>
+            <select class="filter-select"
+                    onchange={handleIndustryFilter}>
+                <option value="All">All Industries</option>
+                <template for:each={industryOptions}
+                          for:item="ind">
+                    <option key={ind} value={ind}>
+                        {ind}
+                    </option>
+                </template>
+            </select>
+        </div>
+
+        <div class="showing-count">
+            Showing {startRecord}-{endRecord}
+            of {totalRecords}
+        </div>
+
+        <!-- TABLE -->
+        <div class="table-container">
+            <table class="data-table">
+                <thead>
+                    <tr>
+                        <th><input type="checkbox" /></th>
+                        <th>#</th>
+                        <th>Name</th>
+                        <th>Account Number</th>
+                        <th>Type</th>
+                        <th>Industry</th>
+                        <th>Website</th>
+                        <th>Phone</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <template if:true={isEmpty}>
+                        <tr>
+                            <td colspan="9" class="empty-cell">
+                                No accounts found.
+                            </td>
+                        </tr>
+                    </template>
+                    <template for:each={paginatedAccounts}
+                              for:item="acc">
+                        <tr key={acc.Id} class="table-row">
+                            <td>
+                                <input type="checkbox" />
+                            </td>
+                            <td>{acc.rowNumber}</td>
+                            <td>
+                                <span class="name-link">
+                                    {acc.Name}
+                                </span>
+                            </td>
+                            <td>{acc.AccountNumber}</td>
+                            <td>
+                                <template if:true={acc.Type}>
+                                    <span class="type-badge">
+                                        {acc.Type}
+                                    </span>
+                                </template>
+                                <template if:false={acc.Type}>
+                                    -
+                                </template>
+                            </td>
+                            <td>
+                                <template if:true={acc.Industry}>
+                                    <span class="industry-badge">
+                                        {acc.Industry}
+                                    </span>
+                                </template>
+                                <template if:false={acc.Industry}>
+                                    -
+                                </template>
+                            </td>
+                            <td>{acc.websiteDisplay}</td>
+                            <td>{acc.phoneDisplay}</td>
+                            <td>
+                                <button
+                                    class="action-btn"
+                                    data-id={acc.Id}
+                                    onclick={handleDelete}
+                                    title="Delete">
+                                    🗑️
+                                </button>
+                            </td>
+                        </tr>
+                    </template>
+                </tbody>
+            </table>
+        </div>
+
+        <!-- PAGINATION -->
+        <div class="pagination">
+            <button class="page-btn"
+                    onclick={handlePrevPage}
+                    disabled={isFirstPage}>
+                ‹ Previous
+            </button>
+            <span class="page-info">
+                Page {currentPage} of {totalPages}
+            </span>
+            <button class="page-btn"
+                    onclick={handleNextPage}
+                    disabled={isLastPage}>
+                Next ›
+            </button>
+        </div>
+
     </div>
+
+    <!-- NEW ACCOUNT MODAL -->
+    <template if:true={showModal}>
+        <div class="modal-overlay"
+             onclick={handleModalClose}>
+        </div>
+        <div class="modal-box">
+            <div class="modal-header">
+                <h2 class="modal-title">New Account</h2>
+                <button class="close-btn"
+                        onclick={handleModalClose}>
+                    ✕
+                </button>
+            </div>
+            <div class="modal-body">
+                <div class="form-group">
+                    <label class="form-label">
+                        Name <span class="req">*</span>
+                    </label>
+                    <input type="text"
+                           class="form-input"
+                           placeholder="Account name"
+                           onchange={handleFieldChange}
+                           data-field="name" />
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Type</label>
+                    <select class="form-select"
+                            onchange={handleFieldChange}
+                            data-field="type">
+                        <option value="">Select type...</option>
+                        <option value="Prospect">Prospect</option>
+                        <option value="Customer">Customer</option>
+                        <option value="Partner">Partner</option>
+                        <option value="Other">Other</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Industry</label>
+                    <select class="form-select"
+                            onchange={handleFieldChange}
+                            data-field="industry">
+                        <option value="">
+                            Select industry...
+                        </option>
+                        <option value="Technology">
+                            Technology
+                        </option>
+                        <option value="Finance">Finance</option>
+                        <option value="Healthcare">
+                            Healthcare
+                        </option>
+                        <option value="Manufacturing">
+                            Manufacturing
+                        </option>
+                        <option value="Retail">Retail</option>
+                        <option value="Other">Other</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Website</label>
+                    <input type="text"
+                           class="form-input"
+                           placeholder="www.example.com"
+                           onchange={handleFieldChange}
+                           data-field="website" />
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Phone</label>
+                    <input type="text"
+                           class="form-input"
+                           placeholder="+1 234 567 8900"
+                           onchange={handleFieldChange}
+                           data-field="phone" />
+                </div>
+                <template if:true={errorMessage}>
+                    <div class="error-msg">{errorMessage}</div>
+                </template>
+            </div>
+            <div class="modal-footer">
+                <button class="btn-cancel"
+                        onclick={handleModalClose}>
+                    Cancel
+                </button>
+                <button class="btn-save"
+                        onclick={handleSave}
+                        disabled={isSaving}>
+                    <template if:true={isSaving}>
+                        Saving...
+                    </template>
+                    <template if:false={isSaving}>
+                        Save
+                    </template>
+                </button>
+            </div>
+        </div>
+    </template>
+
 </template>
