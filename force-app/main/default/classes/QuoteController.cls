@@ -19,10 +19,6 @@ public with sharing class QuoteController {
 
         List<String> conditions = new List<String>();
 
-        // ── Security Filter ─────────
-        if (!isManagerOrAdmin()) {
-            conditions.add('CreatedById = \'' + UserInfo.getUserId() + '\'');
-        }
 
         // Add status filter if provided
         if (String.isNotBlank(statusFilter) &&
@@ -90,26 +86,34 @@ public with sharing class QuoteController {
             Date endDate,
             String timePeriod) {
 
-        // Get Account from Opportunity
-        Opportunity opp = [
-            SELECT Id, AccountId
-            FROM Opportunity
-            WHERE Id = :opportunityId
-            LIMIT 1
-        ];
+        try {
+            // Get Account from Opportunity
+            Opportunity opp = [
+                SELECT Id, AccountId, Pricebook2Id
+                FROM Opportunity
+                WHERE Id = :opportunityId
+                LIMIT 1
+            ];
 
-        Quote q = new Quote();
-        q.OpportunityId  = opportunityId;
-        // AccountId is auto-derived from Opportunity — don't set manually
-        q.Name           = 'New Quote';   // user can rename later
-        q.Description    = description;
-        q.Status         = 'Draft';       // always starts as Draft
-        q.Start_Date__c  = startDate;
-        q.End_Date__c    = endDate;
-        q.Time_Period__c = timePeriod;
+            Quote q = new Quote();
+            q.OpportunityId  = opportunityId;
+            // Inherit Pricebook from Opportunity if present
+            if (opp.Pricebook2Id != null) {
+                q.Pricebook2Id = opp.Pricebook2Id;
+            }
+            
+            q.Name           = 'New Quote';   // user can rename later
+            q.Description    = description;
+            q.Status         = 'Draft';       // always starts as Draft
+            q.Start_Date__c  = startDate;
+            q.End_Date__c    = endDate;
+            q.Time_Period__c = timePeriod;
 
-        insert q;
-        return q.Id; // return Id so LWC can navigate to detail
+            insert q;
+            return q.Id; // return Id so LWC can navigate to detail
+        } catch (Exception e) {
+            throw new AuraHandledException('Quote Creation Failed: ' + e.getMessage());
+        }
     }
 
     // ── Update quote fields ───────────────────────────────────────────────
