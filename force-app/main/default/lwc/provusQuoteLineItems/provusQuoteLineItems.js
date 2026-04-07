@@ -5,6 +5,7 @@ import getLineItems from '@salesforce/apex/QuoteLineItemController.getLineItems'
 import getPhaseList from '@salesforce/apex/QuoteLineItemController.getPhaseList';
 import savePhaseList from '@salesforce/apex/QuoteLineItemController.savePhaseList';
 import updateLineItem from '@salesforce/apex/QuoteLineItemController.updateLineItem';
+import deleteLineItems from '@salesforce/apex/QuoteLineItemController.deleteLineItems';
 
 // Helper for generating unique IDs for drag payload
 const generateId = () => Math.random().toString(36).substring(2, 10);
@@ -19,6 +20,9 @@ export default class ProvusQuoteLineItems extends LightningElement {
     @track phases = []; // Extracted from comma separated Phase_List__c
     @track collapsedPhases = new Set();
     
+    // Selection state
+    @track selectedItemIds = new Set();
+    
     // Drag state
     draggedItemId = null;
     @track dragOverPhase = null;
@@ -26,6 +30,19 @@ export default class ProvusQuoteLineItems extends LightningElement {
 
     wiredItemsResult = undefined;
     wiredPhaseListResult = undefined;
+
+    // ── Getters for UI ─────────────────────────────────────────────────────
+    get selectedCount() {
+        return this.selectedItemIds.size;
+    }
+
+    get hasSelection() {
+        return this.selectedItemIds.size > 0;
+    }
+
+    get isAllSelected() {
+        return this.lineItems.length > 0 && this.selectedItemIds.size === this.lineItems.length;
+    }
 
     // ── Wire Phase List ───────────────────────────────────────────────────
     @wire(getPhaseList, { quoteId: '$quoteId' })
@@ -57,7 +74,8 @@ export default class ProvusQuoteLineItems extends LightningElement {
                 typeIconClass: this.getTypeIconClass(item.Item_Type__c),
                 formattedBaseRate: this.formatCurrency(item.Base_Rate__c),
                 formattedUnitPrice: this.formatCurrency(item.Unit_Price__c),
-                formattedTotal: this.formatCurrency(item.Total_Price__c)
+                formattedTotal: this.formatCurrency(item.Total_Price__c),
+                selected: this.selectedItemIds.has(item.Id)
             }));
         } else if (result.error) {
             console.error('Line items error:', result.error);
@@ -75,7 +93,7 @@ export default class ProvusQuoteLineItems extends LightningElement {
             rows.push({
                 isItem: true,
                 isPhase: false,
-                record: item,
+                record: { ...item, selected: this.selectedItemIds.has(item.Id) },
                 rowClass: 'item-row root-item'
             });
         });
@@ -90,12 +108,16 @@ export default class ProvusQuoteLineItems extends LightningElement {
             const isCollapsed = this.collapsedPhases.has(phaseName);
             const isDragOver = this.dragOverPhase === phaseName;
             
+            // Phase is selected if all its children are selected
+            const phaseSelected = children.length > 0 && children.every(c => this.selectedItemIds.has(c.Id));
+
             // Phase row
             rows.push({
                 isPhase: true,
                 isItem: false,
                 phaseName: phaseName,
                 isCollapsed: isCollapsed,
+                phaseSelected: phaseSelected,
                 chevron: isCollapsed ? '›' : 'v',
                 dragOverClass: isDragOver ? 'phase-row drop-target-active' : 'phase-row'
             });
@@ -106,7 +128,7 @@ export default class ProvusQuoteLineItems extends LightningElement {
                     rows.push({
                         isItem: true,
                         isPhase: false,
-                        record: item,
+                        record: { ...item, selected: this.selectedItemIds.has(item.Id) },
                         rowClass: 'item-row nested-item'
                     });
                 });
@@ -144,6 +166,75 @@ export default class ProvusQuoteLineItems extends LightningElement {
         } else {
             this.collapsedPhases = allPhases;
         }
+    }
+
+    // ── Selection Logic ──────────────────────────────────────────────────
+    handleSelectItem(event) {
+        const itemId = event.target.dataset.id;
+        const checked = event.target.checked;
+        if (checked) {
+            this.selectedItemIds.add(itemId);
+        } else {
+            this.selectedItemIds.delete(itemId);
+        }
+        this.selectedItemIds = new Set(this.selectedItemIds);
+    }
+
+    handleSelectAll(event) {
+        const checked = event.target.checked;
+        if (checked) {
+            this.selectedItemIds = new Set(this.lineItems.map(i => i.Id));
+        } else {
+            this.selectedItemIds = new Set();
+        }
+    }
+
+    handleSelectPhase(event) {
+        const phaseName = event.target.dataset.phase;
+        const checked = event.target.checked;
+        const phaseItemIds = this.lineItems.filter(i => i.Phase__c === phaseName).map(i => i.Id);
+        
+        if (checked) {
+            phaseItemIds.forEach(id => this.selectedItemIds.add(id));
+        } else {
+            phaseItemIds.forEach(id => this.selectedItemIds.delete(id));
+        }
+        this.selectedItemIds = new Set(this.selectedItemIds);
+    }
+
+    handleClearSelection() {
+        this.selectedItemIds = new Set();
+    }
+
+    handleBulkDelete() {
+        if (this.selectedItemIds.size === 0) return;
+        
+        const idsToDelete = Array.from(this.selectedItemIds);
+        
+        // eslint-disable-next-line no-alert
+        if (!confirm(`Are you sure you want to delete ${idsToDelete.length} selected item(s)?`)) {
+            return;
+        }
+
+        deleteLineItems({ itemIds: idsToDelete })
+            .then(() => {
+                this.selectedItemIds = new Set();
+                this.dispatchEvent(new ShowToastEvent({
+                    title: 'Success',
+                    message: `${idsToDelete.length} item(s) deleted successfully`,
+                    variant: 'success'
+                }));
+                if (this.wiredItemsResult) refreshApex(this.wiredItemsResult);
+                this.dispatchEvent(new CustomEvent('lineitemsupdated'));
+            })
+            .catch(error => {
+                console.error('Delete error:', error);
+                this.dispatchEvent(new ShowToastEvent({
+                    title: 'Error',
+                    message: 'Failed to delete items: ' + (error.body ? error.body.message : error.message),
+                    variant: 'error'
+                }));
+            });
     }
 
     // ── Drag and Drop Logic ──────────────────────────────────────────────
@@ -187,6 +278,11 @@ export default class ProvusQuoteLineItems extends LightningElement {
 
             // Persist to server
             updateLineItem({ item: { Id: this.draggedItemId, Phase__c: targetPhase } })
+                .then(() => {
+                    if (this.wiredItemsResult) {
+                        return refreshApex(this.wiredItemsResult);
+                    }
+                })
                 .then(() => {
                     this.dispatchEvent(new CustomEvent('lineitemsupdated'));
                 })

@@ -141,6 +141,9 @@ public with sharing class UserController {
 
             insert u;
 
+            // Step 4: Assign Permission Set based on role
+            assignPermissionSet(u.Id, role);
+
             return 'Success: User ' + firstName + ' ' +
                    lastName + ' created successfully! ' +
                    'They will receive an email to set ' +
@@ -198,5 +201,17 @@ public with sharing class UserController {
         if (role == 'Admin')   return 'System Administrator';
         if (role == 'Manager') return 'CPQ Manager';
         return 'CPQ Salesperson';
+    }
+
+    private static void assignPermissionSet(Id userId, String role) {
+        String psName = (role == 'Manager' || role == 'Admin') ? 'CPQ_Manager' : 'CPQ_Salesperson';
+        
+        List<PermissionSet> psList = [SELECT Id FROM PermissionSet WHERE Name = :psName LIMIT 1];
+        if (psList.isEmpty()) return; // skip if perm set not deployed yet
+
+        insert new PermissionSetAssignment(
+            AssigneeId = userId, 
+            PermissionSetId = psList[0].Id
+        );
     }
 }

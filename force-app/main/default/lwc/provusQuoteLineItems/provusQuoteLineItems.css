@@ -217,3 +217,69 @@
 }
 .total-label { text-align: right; font-size: 14px; }
 .total-amount { text-align: right; font-size: 14px; color: #10b981; }
+
+/* ── Selection Bar ──────────────────────────────────────────────────────── */
+.selection-bar-container {
+    position: fixed;
+    bottom: 32px;
+    left: 50%;
+    transform: translateX(-50%);
+    z-index: 1000;
+    pointer-events: none;
+}
+
+.selection-bar {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    background: #fff;
+    padding: 12px 24px;
+    border-radius: 99px;
+    box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1), 0 8px 10px -6px rgba(0, 0, 0, 0.1);
+    border: 1px solid #e5e7eb;
+    pointer-events: auto;
+    animation: slideUp 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+@keyframes slideUp {
+    from { transform: translateY(20px); opacity: 0; }
+    to { transform: translateY(0); opacity: 1; }
+}
+
+.selection-info {
+    font-size: 14px;
+    color: #374151;
+}
+
+.selection-divider {
+    color: #d1d5db;
+    font-weight: 300;
+}
+
+.btn-clear-selection {
+    background: none;
+    border: none;
+    color: #6b7280;
+    font-size: 14px;
+    cursor: pointer;
+    font-weight: 500;
+}
+.btn-clear-selection:hover { color: #111827; }
+
+.btn-bulk-delete {
+    background: #dc2626;
+    color: white;
+    border: none;
+    padding: 8px 16px;
+    border-radius: 8px;
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    transition: background 0.2s;
+}
+.btn-bulk-delete:hover { background: #b91c1c; }
+
+.trash-icon { font-size: 14px; }

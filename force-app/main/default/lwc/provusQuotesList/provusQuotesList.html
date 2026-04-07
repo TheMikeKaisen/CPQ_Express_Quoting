@@ -193,6 +193,15 @@
 
     </div>
 
+    <!-- CLONE QUOTE MODAL -->
+    <c-provus-clone-quote-modal
+        is-open={showCloneModal}
+        quote-id={cloneQuoteId}
+        quote-number={cloneQuoteNumber}
+        onclose={handleCloneModalClose}
+        oncloned={handleQuoteCloned}>
+    </c-provus-clone-quote-modal>
+
     <!-- CREATE QUOTE MODAL -->
     <c-provus-create-quote-modal
         is-open={showCreateModal}

@@ -175,21 +175,31 @@ export default class ProvusQuotesList extends LightningElement {
         }
     }
 
+    @track showCloneModal = false;
+    @track cloneQuoteId;
+    @track cloneQuoteNumber;
+
     handleClone(event) {
         event.stopPropagation();
-        const quoteId = event.currentTarget.dataset.id;
-        // eslint-disable-next-line no-alert
-        if (!confirm('Clone this quote?')) return;
+        this.cloneQuoteId = event.currentTarget.dataset.id;
+        const quote = this.allQuotes.find(q => q.Id === this.cloneQuoteId);
+        this.cloneQuoteNumber = quote ? quote.QuoteNumber : '';
+        this.showCloneModal = true;
+    }
 
-        cloneQuote({ quoteId: quoteId })
-            .then(() => {
-                if (this.wiredQuotesResult) {
-                    return refreshApex(this.wiredQuotesResult);
-                }
-            })
-            .catch(error => {
-                console.error('Clone error:', error);
-            });
+    handleCloneModalClose() {
+        this.showCloneModal = false;
+    }
+
+    handleQuoteCloned(event) {
+        const newQuoteId = event.detail.quoteId;
+        if (this.wiredQuotesResult) {
+            refreshApex(this.wiredQuotesResult);
+        }
+        // Optionally navigate to the new quote
+        this.dispatchEvent(new CustomEvent('viewquote', {
+            detail: { quoteId: newQuoteId }
+        }));
     }
 
     handleDelete(event) {

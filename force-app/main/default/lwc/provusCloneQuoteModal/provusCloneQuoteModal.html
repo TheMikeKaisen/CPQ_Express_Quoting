@@ -1,0 +1,40 @@
+<template>
+    <template if:true={isOpen}>
+        <div class="modal-overlay" onclick={handleClose}></div>
+        <div class="modal-box">
+            <div class="modal-header">
+                <div>
+                    <h2 class="modal-title">Clone Quote</h2>
+                    <p class="modal-subtitle">
+                        Clone quote "{quoteNumber}" to create a duplicate with all its related data.
+                        Optionally select a different account for the cloned quote.
+                    </p>
+                </div>
+                <button class="close-btn" onclick={handleClose}>✕</button>
+            </div>
+
+            <div class="modal-body">
+                <div class="form-group">
+                    <label class="form-label">Clone to Account (optional)</label>
+                    <select class="form-select" onchange={handleAccountChange}>
+                        <option value="">Keep original account...</option>
+                        <template for:each={accountOptions} for:item="acc">
+                            <option key={acc.Id} value={acc.Id}>{acc.Name}</option>
+                        </template>
+                    </select>
+                </div>
+
+                <template if:true={errorMessage}>
+                    <div class="error-msg">{errorMessage}</div>
+                </template>
+            </div>
+
+            <div class="modal-footer">
+                <button class="btn-cancel" onclick={handleClose}>Cancel</button>
+                <button class="btn-clone" onclick={handleClone} disabled={isCloning}>
+                    {cloneButtonLabel}
+                </button>
+            </div>
+        </div>
+    </template>
+</template>

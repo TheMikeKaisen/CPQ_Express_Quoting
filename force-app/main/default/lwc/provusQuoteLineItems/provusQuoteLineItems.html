@@ -23,7 +23,9 @@
             <table class="items-table">
                 <thead>
                     <tr>
-                        <th class="col-check"><input type="checkbox" /></th>
+                        <th class="col-check">
+                            <input type="checkbox" onchange={handleSelectAll} checked={isAllSelected} />
+                        </th>
                         <th class="col-drag"></th>
                         <th class="col-name">Name</th>
                         <th class="col-task">Task</th>
@@ -65,7 +67,9 @@
                                 ondragleave={handleDragLeave}
                                 ondrop={handleDrop}>
                                 
-                                <td><input type="checkbox" /></td>
+                                <td class="check-col">
+                                    <input type="checkbox" data-phase={row.phaseName} onchange={handleSelectPhase} checked={row.phaseSelected} />
+                                </td>
                                 <td class="drag-cell">⠿</td>
                                 <td colspan="9" class="phase-name-cell">
                                     <span class="chevron-btn" data-phase={row.phaseName} onclick={handleTogglePhase}>
@@ -87,7 +91,9 @@
                                 data-id={row.record.Id}
                                 ondragstart={handleDragStart}>
                                 
-                                <td class="check-col"><input type="checkbox" /></td>
+                                <td class="check-col">
+                                    <input type="checkbox" data-id={row.record.Id} onchange={handleSelectItem} checked={row.record.selected} />
+                                </td>
                                 <td class="drag-cell">⠿</td>
                                 <td class="name-cell">
                                     <div class="name-content">
@@ -156,6 +162,25 @@
                 </tfoot>
             </table>
         </div>
+
+        <!-- FLOATING SELECTION BAR -->
+        <template if:true={hasSelection}>
+            <div class="selection-bar-container">
+                <div class="selection-bar">
+                    <div class="selection-info">
+                        <strong>{selectedCount}</strong> selected
+                    </div>
+                    <div class="selection-divider">|</div>
+                    <button class="btn-clear-selection" onclick={handleClearSelection}>
+                        Clear
+                    </button>
+                    <button class="btn-bulk-delete" onclick={handleBulkDelete}>
+                        <span class="trash-icon">🗑️</span> Delete
+                    </button>
+                </div>
+            </div>
+        </template>
+    </div>
 
     </div>
 

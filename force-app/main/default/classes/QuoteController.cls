@@ -109,12 +109,12 @@ public with sharing class QuoteController {
 
     // ── Clone quote ───────────────────────────────────────────────────────
     @AuraEnabled
-    public static Id cloneQuote(Id quoteId) {
-        // Get original quote
+    public static Id cloneQuote(Id quoteId, Id accountId) {
+        // Get original quote with Phase List for proper structure
         Quote original = [
-            SELECT Id, OpportunityId, Name, Description,
+            SELECT Id, OpportunityId, AccountId, Name, Description,
                    Status, Start_Date__c, End_Date__c,
-                   Time_Period__c, Discount
+                   Time_Period__c, Discount, Phase_List__c
             FROM Quote
             WHERE Id = :quoteId
             LIMIT 1
@@ -122,8 +122,28 @@ public with sharing class QuoteController {
 
         // Create clone
         Quote cloned = original.clone(false, true, false, false);
-        cloned.Name   = 'Copy of ' + original.Name;
+        cloned.Name   = 'Copy of ' + (original.Name != null ? original.Name : 'Quote');
         cloned.Status = 'Draft'; // clone always starts as Draft
+        
+        // Target a different account if provided
+        if (accountId != null) {
+            
+            // If we change Account and it's Master-Detail to Opportunity,
+            // we should try to find an Opportunity for the target account.
+            List<Opportunity> targetOpps = [
+                SELECT Id FROM Opportunity 
+                WHERE AccountId = :accountId 
+                ORDER BY LastModifiedDate DESC 
+                LIMIT 1
+            ];
+            
+            if (!targetOpps.isEmpty()) {
+                cloned.OpportunityId = targetOpps[0].Id;
+            } else {
+                throw new AuraHandledException('No Opportunity found for the target Account. Quotes must be linked to an Opportunity belonging to the Account.');
+            }
+        }
+
         insert cloned;
 
         // Clone line items too
