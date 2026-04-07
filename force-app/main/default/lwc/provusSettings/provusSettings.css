@@ -449,3 +449,12 @@
     background: #93c5fd;
     cursor: not-allowed;
 }
+.success-msg {
+    background: #d1fae5;
+    color: #065f46;
+    padding: 10px 14px;
+    border-radius: 8px;
+    font-size: 12px;
+    border: 1px solid #6ee7b7;
+    margin-top: 8px;
+}

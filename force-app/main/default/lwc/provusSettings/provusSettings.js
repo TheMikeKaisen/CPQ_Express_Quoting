@@ -9,7 +9,6 @@ import createUser from
 import deactivateUser from
     '@salesforce/apex/UserController.deactivateUser';
 
-// Avatar colours for initials
 const AVATAR_COLORS = [
     '#4f46e5', '#7c3aed', '#db2777',
     '#ea580c', '#16a34a', '#0891b2',
@@ -18,27 +17,24 @@ const AVATAR_COLORS = [
 
 export default class ProvusSettings extends LightningElement {
 
-    @track activeTab     = 'users'; // default to users tab
+    @track activeTab     = 'users';
     @track showModal     = false;
     @track isLoading     = true;
     @track isCreating    = false;
     @track errorMessage  = '';
+    @track successMessage = '';
 
-    // Stats
     @track totalSeats     = 20;
     @track usedSeats      = 0;
     @track availableSeats = 20;
+    @track allUsers       = [];
 
-    // Users list
-    @track allUsers = [];
-
-    // Form data
     @track formData = {
         firstName: '',
         lastName:  '',
         email:     '',
         username:  '',
-        role:      'User' // default role
+        role:      'User'
     };
 
     wiredUsersResult = undefined;
@@ -49,19 +45,18 @@ export default class ProvusSettings extends LightningElement {
         this.wiredUsersResult = result;
         this.isLoading = false;
         if (result.data) {
-            this.allUsers = result.data;
+            this.allUsers       = result.data;
             this.usedSeats      = result.data.length;
             this.availableSeats = this.totalSeats -
                                   this.usedSeats;
-        } else if (result.error) {
+        }
+        if (result.error) {
             console.error('Users error:', result.error);
-            this.isLoading = false;
         }
     }
 
-    // ── Wire stats ────────────────────────────────────────────────────────
     @wire(getUserStats)
-    wiredStats({ data, error }) {
+    wiredStats({ data }) {
         if (data) {
             this.totalSeats     = data.totalSeats;
             this.usedSeats      = data.usedSeats;
@@ -69,7 +64,7 @@ export default class ProvusSettings extends LightningElement {
         }
     }
 
-    // ── Build user rows with display helpers ──────────────────────────────
+    // ── User rows ─────────────────────────────────────────────────────────
     get userRows() {
         return this.allUsers.map((u, index) => {
             const initials = this.getInitials(
@@ -78,21 +73,19 @@ export default class ProvusSettings extends LightningElement {
                 index % AVATAR_COLORS.length];
             const role     = this.getRoleFromProfile(
                 u.Profile ? u.Profile.Name : '');
-
             return {
                 ...u,
                 initials,
-                avatarClass: 'user-avatar',
-                avatarStyle: `background-color:${color}`,
-                roleDisplay:     role,
-                roleBadgeClass:  this.getRoleBadgeClass(role),
+                avatarClass:  'user-avatar',
+                avatarStyle:  `background-color:${color}`,
+                roleDisplay:      role,
+                roleBadgeClass:   this.getRoleBadgeClass(role),
                 lastActiveDisplay: this.getLastActive(
                     u.LastLoginDate)
             };
         });
     }
 
-    // ── Helpers ───────────────────────────────────────────────────────────
     getInitials(firstName, lastName) {
         const f = firstName ? firstName.charAt(0) : '';
         const l = lastName  ? lastName.charAt(0)  : '';
@@ -123,9 +116,8 @@ export default class ProvusSettings extends LightningElement {
         const diffMins = Math.floor(diffMs / 60000);
         const diffHrs  = Math.floor(diffMins / 60);
         const diffDays = Math.floor(diffHrs / 24);
-
         if (diffMins < 2)   return 'Just now';
-        if (diffMins < 60)  return diffMins + ' minutes ago';
+        if (diffMins < 60)  return diffMins + ' mins ago';
         if (diffHrs < 24)   return diffHrs + ' hours ago';
         if (diffDays === 1) return '1 day ago';
         return diffDays + ' days ago';
@@ -139,9 +131,8 @@ export default class ProvusSettings extends LightningElement {
     get showIntegrations() {
         return this.activeTab === 'integrations';
     }
-    get showUsers()        { return this.activeTab === 'users'; }
+    get showUsers() { return this.activeTab === 'users'; }
 
-    // ── Tab CSS classes ───────────────────────────────────────────────────
     get generalNavClass() {
         return this.activeTab === 'general'
             ? 'nav-item nav-active' : 'nav-item';
@@ -160,30 +151,23 @@ export default class ProvusSettings extends LightningElement {
     }
 
     // ── Role selection ────────────────────────────────────────────────────
-    get isAdminSelected()   {
-        return this.formData.role === 'Admin';
-    }
+    get isAdminSelected()   { return this.formData.role === 'Admin'; }
     get isManagerSelected() {
         return this.formData.role === 'Manager';
     }
-    get isUserSelected()    {
-        return this.formData.role === 'User';
-    }
+    get isUserSelected()    { return this.formData.role === 'User'; }
 
     get adminOptionClass() {
         return this.formData.role === 'Admin'
-            ? 'role-option role-option-selected'
-            : 'role-option';
+            ? 'role-option role-option-selected' : 'role-option';
     }
     get managerOptionClass() {
         return this.formData.role === 'Manager'
-            ? 'role-option role-option-selected'
-            : 'role-option';
+            ? 'role-option role-option-selected' : 'role-option';
     }
     get userOptionClass() {
         return this.formData.role === 'User'
-            ? 'role-option role-option-selected'
-            : 'role-option';
+            ? 'role-option role-option-selected' : 'role-option';
     }
 
     // ── Handlers ──────────────────────────────────────────────────────────
@@ -192,13 +176,16 @@ export default class ProvusSettings extends LightningElement {
     }
 
     handleAddMember() {
-        this.showModal = true;
+        this.showModal      = true;
+        this.errorMessage   = '';
+        this.successMessage = '';
     }
 
     handleModalClose() {
-        this.showModal    = false;
-        this.errorMessage = '';
-        this.formData     = {
+        this.showModal      = false;
+        this.errorMessage   = '';
+        this.successMessage = '';
+        this.formData = {
             firstName: '', lastName: '',
             email: '', username: '', role: 'User'
         };
@@ -212,13 +199,20 @@ export default class ProvusSettings extends LightningElement {
         };
     }
 
-    // Email change → auto-fill username
+    // ── KEY FIX: Email fills username with unique suffix ──────────────────
     handleEmailChange(event) {
         const email = event.target.value;
+
+        // Auto generate unique username
+        // Add .provusscratch to make it globally unique
+        const username = email.includes('@')
+            ? email.replace('@', '.provusscratch@')
+            : email;
+
         this.formData = {
             ...this.formData,
             email:    email,
-            username: email // auto-fill username with email
+            username: username
         };
     }
 
@@ -256,20 +250,28 @@ export default class ProvusSettings extends LightningElement {
             this.errorMessage = 'Please select a role.';
             return false;
         }
-        // Basic email format check
         const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
         if (!emailRegex.test(this.formData.email)) {
             this.errorMessage = 'Please enter a valid email.';
+            return false;
+        }
+        // Username must also be email format
+        if (!emailRegex.test(this.formData.username)) {
+            this.errorMessage =
+                'Username must be in email format ' +
+                '(e.g. john.provusscratch@company.com)';
             return false;
         }
         this.errorMessage = '';
         return true;
     }
 
-    // ── Create user ───────────────────────────────────────────────────────
+    // ── Create ────────────────────────────────────────────────────────────
     handleCreate() {
         if (!this.validate()) return;
-        this.isCreating = true;
+        this.isCreating     = true;
+        this.errorMessage   = '';
+        this.successMessage = '';
 
         createUser({
             firstName: this.formData.firstName,
@@ -278,41 +280,49 @@ export default class ProvusSettings extends LightningElement {
             username:  this.formData.username,
             role:      this.formData.role
         })
-        .then(() => {
-            this.handleModalClose();
+        .then(result => {
+            // Show success message
+            this.successMessage = result;
+            // Refresh user list
             if (this.wiredUsersResult) {
                 refreshApex(this.wiredUsersResult);
             }
+            // Close modal after 2 seconds
+            setTimeout(() => {
+                this.handleModalClose();
+            }, 2000);
         })
         .catch(error => {
             console.error('Create user error:', error);
             this.errorMessage = error.body
                 ? error.body.message
-                : 'Error creating user. Username may ' +
-                  'already exist or profile not found.';
+                : 'Error creating user.';
         })
         .finally(() => {
             this.isCreating = false;
         });
     }
 
-    // ── User action (deactivate) ──────────────────────────────────────────
+    // ── Deactivate ────────────────────────────────────────────────────────
     handleUserAction(event) {
         const userId = event.currentTarget.dataset.id;
         // eslint-disable-next-line no-alert
-        const action = prompt(
-            'Enter action: "deactivate" to remove user'
-        );
-        if (action === 'deactivate') {
-            deactivateUser({ userId: userId })
-            .then(() => {
-                if (this.wiredUsersResult) {
-                    refreshApex(this.wiredUsersResult);
-                }
-            })
-            .catch(error => {
-                console.error('Deactivate error:', error);
-            });
+        if (!confirm(
+            'Deactivate this user? ' +
+            'They will lose access to the system.')) {
+            return;
         }
+        deactivateUser({ userId: userId })
+        .then(() => {
+            if (this.wiredUsersResult) {
+                refreshApex(this.wiredUsersResult);
+            }
+        })
+        .catch(error => {
+            console.error('Deactivate error:', error);
+            // eslint-disable-next-line no-alert
+            alert('Error: ' + (error.body
+                ? error.body.message : error));
+        });
     }
 }

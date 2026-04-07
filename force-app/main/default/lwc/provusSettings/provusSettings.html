@@ -22,28 +22,13 @@
 
             <!-- LEFT: Settings nav -->
             <div class="settings-nav">
-                <div
-                    class={generalNavClass}
-                    data-tab="general"
-                    onclick={handleNavClick}>
+                <div class={generalNavClass} data-tab="general" onclick={handleNavClick}>
                     ⚙️ General
                 </div>
-                <div
-                    class={orgNavClass}
-                    data-tab="organization"
-                    onclick={handleNavClick}>
+                <div class={orgNavClass} data-tab="organization" onclick={handleNavClick}>
                     🏢 Organization
                 </div>
-                <div
-                    class={intNavClass}
-                    data-tab="integrations"
-                    onclick={handleNavClick}>
-                    🔗 Integrations
-                </div>
-                <div
-                    class={usersNavClass}
-                    data-tab="users"
-                    onclick={handleNavClick}>
+                <div class={usersNavClass} data-tab="users" onclick={handleNavClick}>
                     👥 Users
                 </div>
             </div>
@@ -93,9 +78,7 @@
                                     </p>
                                 </div>
                             </div>
-                            <button
-                                class="btn-add-member"
-                                onclick={handleAddMember}>
+                            <button class="btn-add-member" onclick={handleAddMember}>
                                 + Team Member
                             </button>
                         </div>
@@ -136,8 +119,7 @@
                                 <thead>
                                     <tr>
                                         <th class="col-check">
-                                            <input
-                                                type="checkbox" />
+                                            <input type="checkbox" />
                                         </th>
                                         <th>Name</th>
                                         <th>Email</th>
@@ -150,29 +132,22 @@
                                 <tbody>
                                     <template if:true={isLoading}>
                                         <tr>
-                                            <td colspan="7"
-                                                class="loading-cell">
+                                            <td colspan="7" class="loading-cell">
                                                 Loading users...
                                             </td>
                                         </tr>
                                     </template>
 
                                     <template if:false={isLoading}>
-                                        <template
-                                            for:each={userRows}
-                                            for:item="user">
-                                            <tr key={user.Id}
-                                                class="user-row">
+                                        <template for:each={userRows} for:item="user">
+                                            <tr key={user.Id} class="user-row">
                                                 <td>
-                                                    <input
-                                                        type="checkbox"/>
+                                                    <input type="checkbox" />
                                                 </td>
                                                 <td>
                                                     <div class="user-name-cell">
                                                         <!-- Avatar -->
-                                                        <div
-                                                            class={user.avatarClass}
-                                                            style={user.avatarStyle}>
+                                                        <div class={user.avatarClass} style={user.avatarStyle}>
                                                             {user.initials}
                                                         </div>
                                                         <span class="user-name">
@@ -184,8 +159,7 @@
                                                     {user.Email}
                                                 </td>
                                                 <td>
-                                                    <span
-                                                        class={user.roleBadgeClass}>
+                                                    <span class={user.roleBadgeClass}>
                                                         {user.roleDisplay}
                                                     </span>
                                                 </td>
@@ -200,9 +174,7 @@
                                                     {user.lastActiveDisplay}
                                                 </td>
                                                 <td>
-                                                    <button
-                                                        class="action-dots"
-                                                        data-id={user.Id}
+                                                    <button class="action-dots" data-id={user.Id}
                                                         onclick={handleUserAction}>
                                                         ···
                                                     </button>
@@ -225,8 +197,7 @@
 
     <!-- CREATE TEAM MEMBER MODAL -->
     <template if:true={showModal}>
-        <div class="modal-overlay"
-             onclick={handleModalClose}>
+        <div class="modal-overlay" onclick={handleModalClose}>
         </div>
         <div class="modal-box">
 
@@ -254,11 +225,7 @@
                         First Name
                         <span class="req">*</span>
                     </label>
-                    <input
-                        type="text"
-                        class="form-input"
-                        placeholder="Enter first name"
-                        onchange={handleFieldChange}
+                    <input type="text" class="form-input" placeholder="Enter first name" onchange={handleFieldChange}
                         data-field="firstName" />
                 </div>
 
@@ -268,11 +235,7 @@
                         Last Name
                         <span class="req">*</span>
                     </label>
-                    <input
-                        type="text"
-                        class="form-input"
-                        placeholder="Enter last name"
-                        onchange={handleFieldChange}
+                    <input type="text" class="form-input" placeholder="Enter last name" onchange={handleFieldChange}
                         data-field="lastName" />
                 </div>
 
@@ -282,12 +245,8 @@
                         Email
                         <span class="req">*</span>
                     </label>
-                    <input
-                        type="email"
-                        class="form-input"
-                        placeholder="Enter email address"
-                        onchange={handleEmailChange}
-                        data-field="email" />
+                    <input type="email" class="form-input" placeholder="Enter email address"
+                        onchange={handleEmailChange} data-field="email" />
                     <p class="field-hint">
                         Email will also be used as
                         the default username.
@@ -300,13 +259,8 @@
                         Username
                         <span class="req">*</span>
                     </label>
-                    <input
-                        type="text"
-                        class="form-input"
-                        placeholder="Enter username (email format)"
-                        value={formData.username}
-                        onchange={handleFieldChange}
-                        data-field="username" />
+                    <input type="text" class="form-input" placeholder="Enter username (email format)"
+                        value={formData.username} onchange={handleFieldChange} data-field="username" />
                     <p class="field-hint">
                         Must be in email format and be unique.
                         Defaults to the email address
@@ -326,15 +280,8 @@
                     </p>
 
                     <!-- Admin option -->
-                    <div
-                        class={adminOptionClass}
-                        onclick={handleRoleSelect}
-                        data-role="Admin">
-                        <input
-                            type="radio"
-                            name="role"
-                            value="Admin"
-                            checked={isAdminSelected}
+                    <div class={adminOptionClass} onclick={handleRoleSelect} data-role="Admin">
+                        <input type="radio" name="role" value="Admin" checked={isAdminSelected}
                             onchange={handleRoleChange} />
                         <div class="role-content">
                             <div class="role-name">Admin</div>
@@ -346,15 +293,8 @@
                     </div>
 
                     <!-- Manager option -->
-                    <div
-                        class={managerOptionClass}
-                        onclick={handleRoleSelect}
-                        data-role="Manager">
-                        <input
-                            type="radio"
-                            name="role"
-                            value="Manager"
-                            checked={isManagerSelected}
+                    <div class={managerOptionClass} onclick={handleRoleSelect} data-role="Manager">
+                        <input type="radio" name="role" value="Manager" checked={isManagerSelected}
                             onchange={handleRoleChange} />
                         <div class="role-content">
                             <div class="role-name">Manager</div>
@@ -367,15 +307,8 @@
                     </div>
 
                     <!-- User option -->
-                    <div
-                        class={userOptionClass}
-                        onclick={handleRoleSelect}
-                        data-role="User">
-                        <input
-                            type="radio"
-                            name="role"
-                            value="User"
-                            checked={isUserSelected}
+                    <div class={userOptionClass} onclick={handleRoleSelect} data-role="User">
+                        <input type="radio" name="role" value="User" checked={isUserSelected}
                             onchange={handleRoleChange} />
                         <div class="role-content">
                             <div class="role-name">User</div>
@@ -395,19 +328,20 @@
                         {errorMessage}
                     </div>
                 </template>
+                <!-- Add this AFTER the error-msg template -->
+                <template if:true={successMessage}>
+                    <div class="success-msg">
+                        ✅ {successMessage}
+                    </div>
+                </template>
 
             </div>
 
             <div class="modal-footer">
-                <button
-                    class="btn-cancel"
-                    onclick={handleModalClose}>
+                <button class="btn-cancel" onclick={handleModalClose}>
                     Cancel
                 </button>
-                <button
-                    class="btn-create"
-                    onclick={handleCreate}
-                    disabled={isCreating}>
+                <button class="btn-create" onclick={handleCreate} disabled={isCreating}>
                     <template if:true={isCreating}>
                         Creating...
                     </template>
