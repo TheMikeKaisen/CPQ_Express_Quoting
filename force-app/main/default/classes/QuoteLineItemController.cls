@@ -181,7 +181,22 @@ public with sharing class QuoteLineItemController {
             });
         }
 
+        // Calculate Subtotal (Unit Price * Quantity before discount)
+        List<Quote_Line_Item__c> items = [
+            SELECT Unit_Price__c, Quantity__c 
+            FROM Quote_Line_Item__c 
+            WHERE Quote__c = :quoteId
+        ];
+        
+        Decimal subtotal = 0;
+        for (Quote_Line_Item__c item : items) {
+            if (item.Unit_Price__c != null && item.Quantity__c != null) {
+                subtotal += (item.Unit_Price__c * item.Quantity__c);
+            }
+        }
+
         summary.put('grandTotal', grandTotal);
+        summary.put('subtotal', subtotal);
         return summary;
     }
 

@@ -14,26 +14,26 @@ const PAGE_SIZE = 10;
 export default class ProvusQuotesList extends LightningElement {
 
     @track showCreateModal = false;
-    @track statusFilter    = 'All';
-    @track accountFilter   = 'All';
-    @track searchTerm      = '';
-    @track currentPage     = 1;
+    @track statusFilter = 'All';
+    @track accountFilter = 'All';
+    @track searchTerm = '';
+    @track currentPage = 1;
 
     // ── IMPORTANT: initialize to undefined ───────────────────────────────
-    wiredQuotesResult      = undefined;
-    @track allQuotes       = [];
-    @track accountOptions  = [];
+    wiredQuotesResult = undefined;
+    @track allQuotes = [];
+    @track accountOptions = [];
 
     // ── Wire accounts for filter ──────────────────────────────────────────
     @wire(getAccountsForFilter)
     wiredAccounts({ data, error }) {
-        if (data)  this.accountOptions = data;
+        if (data) this.accountOptions = data;
         if (error) console.error('Accounts error:', error);
     }
 
     // ── Wire quotes ───────────────────────────────────────────────────────
     @wire(getQuotes, {
-        statusFilter:  '$statusFilter',
+        statusFilter: '$statusFilter',
         accountFilter: '$accountFilter'
     })
     wiredQuotes(result) {
@@ -96,8 +96,8 @@ export default class ProvusQuotesList extends LightningElement {
     }
 
     get isFirstPage() { return this.currentPage === 1; }
-    get isLastPage()  { return this.currentPage >= this.totalPages; }
-    get isEmpty()     { return this.filteredQuotes.length === 0; }
+    get isLastPage() { return this.currentPage >= this.totalPages; }
+    get isEmpty() { return this.filteredQuotes.length === 0; }
 
     get startRecord() {
         return this.totalRecords === 0
@@ -114,24 +114,24 @@ export default class ProvusQuotesList extends LightningElement {
 
     get paginatedQuotes() {
         const start = (this.currentPage - 1) * PAGE_SIZE;
-        const end   = start + PAGE_SIZE;
+        const end = start + PAGE_SIZE;
         return this.filteredQuotes.slice(start, end);
     }
 
     // ── Handlers ──────────────────────────────────────────────────────────
     handleSearch(event) {
-        this.searchTerm  = event.target.value;
+        this.searchTerm = event.target.value;
         this.currentPage = 1;
     }
 
     handleStatusFilter(event) {
         this.statusFilter = event.target.value;
-        this.currentPage  = 1;
+        this.currentPage = 1;
     }
 
     handleAccountFilter(event) {
         this.accountFilter = event.target.value;
-        this.currentPage   = 1;
+        this.currentPage = 1;
     }
 
     handleNew() {

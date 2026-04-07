@@ -215,34 +215,33 @@ public with sharing class QuoteController {
     }
 
     // ── Recalculate quote totals from line items ──────────────────────────
-    @AuraEnabled
+@AuraEnabled
 public static void recalculateQuoteTotals(Id quoteId) {
-    // 1. Get all line items for this quote
     List<Quote_Line_Item__c> qlis = [
         SELECT Total_Price__c, Cost__c, Quantity__c 
         FROM Quote_Line_Item__c 
         WHERE Quote__c = :quoteId
     ];
 
-    Decimal totalPrice = 0;
+    Decimal revenue = 0;
     Decimal totalCost = 0;
 
-    // 2. Loop through and do the math
     for(Quote_Line_Item__c item : qlis) {
-        if(item.Total_Price__c != null) totalPrice += item.Total_Price__c;
+        if(item.Total_Price__c != null) revenue += item.Total_Price__c;
         if(item.Cost__c != null && item.Quantity__c != null) {
             totalCost += (item.Cost__c * item.Quantity__c);
         }
     }
 
-    // 3. Calculate Margins
-    Decimal margin = totalPrice - totalCost;
-    Decimal marginPercent = (totalPrice > 0) ? (margin / totalPrice) * 100 : 0;
-
-    // 4. Update the Quote
     Quote q = new Quote(Id = quoteId);
-    q.Margin_Amount__c = margin;
-    q.Margin_Percent__c = marginPercent;
+    // We store the revenue in Margin_Amount__c + Cost, 
+    // but we need a place to store the actual Total Revenue.
+    q.Margin_Amount__c = revenue - totalCost;
+    q.Margin_Percent__c = (revenue > 0) ? (q.Margin_Amount__c / revenue) * 100 : 0;
+    
+    // IMPORTANT: If you have custom fields for Total/Subtotal, map them here:
+    // q.Custom_Total_Amount__c = revenue; 
+    
     update q;
 }
 }

@@ -1,5 +1,6 @@
 import { LightningElement, api, track, wire } from 'lwc';
 import { refreshApex } from '@salesforce/apex';
+import { ShowToastEvent } from 'lightning/platformShowToastEvent';
 import getLineItems from
     '@salesforce/apex/QuoteLineItemController.getLineItems';
 import updateLineItem from
@@ -81,6 +82,27 @@ export default class ProvusQuoteLineItems extends LightningElement {
         const itemId = event.currentTarget.dataset.id;
         const field  = event.currentTarget.dataset.field;
         const value  = event.target.value;
+
+        // Discount validation
+        if (field === 'Discount_Percent__c') {
+            const discount = parseFloat(value);
+            if (discount < 0 || discount > 100) {
+                this.dispatchEvent(
+                    new ShowToastEvent({
+                        title: 'Invalid Discount',
+                        message: 'Discount percentage must be between 0 and 100.',
+                        variant: 'error'
+                    })
+                );
+                
+                // Revert input field visually to the last known valid state
+                const item = this.lineItems.find(i => i.Id === itemId);
+                if (item) {
+                    event.target.value = item.Discount_Percent__c || 0;
+                }
+                return;
+            }
+        }
 
         updateLineItem({
             item: {
