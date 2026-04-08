@@ -32,11 +32,13 @@ export default class ProvusQuoteSummary extends LightningElement {
     // ── Quote metadata getters ────────────────────────────────────────────
     get opportunityName() {
         return this.quote && this.quote.Opportunity
-            ? this.quote.Opportunity.Name : 'N/A';
+            ? this.quote.Opportunity.Name : 'Not selected';
     }
     get accountName() {
-        return this.quote && this.quote.Account
-            ? this.quote.Account.Name : '-';
+        if (!this.quote) return '-';
+        if (this.quote.Account) return this.quote.Account.Name;
+        if (this.quote.QuoteAccount) return this.quote.QuoteAccount.Name;
+        return '-';
     }
     get createdByName() {
         return this.quote && this.quote.CreatedBy

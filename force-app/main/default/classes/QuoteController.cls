@@ -10,6 +10,7 @@ public with sharing class QuoteController {
         String query = 'SELECT Id, QuoteNumber, Name, Status, ' +
                        'OpportunityId, Opportunity.Name, ' +
                        'AccountId, Account.Name, ' +
+                       'QuoteAccountId, QuoteAccount.Name, ' +
                        'CreatedById, CreatedBy.Name, CreatedDate, ' +
                        'TotalPrice, GrandTotal, Discount, ' +
                        'Subtotal, ExpirationDate, ' +
@@ -31,8 +32,7 @@ public with sharing class QuoteController {
         // Add account filter if provided
         if (String.isNotBlank(accountFilter) &&
             accountFilter != 'All') {
-            conditions.add('AccountId = \'' +
-                     String.escapeSingleQuotes(accountFilter) + '\'');
+            conditions.add('(AccountId = \'' + String.escapeSingleQuotes(accountFilter) + '\' OR QuoteAccountId = \'' + String.escapeSingleQuotes(accountFilter) + '\')');
         }
 
         if (!conditions.isEmpty()) {
@@ -64,6 +64,7 @@ public with sharing class QuoteController {
             SELECT Id, QuoteNumber, Name, Status,
                    OpportunityId, Opportunity.Name,
                    AccountId, Account.Name,
+                   QuoteAccountId, QuoteAccount.Name,
                    CreatedById, CreatedBy.Name,
                    LastModifiedById, LastModifiedBy.Name,
                    CreatedDate, LastModifiedDate,
@@ -83,25 +84,28 @@ public with sharing class QuoteController {
     @AuraEnabled
     public static Id createQuote(
             Id opportunityId,
+            Id accountId,
             String description,
             Date startDate,
             Date endDate,
             String timePeriod) {
 
         try {
-            // Get Account from Opportunity
-            Opportunity opp = [
-                SELECT Id, AccountId, Pricebook2Id
-                FROM Opportunity
-                WHERE Id = :opportunityId
-                LIMIT 1
-            ];
-
             Quote q = new Quote();
-            q.OpportunityId  = opportunityId;
-            // Inherit Pricebook from Opportunity if present
-            if (opp.Pricebook2Id != null) {
-                q.Pricebook2Id = opp.Pricebook2Id;
+            q.put('QuoteAccountId', accountId);
+            
+            if (opportunityId != null) {
+                q.OpportunityId  = opportunityId;
+                // Inherit Pricebook from Opportunity if present
+                Opportunity opp = [
+                    SELECT Id, Pricebook2Id
+                    FROM Opportunity
+                    WHERE Id = :opportunityId
+                    LIMIT 1
+                ];
+                if (opp != null && opp.Pricebook2Id != null) {
+                    q.Pricebook2Id = opp.Pricebook2Id;
+                }
             }
             
             q.Name           = 'New Quote';   // user can rename later
@@ -112,7 +116,7 @@ public with sharing class QuoteController {
             q.Time_Period__c = timePeriod;
 
             insert q;
-            return q.Id; // return Id so LWC can navigate to detail
+            return q.Id; 
         } catch (Exception e) {
             throw new AuraHandledException('Quote Creation Failed: ' + e.getMessage());
         }

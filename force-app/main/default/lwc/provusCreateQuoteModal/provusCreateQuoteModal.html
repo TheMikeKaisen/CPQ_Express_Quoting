@@ -20,19 +20,15 @@
             <!-- Body -->
             <div class="modal-body">
 
-                <!-- Opportunity REQUIRED -->
+                <!-- Opportunity (Optional) -->
                 <div class="form-group">
-                    <label class="form-label">
-                        Opportunity
-                        <span class="required">*</span>
-                    </label>
+                    <label class="form-label">Opportunity</label>
                     <select
                         class="form-select"
                         onchange={handleOpportunityChange}>
                         <option value="">
                             Select an opportunity...
                         </option>
-                        <!-- FIX: use opportunityList not opportunities -->
                         <template for:each={opportunityList}
                                   for:item="opp">
                             <option
@@ -44,15 +40,37 @@
                     </select>
                 </div>
 
-                <!-- Account auto-filled -->
+                <!-- Account (Required) -->
                 <div class="form-group">
-                    <label class="form-label">Account</label>
-                    <input
-                        type="text"
-                        class="form-input form-input-readonly"
-                        value={accountName}
-                        placeholder="Auto-filled from Opportunity"
-                        readonly />
+                    <label class="form-label">
+                        Account
+                        <span class="required">*</span>
+                    </label>
+                    <template if:true={isAccountDisabled}>
+                        <input
+                            type="text"
+                            class="form-input"
+                            value={accountName}
+                            disabled />
+                    </template>
+                    <template if:false={isAccountDisabled}>
+                        <select
+                            class="form-select"
+                            value={accountId}
+                            onchange={handleAccountChange}>
+                            <option value="">
+                                Select an account...
+                            </option>
+                            <template for:each={accountList}
+                                      for:item="acc">
+                                <option
+                                    key={acc.Id}
+                                    value={acc.Id}>
+                                    {acc.Name}
+                                </option>
+                            </template>
+                        </select>
+                    </template>
                 </div>
 
                 <!-- Description -->

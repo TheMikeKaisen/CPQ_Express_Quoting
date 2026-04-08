@@ -1,10 +1,8 @@
 import { LightningElement, api, track, wire } from 'lwc';
-import getOpportunities from
-    '@salesforce/apex/OpportunityController.getOpportunities';
-import getOpportunityById from
-    '@salesforce/apex/OpportunityController.getOpportunityById';
-import createQuote from
-    '@salesforce/apex/QuoteController.createQuote';
+import getOpportunities from '@salesforce/apex/OpportunityController.getOpportunities';
+import getOpportunityById from '@salesforce/apex/OpportunityController.getOpportunityById';
+import getAccounts from '@salesforce/apex/AccountController.getAccounts';
+import createQuote from '@salesforce/apex/QuoteController.createQuote';
 
 export default class ProvusCreateQuoteModal extends LightningElement {
 
@@ -25,6 +23,7 @@ export default class ProvusCreateQuoteModal extends LightningElement {
 
     // ── FIX: store opportunities as a tracked array ───────────────────────
     @track opportunityList = [];
+    @track accountList = [];
 
     // ── FIX: wire result handled properly ────────────────────────────────
     @wire(getOpportunities)
@@ -37,33 +36,57 @@ export default class ProvusCreateQuoteModal extends LightningElement {
         }
     }
 
+    @wire(getAccounts, { typeFilter: 'All', industryFilter: 'All' })
+    wiredAccounts({ data, error }) {
+        if (data) {
+            this.accountList = data;
+        } else if (error) {
+            console.error('Error loading accounts:', error);
+            this.accountList = [];
+        }
+    }
+
     // Character count
     get descriptionLength() {
         return this.description ? this.description.length : 0;
     }
 
+    get isAccountDisabled() {
+        return !!this.opportunityId;
+    }
+
     // ── Opportunity selected → auto fill account ──────────────────────────
     handleOpportunityChange(event) {
         this.opportunityId = event.target.value;
-        this.accountName   = '';
-        this.accountId     = '';
 
-        if (!this.opportunityId) return;
+        if (!this.opportunityId) {
+            this.accountId   = '';
+            this.accountName = '';
+            return;
+        }
 
-        // ── FIX: use oppId to match Apex param name ───────────────────
-        getOpportunityById({ oppId: this.opportunityId })
-            .then(opp => {
-                if (opp && opp.Account) {
-                    this.accountName = opp.Account.Name;
-                    this.accountId   = opp.AccountId;
-                } else if (opp) {
-                    this.accountId   = opp.AccountId;
-                    this.accountName = 'Account loaded';
-                }
-            })
-            .catch(error => {
-                console.error('Error fetching opportunity:', error);
-            });
+        // ── Try to find Account info in the already-loaded list first ──────
+        const selectedOpp = this.opportunityList.find(opp => opp.Id === this.opportunityId);
+        if (selectedOpp && selectedOpp.AccountId) {
+            this.accountId   = selectedOpp.AccountId;
+            this.accountName = selectedOpp.Account ? selectedOpp.Account.Name : 'Account loaded';
+        } else {
+            // Fallback to Apex if not found in list for some reason
+            getOpportunityById({ oppId: this.opportunityId })
+                .then(opp => {
+                    if (opp) {
+                        this.accountId   = opp.AccountId;
+                        this.accountName = opp.Account ? opp.Account.Name : 'Account loaded';
+                    }
+                })
+                .catch(error => {
+                    console.error('Error fetching opportunity:', error);
+                });
+        }
+    }
+
+    handleAccountChange(event) {
+        this.accountId = event.target.value;
     }
 
     handleDescriptionChange(event) {
@@ -84,8 +107,8 @@ export default class ProvusCreateQuoteModal extends LightningElement {
 
     // ── Validation ────────────────────────────────────────────────────────
     validate() {
-        if (!this.opportunityId) {
-            this.errorMessage = 'Please select an Opportunity.';
+        if (!this.accountId) {
+            this.errorMessage = 'Please select an Account.';
             return false;
         }
         if (!this.startDate) {
@@ -105,13 +128,15 @@ export default class ProvusCreateQuoteModal extends LightningElement {
         if (!this.validate()) return;
 
         this.isCreating = true;
+        this.errorMessage = '';
 
         createQuote({
-            opportunityId: this.opportunityId,
-            description:   this.description   || '',
-            startDate:     this.startDate,
-            endDate:       this.endDate        || null,
-            timePeriod:    this.timePeriod
+            opportunityId: this.opportunityId || null,
+            accountId: this.accountId || null,
+            description: this.description,
+            startDate: this.startDate || null,
+            endDate: this.endDate || null,
+            timePeriod: this.timePeriod
         })
         .then(newQuoteId => {
             this.dispatchEvent(new CustomEvent('quotecreated', {

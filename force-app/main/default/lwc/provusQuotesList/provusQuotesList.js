@@ -63,9 +63,9 @@ export default class ProvusQuotesList extends LightningElement {
                     ...q,
                     rowNumber: index + 1,
                     opportunityName: q.Opportunity
-                        ? q.Opportunity.Name : 'N/A',
+                        ? q.Opportunity.Name : 'Not selected',
                     accountName: q.Account
-                        ? q.Account.Name : '-',
+                        ? q.Account.Name : (q.QuoteAccount ? q.QuoteAccount.Name : '-'),
                     createdByName: q.CreatedBy
                         ? q.CreatedBy.Name : '-',
                     formattedDate: q.CreatedDate
