@@ -360,9 +360,9 @@ public with sharing class QuoteLineItemController {
             });
         }
 
-        // Subtotal = sum of (Unit Price x Quantity x Duration) before discount
+        // Subtotal = sum of (Unit Price x Quantity x Duration x HoursPerPeriod) before discount
         List<Quote_Line_Item__c> items = [
-            SELECT Unit_Price__c, Quantity__c, Duration__c, Billing_Unit__c
+            SELECT Unit_Price__c, Quantity__c, Duration__c, Billing_Unit__c, Quote__r.Time_Period__c
             FROM Quote_Line_Item__c
             WHERE Quote__c = :quoteId
         ];
@@ -370,9 +370,20 @@ public with sharing class QuoteLineItemController {
         Decimal subtotal = 0;
         for (Quote_Line_Item__c item : items) {
             if (item.Unit_Price__c != null) {
-                Decimal qty      = item.Quantity__c  != null ? item.Quantity__c  : 1;
-                Decimal dur      = item.Duration__c  != null ? item.Duration__c  : 1;
-                subtotal += (item.Unit_Price__c * qty * dur);
+                Decimal qty = item.Quantity__c != null ? item.Quantity__c : 1;
+                Decimal dur = item.Duration__c != null ? item.Duration__c : 1;
+                Decimal up  = item.Unit_Price__c;
+                String  bu  = item.Billing_Unit__c;
+
+                if (bu == 'Hour') {
+                    Decimal hrs = getHoursPerPeriod(item.Quote__r.Time_Period__c);
+                    subtotal += (up * hrs * dur * qty);
+                } else if (bu == 'Day') {
+                    subtotal += (up * dur * qty);
+                } else {
+                    // Each
+                    subtotal += (up * qty);
+                }
             }
         }
 

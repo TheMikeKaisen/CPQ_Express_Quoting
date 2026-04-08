@@ -1,7 +1,25 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <CustomField xmlns="http://soap.sforce.com/2006/04/metadata">
     <fullName>Margin__c</fullName>
-    <formula>Total_Price__c - ( Cost__c *  Quantity__c )</formula>
+    <formula>
+        Line_Total__c - 
+        (
+            Cost__c * Quantity__c * 
+            IF(ISPICKVAL(Billing_Unit__c, 'Hour'),
+                CASE(TEXT(Quote__r.Time_Period__c),
+                    'Days', 8,
+                    'Weeks', 40,
+                    'Months', 160,
+                    'Quarters', 480,
+                    8
+                ) * Duration__c,
+                IF(ISPICKVAL(Billing_Unit__c, 'Day'),
+                    Duration__c,
+                    1
+                )
+            )
+        )
+    </formula>
     <formulaTreatBlanksAs>BlankAsZero</formulaTreatBlanksAs>
     <label>Margin</label>
     <precision>18</precision>

@@ -277,47 +277,75 @@ public with sharing class QuoteController {
     }
 
     // ── Recalculate quote totals from line items ──────────────────────────
-@AuraEnabled
-public static void recalculateQuoteTotals(Id quoteId) {
-    List<Quote_Line_Item__c> qlis = [
-        SELECT Line_Total__c, Unit_Price__c, Cost__c, Quantity__c, Duration__c, End_Date__c
-        FROM Quote_Line_Item__c
-        WHERE Quote__c = :quoteId
-    ];
+    @AuraEnabled
+    public static void recalculateQuoteTotals(Id quoteId) {
+        // Fetch quote first — need Time_Period__c for hour-based calculations
+        Quote q = [SELECT Id, End_Date__c, Time_Period__c FROM Quote WHERE Id = :quoteId LIMIT 1];
+        String timePeriod = q.Time_Period__c;
 
-    Decimal revenue = 0;
-    Decimal subtotal = 0;
-    Decimal totalCost = 0;
-    Date maxEnd = null;
+        List<Quote_Line_Item__c> qlis = [
+            SELECT Line_Total__c, Unit_Price__c, Cost__c, Quantity__c,
+                   Duration__c, Billing_Unit__c, End_Date__c
+            FROM Quote_Line_Item__c
+            WHERE Quote__c = :quoteId
+        ];
 
-    for(Quote_Line_Item__c item : qlis) {
-        if(item.Line_Total__c != null) revenue += item.Line_Total__c;
-        if(item.Unit_Price__c  != null && item.Quantity__c != null) {
-            Decimal dur = item.Duration__c != null ? item.Duration__c : 1;
-            subtotal += (item.Unit_Price__c * item.Quantity__c * dur);
+        Decimal revenue   = 0;  // Post-discount sum of Line_Total__c
+        Decimal subtotal  = 0;  // Pre-discount gross (same formula, no discount)
+        Decimal totalCost = 0;  // Cost basis for margin
+        Date    maxEnd    = null;
+
+        for (Quote_Line_Item__c item : qlis) {
+            if (item.Line_Total__c != null) revenue += item.Line_Total__c;
+
+            Decimal qty  = item.Quantity__c   != null ? item.Quantity__c   : 1;
+            Decimal dur  = item.Duration__c   != null ? item.Duration__c   : 1;
+            Decimal up   = item.Unit_Price__c != null ? item.Unit_Price__c : 0;
+            Decimal cost = item.Cost__c       != null ? item.Cost__c       : 0;
+            String  bu   = item.Billing_Unit__c;
+
+            // Mirror the same formula as calculateTotalPrice, but without discount
+            if (bu == 'Hour') {
+                Decimal hrs  = hoursForPeriod(timePeriod);
+                subtotal  += up   * hrs * dur * qty;
+                totalCost += cost * hrs * dur * qty;
+            } else if (bu == 'Day') {
+                subtotal  += up   * dur * qty;
+                totalCost += cost * dur * qty;
+            } else {
+                // 'Each': no time dimension, no duration
+                subtotal  += up   * qty;
+                totalCost += cost * qty;
+            }
+
+            if (item.End_Date__c != null) {
+                if (maxEnd == null || item.End_Date__c > maxEnd) maxEnd = item.End_Date__c;
+            }
         }
-        if(item.Cost__c != null && item.Quantity__c != null) {
-            Decimal dur = item.Duration__c != null ? item.Duration__c : 1;
-            totalCost += (item.Cost__c * item.Quantity__c * dur);
+
+        // Margin = Post-discount revenue minus cost
+        q.Margin_Amount__c  = revenue - totalCost;
+        q.Margin_Percent__c = (revenue > 0) ? (q.Margin_Amount__c / revenue) * 100 : 0;
+        q.Total_Amount__c   = revenue;
+        q.Subtotal__c       = subtotal;
+
+        // Automatically extend quote end date if a line item exceeds it
+        if (maxEnd != null && (q.End_Date__c == null || maxEnd > q.End_Date__c)) {
+            q.End_Date__c = maxEnd;
         }
-        if(item.End_Date__c != null) {
-            if(maxEnd == null || item.End_Date__c > maxEnd) maxEnd = item.End_Date__c;
-        }
+
+        update q;
     }
 
-    // Query to get current End_Date__c for comparison
-    Quote q = [SELECT Id, End_Date__c FROM Quote WHERE Id = :quoteId LIMIT 1];
-    
-    q.Margin_Amount__c = revenue - totalCost;
-    q.Margin_Percent__c = (revenue > 0) ? (q.Margin_Amount__c / revenue) * 100 : 0;
-    q.Total_Amount__c = revenue;
-    q.Subtotal__c = subtotal;
-    
-    // Automatically extend quote end date if a line item exceeds it
-    if (maxEnd != null && (q.End_Date__c == null || maxEnd > q.End_Date__c)) {
-        q.End_Date__c = maxEnd;
+    /**
+     * Standard work hours per time period (8 hrs/day, 5 days/week).
+     * Mirrors the same constants in QuoteLineItemController.getHoursPerPeriod().
+     */
+    private static Decimal hoursForPeriod(String timePeriod) {
+        if (timePeriod == 'Days')     return 8;
+        if (timePeriod == 'Weeks')    return 40;
+        if (timePeriod == 'Months')   return 160;
+        if (timePeriod == 'Quarters') return 480;
+        return 8; // default
     }
-    
-    update q;
-}
 }
