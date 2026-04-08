@@ -232,15 +232,10 @@ export default class ProvusQuoteDetail extends LightningElement {
 
         getDocumentHtml({ documentId: docId })
             .then(html => {
-                const blob = new Blob([html], { type: 'text/html' });
-                const url  = URL.createObjectURL(blob);
                 const a    = document.createElement('a');
-                a.href     = url;
+                a.href     = 'data:text/html;charset=utf-8,' + encodeURIComponent(html);
                 a.download = (docName || 'Quote') + '.html';
-                document.body.appendChild(a);
                 a.click();
-                document.body.removeChild(a);
-                URL.revokeObjectURL(url);
             })
             .catch(err => {
                 console.error('Download error:', err);

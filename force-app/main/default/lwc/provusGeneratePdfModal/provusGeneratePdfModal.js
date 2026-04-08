@@ -294,15 +294,10 @@ h2{font-size:18px;font-weight:700;color:#111827;border-bottom:3px solid #1d4ed8;
     handleDownload() {
         const html      = this.generateHtmlString();
         const quoteNum  = this.quoteNumber || 'Quote';
-        const blob      = new Blob([html], { type: 'text/html' });
-        const url       = URL.createObjectURL(blob);
         const a         = document.createElement('a');
-        a.href          = url;
+        a.href          = 'data:text/html;charset=utf-8,' + encodeURIComponent(html);
         a.download      = `Quote-${quoteNum}.html`;
-        document.body.appendChild(a);
         a.click();
-        document.body.removeChild(a);
-        URL.revokeObjectURL(url);
     }
 
     // ── Save handler ──────────────────────────────────────────────────────
