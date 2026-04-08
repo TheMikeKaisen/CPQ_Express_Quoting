@@ -65,7 +65,7 @@ public with sharing class QuoteLineItemController {
                 item.Name                = role.Name__c;
                 item.Item_Type__c        = 'Resource Role';
                 item.Resource_Role__c    = role.Id;
-                item.Base_Rate__c        = role.Price__c;
+                item.Base_Rate__c        = role.Cost__c;
                 item.Unit_Price__c       = role.Price__c;
                 item.Cost__c             = role.Cost__c;
                 item.Quantity__c         = 1;
@@ -89,7 +89,7 @@ public with sharing class QuoteLineItemController {
                 item.Name                = product.Name__c;
                 item.Item_Type__c        = 'Product';
                 item.Product__c          = product.Id;
-                item.Base_Rate__c        = product.Price__c;
+                item.Base_Rate__c        = product.Cost__c;
                 item.Unit_Price__c       = product.Price__c;
                 item.Cost__c             = product.Cost__c;
                 item.Quantity__c         = 1;
@@ -113,7 +113,7 @@ public with sharing class QuoteLineItemController {
                 item.Name                = addon.Name__c;
                 item.Item_Type__c        = 'Add-on';
                 item.Add_On__c           = addon.Id;
-                item.Base_Rate__c        = addon.Price__c;
+                item.Base_Rate__c        = addon.Cost__c;
                 item.Unit_Price__c       = addon.Price__c;
                 item.Cost__c             = addon.Cost__c;
                 item.Quantity__c         = 1;

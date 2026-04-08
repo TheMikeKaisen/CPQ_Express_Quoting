@@ -320,27 +320,23 @@ export default class ProvusQuoteLineItems extends LightningElement {
             }
         }
 
+        if (field === 'Unit_Price__c') {
+            const price = parseFloat(value);
+            if (price < 0) {
+                this.dispatchEvent(new ShowToastEvent({ title: 'Invalid Price', message: 'Price cannot be negative.', variant: 'error' }));
+                const item = this.lineItems.find(i => i.Id === itemId);
+                if (item) event.target.value = item.Unit_Price__c || 0;
+                return;
+            }
+        }
+
         updateLineItem({ item: { Id: itemId, [field]: value } })
         .then(() => { if (this.wiredItemsResult) return refreshApex(this.wiredItemsResult); })
         .then(() => { this.dispatchEvent(new CustomEvent('lineitemsupdated')); })
         .catch(error => console.error('Update error:', error));
     }
 
-    handleUnitPriceClick(event) {
-        const itemId = event.currentTarget.dataset.id;
-        // eslint-disable-next-line no-alert
-        const newPrice = prompt('Enter new Unit Price:');
-        if (newPrice === null || newPrice === '') return;
-        const price = parseFloat(newPrice);
-        if (isNaN(price)) return;
-
-        updateLineItem({ item: { Id: itemId, Unit_Price__c: price } })
-        .then(() => {
-            if (this.wiredItemsResult) refreshApex(this.wiredItemsResult);
-            this.dispatchEvent(new CustomEvent('lineitemsupdated'));
-        })
-        .catch(error => console.error('Unit price error:', error));
-    }
+    // Removed old handleUnitPriceClick; unit price is now inline
 
     // ── Add Phase / Add Item ──────────────────────────────────────────────
     handleAddPhase() {

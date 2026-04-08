@@ -125,9 +125,13 @@
                                 </td>
                                 <td class="rate-cell">{row.record.formattedBaseRate}</td>
                                 <td>
-                                    <span class="unit-price-link" data-id={row.record.Id} onclick={handleUnitPriceClick}>
-                                        {row.record.formattedUnitPrice}
-                                    </span>
+                                    <div style="display: flex; align-items: center; justify-content: flex-end; gap: 4px;">
+                                        <span style="color: #6b7280; font-size: 13px;">$</span>
+                                        <input type="number" class="inline-input num-input" 
+                                               value={row.record.Unit_Price__c} min="0" step="1" 
+                                               data-id={row.record.Id} data-field="Unit_Price__c" 
+                                               onchange={handleFieldChange} />
+                                    </div>
                                 </td>
                                 <td>
                                     <div class="discount-input-wrap">
