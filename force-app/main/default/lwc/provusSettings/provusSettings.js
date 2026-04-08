@@ -194,7 +194,10 @@ export default class ProvusSettings extends LightningElement {
         return this.allUsers.map((u, index) => {
             const initials = this.getInitials(u.FirstName, u.LastName);
             const color    = AVATAR_COLORS[index % AVATAR_COLORS.length];
-            const role     = this.getRoleFromProfile(u.Profile ? u.Profile.Name : '');
+            
+            // Priority: Explicit role from Apex > Calculated from Profile
+            const role = u.AssignedRole || this.getRoleFromProfile(u.ProfileName || (u.Profile ? u.Profile.Name : ''));
+
             return {
                 ...u,
                 initials,
@@ -212,8 +215,10 @@ export default class ProvusSettings extends LightningElement {
     }
 
     getRoleFromProfile(profileName) {
-        if (profileName === 'System Administrator') return 'Admin';
-        if (profileName === 'CPQ Manager')          return 'Manager';
+        if (!profileName) return 'User';
+        const name = profileName.toLowerCase().trim();
+        if (name.includes('administrator') || name.includes('admin')) return 'Admin';
+        if (name.includes('manager')) return 'Manager';
         return 'User';
     }
 

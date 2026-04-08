@@ -2,10 +2,12 @@ public with sharing class UserController {
 
     // ── Get all users ─────────────────────────────────────────────────────
     @AuraEnabled(cacheable=true)
-    public static List<User> getUsers() {
+    public static List<Map<String, Object>> getUsers() {
         try {
             ensureManagerAccess();
-            return [
+            
+            // 1. Get all active Salesforce users
+            List<User> users = [
                 SELECT Id, FirstName, LastName, Name,
                        Email, Username, IsActive,
                        Profile.Name, LastLoginDate,
@@ -15,6 +17,48 @@ public with sharing class UserController {
                 AND Profile.UserLicense.Name = 'Salesforce'
                 ORDER BY Name ASC
             ];
+
+            // 2. Get Permission Set assignments for these users
+            Set<Id> userIds = (new Map<Id, User>(users)).keySet();
+            List<PermissionSetAssignment> assignments = [
+                SELECT AssigneeId, PermissionSet.Name 
+                FROM PermissionSetAssignment 
+                WHERE AssigneeId IN :userIds
+                AND PermissionSet.Name IN ('CPQ_Manager_Access', 'CPQ_Salesperson_Access')
+            ];
+
+            Map<Id, String> userToRole = new Map<Id, String>();
+            for (PermissionSetAssignment psa : assignments) {
+                if (psa.PermissionSet.Name == 'CPQ_Manager_Access') {
+                    userToRole.put(psa.AssigneeId, 'Manager');
+                } else if (psa.PermissionSet.Name == 'CPQ_Salesperson_Access' && !userToRole.containsKey(psa.AssigneeId)) {
+                    userToRole.put(psa.AssigneeId, 'User');
+                }
+            }
+
+            // 3. Construct return list
+            List<Map<String, Object>> results = new List<Map<String, Object>>();
+            for (User u : users) {
+                Map<String, Object> uMap = (Map<String, Object>) JSON.deserializeUntyped(JSON.serialize(u));
+                
+                // Add Profile info back because deserialize often flattens it
+                uMap.put('ProfileName', u.Profile.Name);
+                
+                // Determine Role: Priority 1: Admin Profile, Priority 2: Permission Set
+                String role = 'User';
+                if (u.Profile.Name.contains('Administrator')) {
+                    role = 'Admin';
+                } else if (userToRole.containsKey(u.Id)) {
+                    role = userToRole.get(u.Id);
+                } else if (u.Profile.Name.contains('Manager')) {
+                    role = 'Manager';
+                }
+                
+                uMap.put('AssignedRole', role);
+                results.add(uMap);
+            }
+            return results;
+
         } catch (Exception e) {
             throw new AuraHandledException(e.getMessage());
         }
