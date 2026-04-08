@@ -1,6 +1,9 @@
 import { LightningElement, track, wire } from 'lwc';
 import { refreshApex } from '@salesforce/apex';
-import { CurrentPageReference } from 'lightning/navigation';
+import getAwaitingApproval from
+    '@salesforce/apex/DashboardController.getAwaitingApproval';
+import getLowMarginDrafts from
+    '@salesforce/apex/DashboardController.getLowMarginDrafts';
 import getDraftPipeline from
     '@salesforce/apex/DashboardController.getDraftPipeline';
 import getHighMarginDeals from
@@ -18,23 +21,32 @@ import NAME_FIELD from '@salesforce/schema/User.Name';
 export default class ProvusDashboard extends LightningElement {
 
     @track showCreateModal   = false;
+    
+    // Metrics
+    @track awaitingCount     = 0;
+    @track awaitingAmount    = '$0.00';
+    @track lowMarginCount    = 0;
     @track draftCount        = 0;
     @track draftAmount       = '$0.00';
     @track highMarginCount   = 0;
     @track highMarginAmount  = '$0.00';
     @track wonCount          = 0;
     @track wonAmount         = '$0.00';
+
+    // Right Panel
+    @track activeFilter      = 'All';
     @track totalQuoteCount   = 0;
     @track recentQuotes      = [];
 
     userId = USER_ID;
     
     connectedCallback() {
-        // Refresh all dashboard metrics whenever we navigate to this tab
         this.handleRefresh();
     }
 
     // Wire results for refreshApex
+    wiredAwaitingResult;
+    wiredLowMarginResult;
     wiredDraftResult;
     wiredHighMarginResult;
     wiredWonResult;
@@ -54,14 +66,44 @@ export default class ProvusDashboard extends LightningElement {
             : 'User';
     }
 
+    get timeGreeting() {
+        const hour = new Date().getHours();
+        if (hour < 12) return 'Good morning';
+        if (hour < 18) return 'Good afternoon';
+        return 'Good evening';
+    }
+
+    get greetingEmoji() {
+        const hour = new Date().getHours();
+        if (hour < 12) return '🌅';
+        if (hour < 18) return '☀️';
+        return '🌆';
+    }
+
     // ── Wire dashboard data ───────────────────────────────────────────────
+    @wire(getAwaitingApproval)
+    wiredAwaiting(result) {
+        this.wiredAwaitingResult = result;
+        if (result.data) {
+            this.awaitingCount  = result.data.count || 0;
+            this.awaitingAmount = this.formatCurrency(result.data.totalAmount);
+        }
+    }
+
+    @wire(getLowMarginDrafts)
+    wiredLowMargin(result) {
+        this.wiredLowMarginResult = result;
+        if (result.data) {
+            this.lowMarginCount = result.data.count || 0;
+        }
+    }
+
     @wire(getDraftPipeline)
     wiredDraft(result) {
         this.wiredDraftResult = result;
         if (result.data) {
-            this.draftCount  = result.data.count  || 0;
-            this.draftAmount = this.formatCurrency(
-                result.data.totalAmount);
+            this.draftCount  = result.data.count || 0;
+            this.draftAmount = this.formatCurrency(result.data.totalAmount);
         }
     }
 
@@ -70,8 +112,7 @@ export default class ProvusDashboard extends LightningElement {
         this.wiredHighMarginResult = result;
         if (result.data) {
             this.highMarginCount  = result.data.count || 0;
-            this.highMarginAmount = this.formatCurrency(
-                result.data.totalAmount);
+            this.highMarginAmount = this.formatCurrency(result.data.totalAmount);
         }
     }
 
@@ -80,25 +121,24 @@ export default class ProvusDashboard extends LightningElement {
         this.wiredWonResult = result;
         if (result.data) {
             this.wonCount  = result.data.count || 0;
-            this.wonAmount = this.formatCurrency(
-                result.data.totalAmount);
+            this.wonAmount = this.formatCurrency(result.data.totalAmount);
         }
     }
 
-    @wire(getRecentQuotes)
+    @wire(getRecentQuotes, { statusFilter: '$activeFilter' })
     wiredRecent(result) {
         this.wiredRecentResult = result;
         if (result.data) {
             this.recentQuotes = result.data.map(q => ({
                 ...q,
-                accountName: q.Account
-                    ? q.Account.Name : '-',
-                formattedAmount: this.formatCurrency(q.Total_Amount__c)
+                accountName: q.Account ? q.Account.Name : '-',
+                formattedAmount: this.formatCurrency(q.Total_Amount__c),
+                timeAgo: this.getTimeAgo(q.CreatedDate)
             }));
         }
     }
 
-    @wire(getTotalQuoteCount)
+    @wire(getTotalQuoteCount, { statusFilter: '$activeFilter' })
     wiredCount(result) {
         this.wiredCountResult = result;
         if (result.data != null) {
@@ -114,28 +154,58 @@ export default class ProvusDashboard extends LightningElement {
     formatCurrency(value) {
         if (value == null) return '$0.00';
         return '$' + Number(value).toLocaleString('en-US', {
-            minimumFractionDigits: 2,
-            maximumFractionDigits: 2
+            maximumFractionDigits: 0
         });
     }
 
+    getTimeAgo(dateString) {
+        const now = new Date();
+        const past = new Date(dateString);
+        const msPerMinute = 60 * 1000;
+        const msPerHour = msPerMinute * 60;
+        const msPerDay = msPerHour * 24;
+
+        const elapsed = now - past;
+
+        if (elapsed < msPerHour) {
+            return Math.round(elapsed / msPerMinute) + 'm ago';
+        } else if (elapsed < msPerDay) {
+            return Math.round(elapsed / msPerHour) + 'h ago';
+        } else if (elapsed < msPerDay * 7) {
+            return Math.round(elapsed / msPerDay) + 'd ago';
+        }
+        return past.toLocaleDateString();
+    }
+
+    // Tab Classes
+    get allTabClass()      { return this.getTabClass('All'); }
+    get draftTabClass()    { return this.getTabClass('Draft'); }
+    get pendingTabClass()  { return this.getTabClass('Pending'); }
+    get approvedTabClass() { return this.getTabClass('Approved'); }
+    get rejectedTabClass() { return this.getTabClass('Rejected'); }
+
+    getTabClass(status) {
+        return this.activeFilter === status ? 'tab active' : 'tab';
+    }
+
     // ── Handlers ──────────────────────────────────────────────────────────
+    handleFilterClick(event) {
+        this.activeFilter = event.currentTarget.dataset.status;
+    }
+
     handleRefresh() {
-        if (this.wiredDraftResult) {
-            refreshApex(this.wiredDraftResult);
-        }
-        if (this.wiredHighMarginResult) {
-            refreshApex(this.wiredHighMarginResult);
-        }
-        if (this.wiredWonResult) {
-            refreshApex(this.wiredWonResult);
-        }
-        if (this.wiredRecentResult) {
-            refreshApex(this.wiredRecentResult);
-        }
-        if (this.wiredCountResult) {
-            refreshApex(this.wiredCountResult);
-        }
+        const results = [
+            this.wiredAwaitingResult,
+            this.wiredLowMarginResult,
+            this.wiredDraftResult,
+            this.wiredHighMarginResult,
+            this.wiredWonResult,
+            this.wiredRecentResult,
+            this.wiredCountResult
+        ];
+        results.forEach(res => {
+            if (res) refreshApex(res);
+        });
     }
 
     handleCreateQuote() {
@@ -148,7 +218,6 @@ export default class ProvusDashboard extends LightningElement {
 
     handleQuoteCreated(event) {
         this.showCreateModal = false;
-        // Navigate to the new quote
         this.dispatchEvent(new CustomEvent('viewquote', {
             detail: { quoteId: event.detail.quoteId }
         }));
@@ -162,41 +231,26 @@ export default class ProvusDashboard extends LightningElement {
         }));
     }
 
-    // Chip clicks → navigate to relevant pages
     handleChipClick(event) {
         const action = event.currentTarget.dataset.action;
         if (action === 'createQuote') {
             this.showCreateModal = true;
-        } else if (action === 'showQuotes') {
+        } else {
+            const pageMap = {
+                showQuotes: 'quotes',
+                listAccounts: 'accounts',
+                showRoles: 'resourceRoles'
+            };
             this.dispatchEvent(new CustomEvent('navigation', {
-                detail: { page: 'quotes' }
-            }));
-        } else if (action === 'listAccounts') {
-            this.dispatchEvent(new CustomEvent('navigation', {
-                detail: { page: 'accounts' }
-            }));
-        } else if (action === 'showRoles') {
-            this.dispatchEvent(new CustomEvent('navigation', {
-                detail: { page: 'resourceRoles' }
+                detail: { page: pageMap[action] }
             }));
         }
     }
 
-    handleViewDrafts() {
+    handleViewNav(event) {
+        const page = event.currentTarget.dataset.page;
         this.dispatchEvent(new CustomEvent('navigation', {
-            detail: { page: 'quotes' }
-        }));
-    }
-
-    handleViewHighMargin() {
-        this.dispatchEvent(new CustomEvent('navigation', {
-            detail: { page: 'quotes' }
-        }));
-    }
-
-    handleViewWon() {
-        this.dispatchEvent(new CustomEvent('navigation', {
-            detail: { page: 'quotes' }
+            detail: { page: page }
         }));
     }
 }
