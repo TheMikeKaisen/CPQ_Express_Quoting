@@ -1,4 +1,5 @@
 import { LightningElement, api, track, wire } from 'lwc';
+import { refreshApex } from '@salesforce/apex';
 import getResourceRoles from
     '@salesforce/apex/ResourceRoleController.getResourceRoles';
 import getProducts from
@@ -18,6 +19,11 @@ export default class ProvusAddItemsModal extends LightningElement {
     @track searchTerm   = '';
     @track sortBy       = 'name';
     @track isAdding     = false;
+    _hasRefreshed       = false;
+
+    wiredRolesResult;
+    wiredProductsResult;
+    wiredAddonsResult;
 
     // Raw data from wire
     @track allRoles    = [];
@@ -31,7 +37,9 @@ export default class ProvusAddItemsModal extends LightningElement {
 
     // ── Wire data ─────────────────────────────────────────────────────────
     @wire(getResourceRoles, { statusFilter: 'Active' })
-    wiredRoles({ data, error }) {
+    wiredRoles(result) {
+        this.wiredRolesResult = result;
+        const { data, error } = result;
         if (data) {
             this.allRoles = data.map(r => ({
                 ...r,
@@ -45,7 +53,9 @@ export default class ProvusAddItemsModal extends LightningElement {
     }
 
     @wire(getProducts, { searchTerm: '', statusFilter: 'Active' })
-    wiredProducts({ data, error }) {
+    wiredProducts(result) {
+        this.wiredProductsResult = result;
+        const { data, error } = result;
         if (data) {
             this.allProducts = data.map(p => ({
                 ...p,
@@ -59,7 +69,9 @@ export default class ProvusAddItemsModal extends LightningElement {
     }
 
     @wire(getAddons, { searchTerm: '', statusFilter: 'Active' })
-    wiredAddons({ data, error }) {
+    wiredAddons(result) {
+        this.wiredAddonsResult = result;
+        const { data, error } = result;
         if (data) {
             this.allAddons = data.map(a => ({
                 ...a,
@@ -163,6 +175,21 @@ export default class ProvusAddItemsModal extends LightningElement {
             return this.filteredProducts.length === 0;
         }
         return this.filteredAddons.length === 0;
+    }
+
+    renderedCallback() {
+        if (this.isOpen && !this._hasRefreshed) {
+            this.refreshAll();
+            this._hasRefreshed = true;
+        } else if (!this.isOpen && this._hasRefreshed) {
+            this._hasRefreshed = false;
+        }
+    }
+
+    refreshAll() {
+        if (this.wiredRolesResult)    refreshApex(this.wiredRolesResult);
+        if (this.wiredProductsResult) refreshApex(this.wiredProductsResult);
+        if (this.wiredAddonsResult)   refreshApex(this.wiredAddonsResult);
     }
 
     // ── Handlers ──────────────────────────────────────────────────────────
