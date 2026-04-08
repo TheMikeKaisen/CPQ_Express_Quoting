@@ -16,37 +16,17 @@ export default class ProvusSidebar extends LightningElement {
         }
     }
 
-    // Nav items definition
-    // icon, label, page name all defined here
-    get navItems() {
-        const items = [
-            { id: 1, icon: '📊', label: 'Dashboard', page: 'dashboard' },
-            { id: 2, icon: '📋', label: 'Quotes', page: 'quotes' },
-            { id: 3, icon: '🏢', label: 'Accounts', page: 'accounts' },
-            { id: 4, icon: '👤', label: 'Resource Roles', page: 'resourceRoles' },
-            { id: 5, icon: '📦', label: 'Products', page: 'products' },
-            { id: 6, icon: '➕', label: 'Add-ons', page: 'addons' },
-            { id: 7, icon: '🤖', label: 'AI Assistant', page: 'ai' },
-        ];
+    get dashboardClass() { return this.getItemClass('dashboard'); }
+    get quotesClass() { return this.getItemClass('quotes'); }
+    get accountsClass() { return this.getItemClass('accounts'); }
+    get resourceRolesClass() { return this.getItemClass('resourceRoles'); }
+    get productsClass() { return this.getItemClass('products'); }
+    get addonsClass() { return this.getItemClass('addons'); }
+    get aiClass() { return this.getItemClass('ai'); }
+    get settingsClass() { return this.getItemClass('settings'); }
 
-        // Add 'active' CSS class to the current page item
-        return items.map(item => ({
-            ...item,
-            cssClass: item.page === this.activePage
-                ? 'nav-item nav-item-active'
-                : 'nav-item'
-        }));
-    }
-
-    handleBottomNavClick(event) {
-        const page = event.currentTarget.dataset.page;
-        if (page) {
-            this.dispatchEvent(new CustomEvent('navigation', {
-                detail: { page: page },
-                bubbles: true,
-                composed: true
-            }));
-        }
+    getItemClass(page) {
+        return this.activePage === page ? 'nav-item nav-item-active' : 'nav-item';
     }
 
     // When user clicks a nav item → fire event to parent
