@@ -22,6 +22,7 @@ export default class ProvusAddonsList extends LightningElement {
     @track showModal    = false;
     @track isSaving     = false;
     @track errorMessage = '';
+    @track selectedId   = null;
     @track formData     = {
         name: '', billingUnit: 'Each',
         price: 0, cost: 0, tags: ''
@@ -102,10 +103,34 @@ export default class ProvusAddonsList extends LightningElement {
         }
     }
 
-    handleNew() { this.showModal = true; }
+    get modalTitle() {
+        return this.selectedId ? 'Edit Add-on' : 'New Add-on';
+    }
+
+    handleNew() {
+        this.selectedId = null;
+        this.showModal = true;
+    }
+
+    handleEdit(event) {
+        const addonId = event.currentTarget.dataset.id;
+        const addon = this.allAddons.find(a => a.Id === addonId);
+        if (addon) {
+            this.selectedId = addonId;
+            this.formData = {
+                name:        addon.Name__c,
+                billingUnit: addon.Billing_Unit__c,
+                price:       addon.Price__c,
+                cost:        addon.Cost__c,
+                tags:        addon.Tags__c || ''
+            };
+            this.showModal = true;
+        }
+    }
 
     handleModalClose() {
         this.showModal    = false;
+        this.selectedId   = null;
         this.errorMessage = '';
         this.formData     = {
             name: '', billingUnit: 'Each',
@@ -129,6 +154,7 @@ export default class ProvusAddonsList extends LightningElement {
         this.isSaving = true;
 
         createAddon({
+            addonId:     this.selectedId,
             name:        this.formData.name,
             billingUnit: this.formData.billingUnit,
             price:       parseFloat(this.formData.price) || 0,

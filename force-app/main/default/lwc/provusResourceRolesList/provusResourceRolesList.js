@@ -24,6 +24,7 @@ export default class ProvusResourceRolesList
     @track showModal    = false;
     @track isSaving     = false;
     @track errorMessage = '';
+    @track selectedId   = null;
     @track formData     = {
         name: '', location: '', billingUnit: 'Hour',
         price: 0, cost: 0, tags: ''
@@ -111,10 +112,35 @@ export default class ProvusResourceRolesList
         }
     }
 
-    handleNew() { this.showModal = true; }
+    get modalTitle() {
+        return this.selectedId ? 'Edit Resource Role' : 'New Resource Role';
+    }
+
+    handleNew() {
+        this.selectedId = null;
+        this.showModal = true;
+    }
+
+    handleEdit(event) {
+        const roleId = event.currentTarget.dataset.id;
+        const role = this.allRoles.find(r => r.Id === roleId);
+        if (role) {
+            this.selectedId = roleId;
+            this.formData = {
+                name:        role.Name__c,
+                location:    role.Location__c || '',
+                billingUnit: role.Billing_Unit__c,
+                price:       role.Price__c,
+                cost:        role.Cost__c,
+                tags:        role.Tags__c || ''
+            };
+            this.showModal = true;
+        }
+    }
 
     handleModalClose() {
         this.showModal    = false;
+        this.selectedId   = null;
         this.errorMessage = '';
         this.formData     = {
             name: '', location: '', billingUnit: 'Hour',
@@ -138,6 +164,7 @@ export default class ProvusResourceRolesList
         this.isSaving = true;
 
         createResourceRole({
+            roleId:      this.selectedId,
             name:        this.formData.name,
             location:    this.formData.location,
             billingUnit: this.formData.billingUnit,

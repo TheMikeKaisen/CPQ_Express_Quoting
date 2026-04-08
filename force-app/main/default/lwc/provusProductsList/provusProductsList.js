@@ -22,6 +22,7 @@ export default class ProvusProductsList extends LightningElement {
     @track showModal    = false;
     @track isSaving     = false;
     @track errorMessage = '';
+    @track selectedId   = null;
     @track formData     = {
         name: '', billingUnit: 'Each',
         price: 0, cost: 0, tags: ''
@@ -103,10 +104,34 @@ export default class ProvusProductsList extends LightningElement {
         }
     }
 
-    handleNew() { this.showModal = true; }
+    get modalTitle() {
+        return this.selectedId ? 'Edit Product' : 'New Product';
+    }
+
+    handleNew() {
+        this.selectedId = null;
+        this.showModal = true;
+    }
+
+    handleEdit(event) {
+        const productId = event.currentTarget.dataset.id;
+        const prod = this.allProducts.find(p => p.Id === productId);
+        if (prod) {
+            this.selectedId = productId;
+            this.formData = {
+                name:        prod.Name__c,
+                billingUnit: prod.Billing_Unit__c,
+                price:       prod.Price__c,
+                cost:        prod.Cost__c,
+                tags:        prod.Tags__c || ''
+            };
+            this.showModal = true;
+        }
+    }
 
     handleModalClose() {
         this.showModal    = false;
+        this.selectedId   = null;
         this.errorMessage = '';
         this.formData     = {
             name: '', billingUnit: 'Each',
@@ -130,6 +155,7 @@ export default class ProvusProductsList extends LightningElement {
         this.isSaving = true;
 
         createProduct({
+            productId:   this.selectedId,
             name:        this.formData.name,
             billingUnit: this.formData.billingUnit,
             price:       parseFloat(this.formData.price) || 0,

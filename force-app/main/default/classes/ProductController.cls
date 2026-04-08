@@ -24,9 +24,10 @@ public with sharing class ProductController {
         return Database.query(query);
     }
 
-    // ── Create new product ────────────────────────────────────────────────
+    // ── Create or Update product ──────────────────────────────────────────
     @AuraEnabled
     public static Id createProduct(
+            Id productId,
             String name,
             String billingUnit,
             Decimal price,
@@ -34,14 +35,20 @@ public with sharing class ProductController {
             String tags) {
 
         Product__c p      = new Product__c();
+        if (productId != null) {
+            p.Id = productId;
+        }
         p.Name__c         = name;
         p.Billing_Unit__c = billingUnit;
         p.Price__c        = price;
         p.Cost__c         = cost;
         p.Tags__c         = tags;
-        p.Is_Active__c    = true;
+        
+        if (productId == null) {
+            p.Is_Active__c = true;
+        }
 
-        insert p;
+        upsert p;
         return p.Id;
     }
 

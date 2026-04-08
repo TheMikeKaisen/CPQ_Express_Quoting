@@ -29,9 +29,10 @@ public with sharing class ResourceRoleController {
         return Database.query(query);
     }
 
-    // ── Create new resource role ──────────────────────────────────────────
+    // ── Create or Update resource role ───────────────────────────────────
     @AuraEnabled
     public static Id createResourceRole(
+            Id roleId,
             String name,
             String location,
             String billingUnit,
@@ -40,15 +41,21 @@ public with sharing class ResourceRoleController {
             String tags) {
 
         Resource_Role__c role  = new Resource_Role__c();
+        if (roleId != null) {
+            role.Id = roleId;
+        }
         role.Name__c           = name;
         role.Location__c       = location;
         role.Billing_Unit__c   = billingUnit;
         role.Price__c          = price;
         role.Cost__c           = cost;
         role.Tags__c           = tags;
-        role.Is_Active__c      = true;
+        
+        if (roleId == null) {
+            role.Is_Active__c = true;
+        }
 
-        insert role;
+        upsert role;
         return role.Id;
     }
 

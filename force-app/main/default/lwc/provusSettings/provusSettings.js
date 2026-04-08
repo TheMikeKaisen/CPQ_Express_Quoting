@@ -123,8 +123,10 @@ export default class ProvusSettings extends LightningElement {
 
         this.logoUploadError = '';
 
-        if (file.size > 2 * 1024 * 1024) {
-            this.logoUploadError = 'File size must be less than 2 MB.';
+        // Max size 100 KB
+        const maxSize = 100 * 1024; 
+        if (file.size > maxSize) {
+            this.logoUploadError = 'File size must be less than 100 KB.';
             return;
         }
         if (!['image/png', 'image/jpeg', 'image/jpg'].includes(file.type)) {

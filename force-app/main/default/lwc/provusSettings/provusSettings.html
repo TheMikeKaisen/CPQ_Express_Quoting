@@ -29,9 +29,78 @@
             <!-- RIGHT: Content -->
             <div class="settings-content">
 
-                <!-- GENERAL — stub -->
+                <!-- GENERAL TAB -->
                 <template if:true={showGeneral}>
-                    <div class="stub-tab"><h2>General Settings</h2><p>Coming soon.</p></div>
+                    <div class="general-section">
+                        
+                        <!-- Header -->
+                        <div class="section-header-row">
+                            <span class="section-emoji">🕒</span>
+                            <div>
+                                <h2 class="section-title">Billing Time Defaults</h2>
+                                <p class="section-subtitle">
+                                    Standard time units used for planning and calculations
+                                </p>
+                            </div>
+                        </div>
+
+                        <!-- Time Defaults Table -->
+                        <div class="time-defaults-container">
+                            <table class="time-table">
+                                <thead>
+                                    <tr>
+                                        <th>Period</th>
+                                        <th>Days</th>
+                                        <th>Calculation</th>
+                                        <th class="txt-blue">Total Hours</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr>
+                                        <td><strong>1 Week</strong></td>
+                                        <td>5 days</td>
+                                        <td>5 × 8</td>
+                                        <td class="txt-blue">40 hours</td>
+                                    </tr>
+                                    <tr>
+                                        <td><strong>1 Month</strong></td>
+                                        <td>20 days</td>
+                                        <td>20 × 8</td>
+                                        <td class="txt-blue">160 hours</td>
+                                    </tr>
+                                    <tr>
+                                        <td><strong>1 Quarter</strong></td>
+                                        <td>60 days</td>
+                                        <td>60 × 8</td>
+                                        <td class="txt-blue">480 hours</td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+
+                        <!-- Example Box -->
+                        <div class="example-box">
+                            <div class="example-header">Example Line Item:</div>
+                            <h3 class="example-item-title">Fullstack Developer @ $50/hr</h3>
+                            <p class="example-item-subtitle">Full-stack development with React & Node.js</p>
+
+                            <div class="example-grid">
+                                <div class="example-col">
+                                    <div class="col-header">Time Estimate</div>
+                                    <div class="col-item">20 days work</div>
+                                    <div class="col-item">160 hours total</div>
+                                    <div class="col-item">4 weeks duration</div>
+                                </div>
+                                <div class="example-col">
+                                    <div class="col-header">Calculation</div>
+                                    <div class="col-item">20 × 8 = 160h</div>
+                                    <div class="col-item">$50/h × 160h</div>
+                                    <div class="col-item txt-blue-bold">$8,000 total</div>
+                                </div>
+                            </div>
+                        </div>
+
+                    </div>
                 </template>
 
                 <!-- PDF — stub -->
@@ -156,44 +225,47 @@
                                 </p>
 
                                 <div class="logo-section">
-                                    <div class="logo-upload-box">
-                                        <div class="logo-upload-inner">
-                                            <span class="logo-upload-icon">🖼️</span>
-                                            <span class="logo-upload-text">PNG or JPEG up to 2 MB</span>
-                                        </div>
-                                        <div class="logo-upload-actions">
-                                            <label class="btn-upload-logo">
-                                                ⬆ Upload logo
-                                                <input type="file"
-                                                       accept="image/png,image/jpeg,image/jpg"
-                                                       onchange={handleLogoUpload}
-                                                       style="display:none" />
-                                            </label>
-                                            <button class="btn-remove-logo"
-                                                    onclick={handleLogoRemove}
-                                                    disabled={isRemoveLogoDisabled}>
-                                                Remove
-                                            </button>
-                                        </div>
-                                        <p class="logo-allowed-text">
-                                            Allowed formats: PNG, JPG, JPEG. Maximum file size: 2 MB.
-                                        </p>
+                                    <div class="logo-upload-zone">
+                                        <label class="logo-dropzone">
+                                            <input type="file"
+                                                   accept="image/png,image/jpeg,image/jpg"
+                                                   onchange={handleLogoUpload}
+                                                   style="display:none" />
+                                            <div class="dropzone-content">
+                                                <div class="dropzone-icon">☁️</div>
+                                                <div class="dropzone-text">
+                                                    <strong>Click to upload</strong> or drag and drop
+                                                </div>
+                                                <div class="dropzone-hint">
+                                                    PNG, JPG or JPEG (max. 100KB)
+                                                </div>
+                                            </div>
+                                        </label>
                                         <template if:true={logoUploadError}>
-                                            <p class="logo-upload-error">{logoUploadError}</p>
+                                            <div class="logo-error-msg">
+                                                ⚠️ {logoUploadError}
+                                            </div>
+                                        </template>
+                                        <template if:true={hasLogoPreview}>
+                                            <button class="btn-remove-logo" onclick={handleLogoRemove}>
+                                                🗑️ Remove current logo
+                                            </button>
                                         </template>
                                     </div>
 
-                                    <div class="logo-preview-box">
-                                        <div class="logo-preview-label">Logo preview</div>
-                                        <template if:true={hasLogoPreview}>
-                                            <img src={logoPreview} class="logo-preview-img" alt="Logo preview" />
-                                        </template>
-                                        <template if:false={hasLogoPreview}>
-                                            <div class="logo-no-preview">
-                                                <span>🏢</span>
-                                                <span class="logo-no-preview-text">No logo selected</span>
-                                            </div>
-                                        </template>
+                                    <div class="logo-preview-card">
+                                        <div class="preview-header">Preview</div>
+                                        <div class="preview-body">
+                                            <template if:true={hasLogoPreview}>
+                                                <img src={logoPreview} class="logo-img" alt="Logo preview" />
+                                            </template>
+                                            <template if:false={hasLogoPreview}>
+                                                <div class="no-logo">
+                                                    <span class="no-logo-emoji">🏢</span>
+                                                    <p>No logo</p>
+                                                </div>
+                                            </template>
+                                        </div>
                                     </div>
                                 </div>
                             </div>

@@ -33,9 +33,10 @@ public with sharing class AddonController {
         return Database.query(query);
     }
 
-    // ── Create new add-on ─────────────────────────────────────────────────
+    // ── Create or Update add-on ──────────────────────────────────────────
     @AuraEnabled
     public static Id createAddon(
+            Id addonId,
             String name,
             String billingUnit,
             Decimal price,
@@ -43,14 +44,20 @@ public with sharing class AddonController {
             String tags) {
 
         Add_On__c a       = new Add_On__c();
+        if (addonId != null) {
+            a.Id = addonId;
+        }
         a.Name__c         = name;
         a.Billing_Unit__c = billingUnit;
         a.Price__c        = price;
         a.Cost__c         = cost;
         a.Tags__c         = tags;
-        a.Is_Active__c    = true;
+        
+        if (addonId == null) {
+            a.Is_Active__c = true;
+        }
 
-        insert a;
+        upsert a;
         return a.Id;
     }
 

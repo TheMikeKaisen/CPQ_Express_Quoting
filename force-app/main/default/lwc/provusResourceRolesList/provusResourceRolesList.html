@@ -83,7 +83,9 @@
                             </td>
                             <td>{role.rowNumber}</td>
                             <td>
-                                <span class="id-link">
+                                <span class="id-link"
+                                      onclick={handleEdit}
+                                      data-id={role.Id}>
                                     {role.Name}
                                 </span>
                             </td>
@@ -155,7 +157,7 @@
         </div>
         <div class="modal-box">
             <div class="modal-header">
-                <h2 class="modal-title">New Resource Role</h2>
+                <h2 class="modal-title">{modalTitle}</h2>
                 <button class="close-btn"
                         onclick={handleModalClose}>✕
                 </button>
@@ -168,6 +170,7 @@
                     <input type="text"
                            class="form-input"
                            placeholder="e.g. QA Lead"
+                           value={formData.name}
                            onchange={handleFieldChange}
                            data-field="name" />
                 </div>
@@ -176,6 +179,7 @@
                     <input type="text"
                            class="form-input"
                            placeholder="e.g. Remote"
+                           value={formData.location}
                            onchange={handleFieldChange}
                            data-field="location" />
                 </div>
@@ -184,6 +188,7 @@
                         Billing Unit <span class="req">*</span>
                     </label>
                     <select class="form-select"
+                            value={formData.billingUnit}
                             onchange={handleFieldChange}
                             data-field="billingUnit">
                         <option value="Hour">Hour</option>
@@ -201,6 +206,7 @@
                             <input type="number"
                                    class="form-input"
                                    placeholder="0.00"
+                                   value={formData.price}
                                    onchange={handleFieldChange}
                                    data-field="price" />
                         </div>
@@ -212,6 +218,7 @@
                             <input type="number"
                                    class="form-input"
                                    placeholder="0.00"
+                                   value={formData.cost}
                                    onchange={handleFieldChange}
                                    data-field="cost" />
                         </div>
@@ -222,6 +229,7 @@
                     <input type="text"
                            class="form-input"
                            placeholder="e.g. QA, Testing"
+                           value={formData.tags}
                            onchange={handleFieldChange}
                            data-field="tags" />
                 </div>
