@@ -161,6 +161,10 @@ export default class ProvusResourceRolesList
             this.errorMessage = 'Name is required.';
             return;
         }
+        if (this.formData.cost === '' || this.formData.cost === null || this.formData.cost === undefined) {
+            this.errorMessage = 'Cost is required.';
+            return;
+        }
         this.isSaving = true;
 
         createResourceRole({

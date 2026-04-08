@@ -98,18 +98,31 @@ export default class ProvusGeneratePdfModal extends LightningElement {
             qty:       Number(item.Quantity__c || 1),
             unitPrice: this.fmt(item.Unit_Price__c),
             discount:  Number(item.Discount_Percent__c || 0) + '%',
-            total:     this.fmt(item.Total_Price__c)
+            total:     this.fmt(item.Line_Total__c)
         }));
     }
 
     get grandTotal() {
         return (this.lineItems || [])
-            .reduce((s, i) => s + Number(i.Total_Price__c || 0), 0);
+            .reduce((s, i) => s + Number(i.Line_Total__c || 0), 0);
     }
 
     get subtotal() {
-        return (this.lineItems || [])
-            .reduce((s, i) => s + Number(i.Unit_Price__c || 0) * Number(i.Quantity__c || 1), 0);
+        return (this.lineItems || []).reduce((s, item) => {
+            const u   = Number(item.Unit_Price__c || 0);
+            const qty = Number(item.Quantity__c || 1);
+            const dur = Number(item.Duration__c || 1);
+            const bu  = item.Billing_Unit__c;
+            const tp  = item.Quote__r ? item.Quote__r.Time_Period__c : 'Days';
+            let hrs = 8;
+            if (tp === 'Weeks') hrs = 40;
+            else if (tp === 'Months') hrs = 160;
+            else if (tp === 'Quarters') hrs = 480;
+
+            if (bu === 'Hour') return s + (u * hrs * dur * qty);
+            if (bu === 'Day') return s + (u * dur * qty);
+            return s + (u * qty);
+        }, 0);
     }
 
     get formattedTotal()    { return this.fmt(this.grandTotal); }
@@ -163,12 +176,23 @@ export default class ProvusGeneratePdfModal extends LightningElement {
         let total    = 0;
         let subtotal = 0;
         (this.lineItems || []).forEach(item => {
-            const t   = Number(item.Total_Price__c   || 0);
+            const t   = Number(item.Line_Total__c   || 0);
             const u   = Number(item.Unit_Price__c    || 0);
             const qty = Number(item.Quantity__c      || 1);
+            const dur = Number(item.Duration__c      || 1);
             const d   = Number(item.Discount_Percent__c || 0);
-            total    += t;
-            subtotal += u * qty;
+            const bu  = item.Billing_Unit__c;
+            const tp  = item.Quote__r ? item.Quote__r.Time_Period__c : 'Days';
+            let hrs = 8;
+            if (tp === 'Weeks') hrs = 40;
+            else if (tp === 'Months') hrs = 160;
+            else if (tp === 'Quarters') hrs = 480;
+
+            total += t;
+            if (bu === 'Hour') subtotal += (u * hrs * dur * qty);
+            else if (bu === 'Day') subtotal += (u * dur * qty);
+            else subtotal += (u * qty);
+
             itemRowsHtml += `
                 <tr>
                     <td style="padding:10px 14px;border-bottom:1px solid #f3f4f6;">${item.Name || ''}</td>
