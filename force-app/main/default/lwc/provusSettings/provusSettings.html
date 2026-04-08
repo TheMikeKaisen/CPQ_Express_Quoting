@@ -6,76 +6,240 @@
             <div class="header-left">
                 <h1 class="page-title">Settings</h1>
                 <p class="page-subtitle">
-                    Manage your application preferences
-                    and organization settings
+                    Manage your application preferences and organization settings
                 </p>
             </div>
             <div class="header-right">
-                <button class="btn-icon">
-                    ✨ AI Assistant
-                </button>
+                <button class="btn-icon">✨ AI Assistant</button>
             </div>
         </div>
 
         <!-- SETTINGS BODY -->
         <div class="settings-body">
 
-            <!-- LEFT: Settings nav -->
+            <!-- LEFT: Nav -->
             <div class="settings-nav">
-                <div class={generalNavClass} data-tab="general" onclick={handleNavClick}>
-                    ⚙️ General
-                </div>
-                <div class={orgNavClass} data-tab="organization" onclick={handleNavClick}>
-                    🏢 Organization
-                </div>
-                <div class={usersNavClass} data-tab="users" onclick={handleNavClick}>
-                    👥 Users
-                </div>
+                <div class={generalNavClass}     data-tab="general"      onclick={handleNavClick}>⚙️ General</div>
+                <div class={companyInfoNavClass} data-tab="companyInfo"  onclick={handleNavClick}>🏢 Company Info</div>
+                <div class={pdfNavClass}         data-tab="pdf"          onclick={handleNavClick}>📄 PDF</div>
+                <div class={intNavClass}         data-tab="integrations" onclick={handleNavClick}>🔗 Integrations</div>
+                <div class={usersNavClass}       data-tab="users"        onclick={handleNavClick}>👥 Users</div>
             </div>
 
-            <!-- RIGHT: Tab content -->
+            <!-- RIGHT: Content -->
             <div class="settings-content">
 
-                <!-- GENERAL tab stub -->
+                <!-- GENERAL — stub -->
                 <template if:true={showGeneral}>
-                    <div class="stub-tab">
-                        <h2>General Settings</h2>
-                        <p>Coming soon.</p>
-                    </div>
+                    <div class="stub-tab"><h2>General Settings</h2><p>Coming soon.</p></div>
                 </template>
 
-                <!-- ORGANIZATION tab stub -->
-                <template if:true={showOrganization}>
-                    <div class="stub-tab">
-                        <h2>Organization Settings</h2>
-                        <p>Coming soon.</p>
-                    </div>
+                <!-- PDF — stub -->
+                <template if:true={showPdf}>
+                    <div class="stub-tab"><h2>PDF Settings</h2><p>Coming soon.</p></div>
                 </template>
 
-                <!-- INTEGRATIONS tab stub -->
+                <!-- INTEGRATIONS — stub -->
                 <template if:true={showIntegrations}>
-                    <div class="stub-tab">
-                        <h2>Integrations</h2>
-                        <p>Coming soon.</p>
+                    <div class="stub-tab"><h2>Integrations</h2><p>Coming soon.</p></div>
+                </template>
+
+                <!-- COMPANY INFO TAB -->
+                <template if:true={showCompanyInfo}>
+                    <div class="company-info-section">
+
+                        <!-- Section Title -->
+                        <div class="ci-heading-row">
+                            <div class="ci-icon">🏢</div>
+                            <div>
+                                <h2 class="ci-title">Company Information</h2>
+                                <p class="ci-subtitle">
+                                    Configure your company details that appear on PDF quotes
+                                </p>
+                            </div>
+                        </div>
+
+                        <!-- Form -->
+                        <div class="ci-form-card">
+
+                            <!-- Row 1: Company Name + Email -->
+                            <div class="form-row-2">
+                                <div class="form-group">
+                                    <label class="form-label">Company Name</label>
+                                    <input type="text" class="form-input"
+                                           placeholder="e.g. Provus Inc."
+                                           value={companyForm.companyName}
+                                           data-field="companyName"
+                                           onchange={handleCompanyFieldChange} />
+                                </div>
+                                <div class="form-group">
+                                    <label class="form-label">Email</label>
+                                    <input type="email" class="form-input"
+                                           placeholder="contact@company.com"
+                                           value={companyForm.email}
+                                           data-field="email"
+                                           onchange={handleCompanyFieldChange} />
+                                </div>
+                            </div>
+
+                            <!-- Row 2: Phone + Website -->
+                            <div class="form-row-2">
+                                <div class="form-group">
+                                    <label class="form-label">Phone</label>
+                                    <input type="text" class="form-input"
+                                           placeholder="+1 234 567 8900"
+                                           value={companyForm.phone}
+                                           data-field="phone"
+                                           onchange={handleCompanyFieldChange} />
+                                </div>
+                                <div class="form-group">
+                                    <label class="form-label">Website</label>
+                                    <input type="text" class="form-input"
+                                           placeholder="www.company.com"
+                                           value={companyForm.website}
+                                           data-field="website"
+                                           onchange={handleCompanyFieldChange} />
+                                </div>
+                            </div>
+
+                            <!-- Row 3: Address (full width) -->
+                            <div class="form-group">
+                                <label class="form-label">Address</label>
+                                <input type="text" class="form-input"
+                                       placeholder="123 Business Street"
+                                       value={companyForm.address}
+                                       data-field="address"
+                                       onchange={handleCompanyFieldChange} />
+                            </div>
+
+                            <!-- Row 4: City / State / Zip / Country -->
+                            <div class="form-row-4">
+                                <div class="form-group">
+                                    <label class="form-label">City</label>
+                                    <input type="text" class="form-input"
+                                           placeholder="City"
+                                           value={companyForm.city}
+                                           data-field="city"
+                                           onchange={handleCompanyFieldChange} />
+                                </div>
+                                <div class="form-group">
+                                    <label class="form-label">State</label>
+                                    <input type="text" class="form-input"
+                                           placeholder="State"
+                                           value={companyForm.state}
+                                           data-field="state"
+                                           onchange={handleCompanyFieldChange} />
+                                </div>
+                                <div class="form-group">
+                                    <label class="form-label">Zip Code</label>
+                                    <input type="text" class="form-input"
+                                           placeholder="12345"
+                                           value={companyForm.zipCode}
+                                           data-field="zipCode"
+                                           onchange={handleCompanyFieldChange} />
+                                </div>
+                                <div class="form-group">
+                                    <label class="form-label">Country</label>
+                                    <input type="text" class="form-input"
+                                           placeholder="US"
+                                           value={companyForm.country}
+                                           data-field="country"
+                                           onchange={handleCompanyFieldChange} />
+                                </div>
+                            </div>
+
+                            <!-- Brand Logo -->
+                            <div class="form-group">
+                                <label class="form-label">Brand Logo</label>
+                                <p class="form-hint">
+                                    Choose how your logo appears in generated PDFs.
+                                </p>
+
+                                <div class="logo-section">
+                                    <div class="logo-upload-box">
+                                        <div class="logo-upload-inner">
+                                            <span class="logo-upload-icon">🖼️</span>
+                                            <span class="logo-upload-text">PNG or JPEG up to 2 MB</span>
+                                        </div>
+                                        <div class="logo-upload-actions">
+                                            <label class="btn-upload-logo">
+                                                ⬆ Upload logo
+                                                <input type="file"
+                                                       accept="image/png,image/jpeg,image/jpg"
+                                                       onchange={handleLogoUpload}
+                                                       style="display:none" />
+                                            </label>
+                                            <button class="btn-remove-logo"
+                                                    onclick={handleLogoRemove}
+                                                    disabled={isRemoveLogoDisabled}>
+                                                Remove
+                                            </button>
+                                        </div>
+                                        <p class="logo-allowed-text">
+                                            Allowed formats: PNG, JPG, JPEG. Maximum file size: 2 MB.
+                                        </p>
+                                        <template if:true={logoUploadError}>
+                                            <p class="logo-upload-error">{logoUploadError}</p>
+                                        </template>
+                                    </div>
+
+                                    <div class="logo-preview-box">
+                                        <div class="logo-preview-label">Logo preview</div>
+                                        <template if:true={hasLogoPreview}>
+                                            <img src={logoPreview} class="logo-preview-img" alt="Logo preview" />
+                                        </template>
+                                        <template if:false={hasLogoPreview}>
+                                            <div class="logo-no-preview">
+                                                <span>🏢</span>
+                                                <span class="logo-no-preview-text">No logo selected</span>
+                                            </div>
+                                        </template>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Success / Error messages -->
+                            <template if:true={companySaveOk}>
+                                <div class="save-success-msg">
+                                    ✅ Company information saved successfully!
+                                </div>
+                            </template>
+                            <template if:true={companySaveError}>
+                                <div class="save-error-msg">{companySaveError}</div>
+                            </template>
+
+                        </div><!-- /.ci-form-card -->
+
+                        <!-- Footer actions -->
+                        <div class="ci-footer">
+                            <button class="btn-discard" onclick={handleDiscardCompany}>
+                                Discard
+                            </button>
+                            <button class="btn-save-company"
+                                    onclick={handleSaveCompany}
+                                    disabled={isSavingCompany}>
+                                <template if:true={isSavingCompany}>
+                                    Saving...
+                                </template>
+                                <template if:false={isSavingCompany}>
+                                    Save Company Information
+                                </template>
+                            </button>
+                        </div>
+
                     </div>
                 </template>
 
-                <!-- USERS tab -->
+                <!-- USERS TAB -->
                 <template if:true={showUsers}>
                     <div class="users-section">
 
-                        <!-- Section header -->
                         <div class="section-header">
                             <div class="section-header-left">
                                 <div class="section-icon">👥</div>
                                 <div>
-                                    <h2 class="section-title">
-                                        Manage Your Team
-                                    </h2>
-                                    <p class="section-subtitle">
-                                        Manage user access, roles,
-                                        and permissions.
-                                    </p>
+                                    <h2 class="section-title">Manage Your Team</h2>
+                                    <p class="section-subtitle">Manage user access, roles, and permissions.</p>
                                 </div>
                             </div>
                             <button class="btn-add-member" onclick={handleAddMember}>
@@ -86,30 +250,18 @@
                         <!-- Seat stats -->
                         <div class="seat-stats">
                             <div class="stat-item">
-                                <div class="stat-number">
-                                    {totalSeats}
-                                </div>
-                                <div class="stat-label">
-                                    TOTAL LICENSES
-                                </div>
+                                <div class="stat-number">{totalSeats}</div>
+                                <div class="stat-label">TOTAL LICENSES</div>
                             </div>
                             <div class="stat-divider"></div>
                             <div class="stat-item">
-                                <div class="stat-number">
-                                    {usedSeats}
-                                </div>
-                                <div class="stat-label">
-                                    USED LICENSES
-                                </div>
+                                <div class="stat-number">{usedSeats}</div>
+                                <div class="stat-label">USED LICENSES</div>
                             </div>
                             <div class="stat-divider"></div>
                             <div class="stat-item">
-                                <div class="stat-number">
-                                    {availableSeats}
-                                </div>
-                                <div class="stat-label">
-                                    REMAINING
-                                </div>
+                                <div class="stat-number">{availableSeats}</div>
+                                <div class="stat-label">REMAINING</div>
                             </div>
                         </div>
 
@@ -118,9 +270,7 @@
                             <table class="users-table">
                                 <thead>
                                     <tr>
-                                        <th class="col-check">
-                                            <input type="checkbox" />
-                                        </th>
+                                        <th class="col-check"><input type="checkbox" /></th>
                                         <th>Name</th>
                                         <th>Email</th>
                                         <th>Role</th>
@@ -131,58 +281,39 @@
                                 </thead>
                                 <tbody>
                                     <template if:true={isLoading}>
-                                        <tr>
-                                            <td colspan="7" class="loading-cell">
-                                                Loading users...
-                                            </td>
-                                        </tr>
+                                        <tr><td colspan="7" class="loading-cell">Loading users...</td></tr>
                                     </template>
-
                                     <template if:false={isLoading}>
                                         <template for:each={userRows} for:item="user">
                                             <tr key={user.Id} class="user-row">
-                                                <td>
-                                                    <input type="checkbox" />
-                                                </td>
+                                                <td><input type="checkbox" /></td>
                                                 <td>
                                                     <div class="user-name-cell">
-                                                        <!-- Avatar -->
-                                                        <div class={user.avatarClass} style={user.avatarStyle}>
+                                                        <div class="user-avatar" style={user.avatarStyle}>
                                                             {user.initials}
                                                         </div>
-                                                        <span class="user-name">
-                                                            {user.Name}
-                                                        </span>
+                                                        <span class="user-name">{user.Name}</span>
                                                     </div>
                                                 </td>
-                                                <td class="email-cell">
-                                                    {user.Email}
-                                                </td>
-                                                <td>
-                                                    <span class={user.roleBadgeClass}>
-                                                        {user.roleDisplay}
-                                                    </span>
-                                                </td>
+                                                <td class="email-cell">{user.Email}</td>
+                                                <td><span class={user.roleBadgeClass}>{user.roleDisplay}</span></td>
                                                 <td>
                                                     <div class="status-cell">
-                                                        <span class="status-dot">
-                                                        </span>
+                                                        <span class="status-dot"></span>
                                                         Active
                                                     </div>
                                                 </td>
-                                                <td class="last-active">
-                                                    {user.lastActiveDisplay}
-                                                </td>
+                                                <td class="last-active">{user.lastActiveDisplay}</td>
                                                 <td>
-                                                    <button class="action-dots" data-id={user.Id}
-                                                        onclick={handleUserAction}>
+                                                    <button class="action-dots"
+                                                            data-id={user.Id}
+                                                            onclick={handleUserAction}>
                                                         ···
                                                     </button>
                                                 </td>
                                             </tr>
                                         </template>
                                     </template>
-
                                 </tbody>
                             </table>
                         </div>
@@ -190,167 +321,82 @@
                     </div>
                 </template>
 
-            </div>
-        </div>
+            </div><!-- /.settings-content -->
+        </div><!-- /.settings-body -->
 
     </div>
 
     <!-- CREATE TEAM MEMBER MODAL -->
     <template if:true={showModal}>
-        <div class="modal-overlay" onclick={handleModalClose}>
-        </div>
+        <div class="modal-overlay" onclick={handleModalClose}></div>
         <div class="modal-box">
-
             <div class="modal-header">
                 <div>
-                    <h2 class="modal-title">
-                        Create Team Member
-                    </h2>
-                    <p class="modal-subtitle">
-                        Add a team member and select
-                        a role before submitting.
-                    </p>
-                    <p class="modal-subtitle">
-                        Email will also be used as
-                        the default username.
-                    </p>
+                    <h2 class="modal-title">Create Team Member</h2>
+                    <p class="modal-subtitle">Add a team member and select a role before submitting.</p>
                 </div>
             </div>
-
             <div class="modal-body">
-
-                <!-- First Name -->
                 <div class="form-group">
-                    <label class="form-label">
-                        First Name
-                        <span class="req">*</span>
-                    </label>
-                    <input type="text" class="form-input" placeholder="Enter first name" onchange={handleFieldChange}
-                        data-field="firstName" />
+                    <label class="form-label">First Name <span class="req">*</span></label>
+                    <input type="text" class="form-input" placeholder="Enter first name"
+                           onchange={handleFieldChange} data-field="firstName" />
                 </div>
-
-                <!-- Last Name -->
                 <div class="form-group">
-                    <label class="form-label">
-                        Last Name
-                        <span class="req">*</span>
-                    </label>
-                    <input type="text" class="form-input" placeholder="Enter last name" onchange={handleFieldChange}
-                        data-field="lastName" />
+                    <label class="form-label">Last Name <span class="req">*</span></label>
+                    <input type="text" class="form-input" placeholder="Enter last name"
+                           onchange={handleFieldChange} data-field="lastName" />
                 </div>
-
-                <!-- Email -->
                 <div class="form-group">
-                    <label class="form-label">
-                        Email
-                        <span class="req">*</span>
-                    </label>
+                    <label class="form-label">Email <span class="req">*</span></label>
                     <input type="email" class="form-input" placeholder="Enter email address"
-                        onchange={handleEmailChange} data-field="email" />
-                    <p class="field-hint">
-                        Email will also be used as
-                        the default username.
-                    </p>
+                           onchange={handleEmailChange} data-field="email" />
+                    <p class="field-hint">Email will also be used as the default username.</p>
                 </div>
-
-                <!-- Username -->
                 <div class="form-group">
-                    <label class="form-label">
-                        Username
-                        <span class="req">*</span>
-                    </label>
+                    <label class="form-label">Username <span class="req">*</span></label>
                     <input type="text" class="form-input" placeholder="Enter username (email format)"
-                        value={formData.username} onchange={handleFieldChange} data-field="username" />
-                    <p class="field-hint">
-                        Must be in email format and be unique.
-                        Defaults to the email address
-                        if not edited.
-                    </p>
+                           value={formData.username} onchange={handleFieldChange} data-field="username" />
+                    <p class="field-hint">Must be in email format and globally unique.</p>
                 </div>
-
-                <!-- Role -->
                 <div class="form-group">
-                    <label class="form-label">
-                        Role
-                        <span class="req">*</span>
-                    </label>
-                    <p class="field-hint">
-                        Choose a role to control access
-                        and responsibilities.
-                    </p>
-
-                    <!-- Admin option -->
+                    <label class="form-label">Role <span class="req">*</span></label>
                     <div class={adminOptionClass} onclick={handleRoleSelect} data-role="Admin">
-                        <input type="radio" name="role" value="Admin" checked={isAdminSelected}
-                            onchange={handleRoleChange} />
+                        <input type="radio" name="role" value="Admin" checked={isAdminSelected} onchange={handleRoleChange} />
                         <div class="role-content">
                             <div class="role-name">Admin</div>
-                            <div class="role-desc">
-                                Full settings access and all
-                                Manager/User capabilities.
-                            </div>
+                            <div class="role-desc">Full settings access and all Manager/User capabilities.</div>
                         </div>
                     </div>
-
-                    <!-- Manager option -->
                     <div class={managerOptionClass} onclick={handleRoleSelect} data-role="Manager">
-                        <input type="radio" name="role" value="Manager" checked={isManagerSelected}
-                            onchange={handleRoleChange} />
+                        <input type="radio" name="role" value="Manager" checked={isManagerSelected} onchange={handleRoleChange} />
                         <div class="role-content">
                             <div class="role-name">Manager</div>
-                            <div class="role-desc">
-                                Can approve/reject quotes and
-                                manage team data while inheriting
-                                User access.
-                            </div>
+                            <div class="role-desc">Can approve/reject quotes and manage team data while inheriting User access.</div>
                         </div>
                     </div>
-
-                    <!-- User option -->
                     <div class={userOptionClass} onclick={handleRoleSelect} data-role="User">
-                        <input type="radio" name="role" value="User" checked={isUserSelected}
-                            onchange={handleRoleChange} />
+                        <input type="radio" name="role" value="User" checked={isUserSelected} onchange={handleRoleChange} />
                         <div class="role-content">
                             <div class="role-name">User</div>
-                            <div class="role-desc">
-                                Can edit own quotes, view others
-                                read-only, and manage
-                                catalog/account data.
-                            </div>
+                            <div class="role-desc">Can edit own quotes, view others read-only, and manage catalog/account data.</div>
                         </div>
                     </div>
-
                 </div>
-
-                <!-- Error -->
                 <template if:true={errorMessage}>
-                    <div class="error-msg">
-                        {errorMessage}
-                    </div>
+                    <div class="error-msg">{errorMessage}</div>
                 </template>
-                <!-- Add this AFTER the error-msg template -->
                 <template if:true={successMessage}>
-                    <div class="success-msg">
-                        ✅ {successMessage}
-                    </div>
+                    <div class="success-msg">✅ {successMessage}</div>
                 </template>
-
             </div>
-
             <div class="modal-footer">
-                <button class="btn-cancel" onclick={handleModalClose}>
-                    Cancel
-                </button>
+                <button class="btn-cancel" onclick={handleModalClose}>Cancel</button>
                 <button class="btn-create" onclick={handleCreate} disabled={isCreating}>
-                    <template if:true={isCreating}>
-                        Creating...
-                    </template>
-                    <template if:false={isCreating}>
-                        Create
-                    </template>
+                    <template if:true={isCreating}>Creating...</template>
+                    <template if:false={isCreating}>Create</template>
                 </button>
             </div>
-
         </div>
     </template>
 

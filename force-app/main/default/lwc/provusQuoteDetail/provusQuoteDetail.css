@@ -256,3 +256,157 @@
     color: #ef4444;
     font-size: 14px;
 }
+
+/* ── Generated PDFs tab ──────────────────────────────────────── */
+.pdfs-tab-content {
+    padding: 24px;
+}
+
+.pdfs-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    margin-bottom: 20px;
+}
+
+.pdfs-title {
+    font-size: 15px;
+    font-weight: 700;
+    color: #111827;
+    margin: 0 0 4px;
+}
+
+.pdfs-subtitle {
+    font-size: 13px;
+    color: #6b7280;
+    margin: 0;
+}
+
+.btn-generate-new {
+    padding: 9px 18px;
+    background: #1d4ed8;
+    color: white;
+    border: none;
+    border-radius: 8px;
+    font-size: 13px;
+    font-weight: 600;
+    cursor: pointer;
+}
+.btn-generate-new:hover { background: #1e40af; }
+
+.docs-list {
+    display: flex;
+    flex-direction: column;
+    gap: 0;
+    border: 1px solid #e5e7eb;
+    border-radius: 10px;
+    overflow: hidden;
+}
+
+.doc-row {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    padding: 16px 20px;
+    border-bottom: 1px solid #f3f4f6;
+    background: white;
+    transition: background 0.1s;
+}
+.doc-row:last-child { border-bottom: none; }
+.doc-row:hover { background: #f9fafb; }
+
+.doc-icon { font-size: 24px; flex-shrink: 0; }
+
+.doc-info { flex: 1; }
+
+.doc-name {
+    font-size: 14px;
+    font-weight: 600;
+    color: #111827;
+    margin-bottom: 3px;
+}
+
+.doc-meta {
+    font-size: 12px;
+    color: #9ca3af;
+}
+
+.doc-actions {
+    display: flex;
+    gap: 8px;
+    align-items: center;
+}
+
+.doc-btn {
+    padding: 7px 14px;
+    border-radius: 7px;
+    font-size: 12px;
+    font-weight: 600;
+    cursor: pointer;
+    border: 1px solid #d1d5db;
+    background: white;
+    color: #374151;
+}
+.doc-btn:hover { background: #f9fafb; }
+
+.doc-btn-delete {
+    background: none;
+    border: none;
+    font-size: 15px;
+    padding: 6px 8px;
+    border-radius: 6px;
+    cursor: pointer;
+}
+.doc-btn-delete:hover { background: #fee2e2; }
+
+/* Empty state */
+.pdfs-empty {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 60px 24px;
+    text-align: center;
+}
+
+.empty-icon { font-size: 48px; margin-bottom: 16px; }
+
+.empty-title {
+    font-size: 16px;
+    font-weight: 700;
+    color: #374151;
+    margin: 0 0 8px;
+}
+
+.empty-sub {
+    font-size: 13px;
+    color: #9ca3af;
+    margin: 0 0 24px;
+}
+
+.btn-empty-generate {
+    padding: 10px 24px;
+    background: #1d4ed8;
+    color: white;
+    border: none;
+    border-radius: 8px;
+    font-size: 13px;
+    font-weight: 600;
+    cursor: pointer;
+}
+.btn-empty-generate:hover { background: #1e40af; }
+
+/* Doc count badge on tab button */
+.doc-count-badge {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    background: #1d4ed8;
+    color: white;
+    border-radius: 10px;
+    font-size: 10px;
+    font-weight: 700;
+    min-width: 18px;
+    height: 18px;
+    padding: 0 5px;
+    margin-left: 6px;
+}

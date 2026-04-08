@@ -1,0 +1,173 @@
+<template>
+    <template if:true={isOpen}>
+        <div class="pdf-overlay">
+
+            <!-- TOP BAR -->
+            <div class="pdf-topbar">
+                <div class="topbar-left">
+                    <span class="page-count">1 page</span>
+                    <div class="zoom-controls">
+                        <button class="zoom-btn" onclick={handleZoomOut} title="Zoom Out">−</button>
+                        <span class="zoom-level">{zoomLevel}%</span>
+                        <button class="zoom-btn" onclick={handleZoomIn} title="Zoom In">+</button>
+                    </div>
+                </div>
+                <div class="topbar-right">
+                    <button class="topbar-btn" onclick={handleDownload} title="Download as HTML (open and print to save as PDF)">
+                        ⬇ Download
+                    </button>
+                    <button class="topbar-btn topbar-btn-save" onclick={handleSave} disabled={isSaving}>
+                        {saveLabel}
+                    </button>
+                    <button class="topbar-btn topbar-btn-close" onclick={handleClose} title="Close">
+                        ✕
+                    </button>
+                </div>
+            </div>
+
+            <!-- SCROLL AREA -->
+            <div class="pdf-scroll-area">
+                <div class="pdf-page-wrapper">
+                    <div class="pdf-document" style={pageStyle}>
+
+                        <!-- ── HEADER ─────────────────────────────────── -->
+                        <div class="pdf-header">
+                            <div class="company-section">
+                                <template if:true={hasLogo}>
+                                    <img src={logoSrc} class="company-logo" alt="Company Logo" />
+                                </template>
+                                <div class="company-name">{companyName}</div>
+                                <div class="company-addr">{companyAddressLine}</div>
+                                <template if:true={companyCountry}>
+                                    <div class="company-addr">{companyCountry}</div>
+                                </template>
+                                <template if:true={companyContact}>
+                                    <div class="company-addr">{companyContact}</div>
+                                </template>
+                                <template if:true={companyWebsite}>
+                                    <div class="company-addr">{companyWebsite}</div>
+                                </template>
+                            </div>
+                            <div class="quote-box">
+                                <div class="quote-title">QUOTE</div>
+                                <div class="quote-detail">
+                                    Quote #: <strong>{quoteNumber}</strong>
+                                </div>
+                                <div class="quote-detail">Date: {quoteDate}</div>
+                                <div class="quote-detail">Valid Until: {validUntil}</div>
+                                <div class="quote-detail">Prepared By: {preparedBy}</div>
+                            </div>
+                        </div>
+
+                        <hr class="pdf-hr" />
+
+                        <!-- ── BILL TO ─────────────────────────────────── -->
+                        <div class="bill-to-block">
+                            <div class="small-label">Bill To</div>
+                            <div class="bill-to-name">{accountName}</div>
+                        </div>
+
+                        <!-- ── PROJECT OVERVIEW ───────────────────────── -->
+                        <div class="section-block">
+                            <h2 class="section-h2">Project Overview</h2>
+                            <div class="small-label" style="margin-bottom:6px">DESCRIPTION</div>
+                            <div class="field-value">{quoteDescription}</div>
+                        </div>
+
+                        <!-- ── PRICE BREAKDOWN ────────────────────────── -->
+                        <div class="section-block">
+                            <h2 class="section-h2">Detailed Price Breakdown</h2>
+                            <table class="items-table">
+                                <thead>
+                                    <tr>
+                                        <th class="th-left">Name</th>
+                                        <th class="th-left">Phase</th>
+                                        <th class="th-center">Qty</th>
+                                        <th class="th-right">Unit Price</th>
+                                        <th class="th-center">Disc.</th>
+                                        <th class="th-right">Total</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <template if:true={hasLineItems}>
+                                        <template for:each={lineItemRows} for:item="row">
+                                            <tr key={row.id} class="item-tr">
+                                                <td class="td-left">{row.name}</td>
+                                                <td class="td-left">{row.phase}</td>
+                                                <td class="td-center">{row.qty}</td>
+                                                <td class="td-right">{row.unitPrice}</td>
+                                                <td class="td-center">{row.discount}</td>
+                                                <td class="td-right td-total">{row.total}</td>
+                                            </tr>
+                                        </template>
+                                    </template>
+                                    <template if:false={hasLineItems}>
+                                        <tr>
+                                            <td colspan="6" class="empty-row">
+                                                No line items added to this quote.
+                                            </td>
+                                        </tr>
+                                    </template>
+                                </tbody>
+                            </table>
+
+                            <!-- Total box -->
+                            <div class="total-container">
+                                <div class="total-box">
+                                    <div class="subtotal-row">
+                                        <span>Subtotal:</span>
+                                        <span>{formattedSubtotal}</span>
+                                    </div>
+                                    <div class="grand-total-row">
+                                        <span>Total Project Cost:</span>
+                                        <span>{formattedTotal}</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- ── TERMS & CONDITIONS ─────────────────────── -->
+                        <div class="section-block">
+                            <h2 class="section-h2">Terms and Conditions</h2>
+                            <div class="terms-grid">
+                                <div class="term-item">
+                                    <div class="term-title">1. Scope of Work</div>
+                                    <div class="term-body">Work will be performed according to specifications outlined in this quote. Changes in scope require written approval and may result in additional charges.</div>
+                                </div>
+                                <div class="term-item">
+                                    <div class="term-title">2. Timeline and Delivery</div>
+                                    <div class="term-body">Project timeline is estimated based on current requirements. Delays caused by client feedback or scope changes may extend the timeline.</div>
+                                </div>
+                                <div class="term-item">
+                                    <div class="term-title">3. Payment Terms</div>
+                                    <div class="term-body">Payment schedule must be maintained for project to proceed. Late payments (&gt;15 days) will incur a 1.5% monthly service charge.</div>
+                                </div>
+                                <div class="term-item">
+                                    <div class="term-title">4. Intellectual Property</div>
+                                    <div class="term-body">Client will own all custom code and designs upon final payment. Third-party licenses remain property of respective owners.</div>
+                                </div>
+                                <div class="term-item">
+                                    <div class="term-title">5. Warranty and Support</div>
+                                    <div class="term-body">30-day warranty on all custom development work. Bug fixes during warranty period provided at no charge.</div>
+                                </div>
+                                <div class="term-item">
+                                    <div class="term-title">6. Acceptance</div>
+                                    <div class="term-body">Quote valid for 30 days from date issued. Project begins upon signed contract and initial deposit.</div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- ── FOOTER ─────────────────────────────────── -->
+                        <hr class="pdf-hr" style="margin-bottom:14px" />
+                        <div class="pdf-footer">
+                            This quote is created by Provus Express Quoting product.
+                            To learn more, check this out — https://provus.ai/cpq-express
+                        </div>
+
+                    </div><!-- /.pdf-document -->
+                </div><!-- /.pdf-page-wrapper -->
+            </div><!-- /.pdf-scroll-area -->
+
+        </div><!-- /.pdf-overlay -->
+    </template>
+</template>
