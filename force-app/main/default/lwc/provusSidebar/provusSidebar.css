@@ -5,9 +5,8 @@
     border-right: 1px solid #e5e7eb;
     display: flex;
     flex-direction: column;
-    height: 100vh;
-    position: sticky;
-    top: 0;
+    height: 100%;
+    overflow: hidden;
 }
 
 /* Header */
@@ -15,7 +14,7 @@
     display: flex;
     align-items: center;
     gap: 10px;
-    padding: 20px 16px 16px;
+    padding: 12px 14px;
     border-bottom: 1px solid #e5e7eb;
 }
 
@@ -54,13 +53,14 @@
     display: flex;
     align-items: center;
     gap: 10px;
-    padding: 10px 12px;
+    padding: 8px 12px;
     border-radius: 8px;
     cursor: pointer;
     margin-bottom: 2px;
     transition: background-color 0.15s ease;
     color: #374151;
     font-size: 13px;
+    user-select: none;
 }
 
 .nav-item:hover {
@@ -90,14 +90,14 @@
 
 /* Bottom links */
 .sidebar-bottom {
-    padding: 8px;
+    padding: 12px 8px;
     border-top: 1px solid #e5e7eb;
 }
 
 .bottom-item {
     color: #6b7280;
-    font-size: 12px;
-    padding: 8px 12px;
+    font-size: 13px;
+    padding: 10px 12px;
 }
 
 .bottom-item:hover {

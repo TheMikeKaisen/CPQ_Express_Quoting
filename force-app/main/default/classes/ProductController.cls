@@ -1,8 +1,10 @@
 public with sharing class ProductController {
 
-    // ── Get all products ──────────────────────────────────────────────────
+    // ── Get all products with optional search and status filters ──────────
     @AuraEnabled(cacheable=true)
-    public static List<Product__c> getProducts(String searchTerm) {
+    public static List<Product__c> getProducts(
+            String searchTerm,
+            String statusFilter) {
 
         String query = 'SELECT Id, Name, Name__c, Description__c, ' +
                        'Billing_Unit__c, Price__c, Cost__c, ' +
@@ -14,6 +16,14 @@ public with sharing class ProductController {
         if (String.isNotBlank(searchTerm)) {
             conditions.add('Name__c LIKE \'%' +
                      String.escapeSingleQuotes(searchTerm) + '%\'');
+        }
+
+        if (String.isNotBlank(statusFilter)) {
+            if (statusFilter == 'Active') {
+                conditions.add('Is_Active__c = true');
+            } else if (statusFilter == 'Inactive') {
+                conditions.add('Is_Active__c = false');
+            }
         }
 
         if (!conditions.isEmpty()) {

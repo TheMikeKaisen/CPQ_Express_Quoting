@@ -44,7 +44,7 @@ export default class ProvusAddItemsModal extends LightningElement {
         if (error) console.error('RR error:', error);
     }
 
-    @wire(getProducts, { searchTerm: '' })
+    @wire(getProducts, { searchTerm: '', statusFilter: 'Active' })
     wiredProducts({ data, error }) {
         if (data) {
             this.allProducts = data.map(p => ({
@@ -58,7 +58,7 @@ export default class ProvusAddItemsModal extends LightningElement {
         if (error) console.error('Products error:', error);
     }
 
-    @wire(getAddons, { searchTerm: '' })
+    @wire(getAddons, { searchTerm: '', statusFilter: 'Active' })
     wiredAddons({ data, error }) {
         if (data) {
             this.allAddons = data.map(a => ({
