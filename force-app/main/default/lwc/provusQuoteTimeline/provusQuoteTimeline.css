@@ -1,0 +1,182 @@
+.timeline-container {
+    background: #fff;
+    border-radius: 8px;
+    padding: 16px;
+    margin-top: 16px;
+}
+
+.timeline-legend {
+    display: flex;
+    justify-content: flex-start;
+    margin-bottom: 24px;
+}
+.legend-items {
+    display: flex;
+    gap: 24px;
+    font-size: 13px;
+    color: #4b5563;
+}
+.legend-item {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+.dot {
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    display: inline-block;
+}
+.dot-product, .type-dot.dot-product { background-color: #3b82f6; }
+.dot-addon, .type-dot.dot-addon { background-color: #8b5cf6; } 
+.dot-role, .type-dot.dot-role { background-color: #10b981; }
+
+.dot-default, .type-dot.dot-default { background-color: #9ca3af; }
+.type-dot {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    display: inline-block;
+}
+
+.empty-state {
+    text-align: center;
+    padding: 40px;
+    color: #6b7280;
+    font-size: 14px;
+    background: #f9fafb;
+    border: 1px dashed #d1d5db;
+    border-radius: 8px;
+}
+
+/* Gantt Layout */
+.gantt-wrapper {
+    display: flex;
+    border: 1px solid #e5e7eb;
+    border-radius: 8px;
+    overflow: hidden;
+}
+
+.gantt-pane-left {
+    min-width: 320px;
+    width: 320px;
+    flex-shrink: 0;
+    border-right: 1px solid #e5e7eb;
+    background: #f9fafb;
+    display: flex;
+    flex-direction: column;
+}
+
+.gantt-pane-right {
+    flex-grow: 1;
+    overflow-x: auto;
+    background: #fff;
+    display: flex;
+    flex-direction: column;
+    position: relative;
+    min-width: 400px;
+}
+
+/* Headers */
+.gantt-header-left, .gantt-header-right {
+    display: flex;
+    height: 48px;
+    border-bottom: 1px solid #e5e7eb;
+    background: #f9fafb;
+    align-items: center;
+    font-size: 13px;
+    color: #6b7280;
+    font-weight: 500;
+}
+.gantt-header-left {
+    padding: 0 16px;
+}
+.col-issues { flex-grow: 1; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; display: flex; align-items: center; gap: 8px;}
+.col-duration { width: 100px; text-align: right; }
+
+.gantt-header-right {
+    position: relative;
+}
+.header-cell {
+    /* inline width driven by react/lwc */
+    flex-shrink: 0;
+    text-align: center;
+    border-right: 1px solid #f3f4f6;
+    padding: 0 4px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+/* Body */
+.gantt-body-left {
+    flex-grow: 1;
+}
+.gantt-row-left {
+    display: flex;
+    align-items: center;
+    padding: 0 16px;
+    height: 48px;
+    border-bottom: 1px solid #f3f4f6;
+    font-size: 13px;
+    color: #111827;
+}
+
+.item-name { font-weight: 500; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+
+.gantt-body-right {
+    position: relative;
+    flex-grow: 1;
+}
+.grid-lines {
+    position: absolute;
+    top: 0; bottom: 0; left: 0; right: 0;
+    display: flex;
+    pointer-events: none;
+}
+.grid-line {
+    flex-shrink: 0;
+    border-right: 1px dashed #e5e7eb;
+    height: 100%;
+}
+
+.bars-container {
+    position: relative;
+    z-index: 10;
+}
+
+/* Timeline Rows (right) */
+.gantt-row-right {
+    position: relative;
+    height: 48px;
+    border-bottom: 1px solid #f3f4f6;
+}
+
+.timeline-bar {
+    position: absolute;
+    top: 8px;
+    height: 32px;
+    border-radius: 6px;
+    display: flex;
+    align-items: center;
+    padding: 0 8px;
+    white-space: nowrap;
+    overflow: hidden;
+    font-size: 12px;
+    font-weight: 500;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+    transition: transform 0.2s;
+    cursor: default;
+}
+.timeline-bar:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1), 0 2px 4px -1px rgba(0,0,0,0.06);
+}
+
+.bar-product { background-color: #dbeafe; color: #1e40af; border: 1px solid #bfdbfe; }
+.bar-addon { background-color: #ede9fe; color: #5b21b6; border: 1px solid #ddd6fe; }
+.bar-role { background-color: #d1fae5; color: #065f46; border: 1px solid #a7f3d0; }
+.bar-default { background-color: #f3f4f6; color: #374151; border: 1px solid #e5e7eb; }
+
+.bar-icon { margin-right: 6px; opacity: 0.8; font-size: 14px; }
+.bar-label { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }

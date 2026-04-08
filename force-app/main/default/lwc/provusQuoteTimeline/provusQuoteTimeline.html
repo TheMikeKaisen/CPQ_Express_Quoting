@@ -1,0 +1,75 @@
+<template>
+    <div class="timeline-container">
+        
+        <div class="timeline-legend">
+            <div class="legend-items">
+                <span class="legend-item"><span class="dot dot-product"></span> Product</span>
+                <span class="legend-item"><span class="dot dot-addon"></span> Add-on</span>
+                <span class="legend-item"><span class="dot dot-role"></span> Resource Role</span>
+            </div>
+        </div>
+
+        <template if:false={hasItems}>
+            <div class="empty-state">
+                <p>No valid line items found to generate a timeline. Add line items with Start and End Dates to view them here.</p>
+            </div>
+        </template>
+
+        <template if:true={hasItems}>
+            <div class="gantt-wrapper">
+                
+                <!-- Left Pane: Issues List -->
+                <div class="gantt-pane-left">
+                    <div class="gantt-header-left">
+                        <div class="col-issues">Issues</div>
+                        <div class="col-duration">Duration</div>
+                    </div>
+                    <div class="gantt-body-left">
+                        <template for:each={timelineItems} for:item="item">
+                            <div class="gantt-row-left" key={item.Id}>
+                                <div class="col-issues">
+                                    <span class={item.dotClass}></span>
+                                    <span class="item-name" title={item.Name}>{item.Name}</span>
+                                </div>
+                                <div class="col-duration">{item.durationText}</div>
+                            </div>
+                        </template>
+                    </div>
+                </div>
+
+                <!-- Right Pane: Timeline Grid -->
+                <div class="gantt-pane-right">
+                    <div class="gantt-header-right">
+                        <template for:each={timelineHeaders} for:item="header">
+                            <div key={header.label} class="header-cell" style={header.style}>
+                                {header.label}
+                            </div>
+                        </template>
+                    </div>
+                    <div class="gantt-body-right">
+                        <!-- Grid lines -->
+                        <div class="grid-lines">
+                            <template for:each={timelineHeaders} for:item="header">
+                                <div key={header.label} class="grid-line" style={header.style}></div>
+                            </template>
+                        </div>
+                        
+                        <!-- Timeline Bars -->
+                        <div class="bars-container">
+                            <template for:each={timelineItems} for:item="item">
+                                <div class="gantt-row-right" key={item.Id}>
+                                    <div class={item.typeClass} style={item.cssStyle} title={item.Name}>
+                                        <span class="bar-icon">{item.icon}</span> 
+                                        <span class="bar-label">{item.Name}</span>
+                                    </div>
+                                </div>
+                            </template>
+                        </div>
+
+                    </div>
+                </div>
+            </div>
+        </template>
+
+    </div>
+</template>
