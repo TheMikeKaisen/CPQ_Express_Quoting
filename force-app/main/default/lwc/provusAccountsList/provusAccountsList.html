@@ -82,7 +82,9 @@
                             </td>
                             <td>{acc.rowNumber}</td>
                             <td>
-                                <span class="name-link">
+                                <span class="name-link"
+                                      onclick={handleEdit}
+                                      data-id={acc.Id}>
                                     {acc.Name}
                                 </span>
                             </td>
@@ -143,7 +145,7 @@
         </div>
         <div class="modal-box">
             <div class="modal-header">
-                <h2 class="modal-title">New Account</h2>
+                <h2 class="modal-title">{modalTitle}</h2>
                 <button class="close-btn" onclick={handleModalClose}>
                     ✕
                 </button>
@@ -153,12 +155,12 @@
                     <label class="form-label">
                         Name <span class="req">*</span>
                     </label>
-                    <input type="text" class="form-input" placeholder="Account name" onchange={handleFieldChange}
+                    <input type="text" class="form-input" placeholder="Account name" value={formData.name} onchange={handleFieldChange}
                         data-field="name" />
                 </div>
                 <div class="form-group">
                     <label class="form-label">Type</label>
-                    <select class="form-select" onchange={handleFieldChange} data-field="type">
+                    <select class="form-select" value={formData.type} onchange={handleFieldChange} data-field="type">
                         <option value="">Select type...</option>
                         <option value="Prospect">Prospect</option>
                         <option value="Customer">Customer</option>
@@ -168,7 +170,7 @@
                 </div>
                 <div class="form-group">
                     <label class="form-label">Industry</label>
-                    <select class="form-select" onchange={handleFieldChange} data-field="industry">
+                    <select class="form-select" value={formData.industry} onchange={handleFieldChange} data-field="industry">
                         <option value="">
                             Select industry...
                         </option>
@@ -188,12 +190,12 @@
                 </div>
                 <div class="form-group">
                     <label class="form-label">Website</label>
-                    <input type="text" class="form-input" placeholder="www.example.com" onchange={handleFieldChange}
+                    <input type="text" class="form-input" placeholder="www.example.com" value={formData.website} onchange={handleFieldChange}
                         data-field="website" />
                 </div>
                 <div class="form-group">
                     <label class="form-label">Phone</label>
-                    <input type="text" class="form-input" placeholder="+1 234 567 8900" onchange={handleFieldChange}
+                    <input type="text" class="form-input" placeholder="+1 234 567 8900" value={formData.phone} onchange={handleFieldChange}
                         data-field="phone" />
                 </div>
                 <template if:true={errorMessage}>

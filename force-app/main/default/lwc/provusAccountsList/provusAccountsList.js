@@ -29,6 +29,7 @@ export default class ProvusAccountsList extends LightningElement {
     @track showModal = false;
     @track isSaving = false;
     @track errorMessage = '';
+    @track selectedId = null;
 
     // Form fields
     @track formData = {
@@ -131,10 +132,34 @@ export default class ProvusAccountsList extends LightningElement {
         }
     }
 
-    handleNew() { this.showModal = true; }
+    get modalTitle() {
+        return this.selectedId ? 'Edit Account' : 'New Account';
+    }
+
+    handleNew() {
+        this.selectedId = null;
+        this.showModal = true;
+    }
+
+    handleEdit(event) {
+        const accountId = event.currentTarget.dataset.id;
+        const acc = this.allAccounts.find(a => a.Id === accountId);
+        if (acc) {
+            this.selectedId = accountId;
+            this.formData = {
+                name:     acc.Name,
+                type:     acc.Type || '',
+                industry: acc.Industry || '',
+                website:  acc.Website || '',
+                phone:    acc.Phone || ''
+            };
+            this.showModal = true;
+        }
+    }
 
     handleModalClose() {
         this.showModal = false;
+        this.selectedId = null;
         this.errorMessage = '';
         this.formData = {
             name: '', type: '', industry: '',
@@ -158,6 +183,7 @@ export default class ProvusAccountsList extends LightningElement {
         this.isSaving = true;
 
         createAccount({
+            accountId: this.selectedId,
             name: this.formData.name,
             type: this.formData.type,
             industry: this.formData.industry,

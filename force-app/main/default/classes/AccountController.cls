@@ -25,9 +25,10 @@ public with sharing class AccountController {
         return Database.query(query);
     }
 
-    // ── Create new account ────────────────────────────────────────────────
+    // ── Create or Update account ──────────────────────────────────────────
     @AuraEnabled
     public static Id createAccount(
+            Id accountId,
             String name,
             String type,
             String industry,
@@ -35,13 +36,16 @@ public with sharing class AccountController {
             String phone) {
 
         Account acc  = new Account();
+        if (accountId != null) {
+            acc.Id = accountId;
+        }
         acc.Name     = name;
         acc.Type     = type;
         acc.Industry = industry;
         acc.Website  = website;
         acc.Phone    = phone;
 
-        insert acc;
+        upsert acc;
         return acc.Id;
     }
 
