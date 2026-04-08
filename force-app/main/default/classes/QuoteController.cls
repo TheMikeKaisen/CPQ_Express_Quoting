@@ -13,6 +13,7 @@ public with sharing class QuoteController {
                        'CreatedById, CreatedBy.Name, CreatedDate, ' +
                        'TotalPrice, GrandTotal, Discount, ' +
                        'Subtotal, ExpirationDate, ' +
+                       'Total_Amount__c, Subtotal__c, ' +
                        'Start_Date__c, End_Date__c, Time_Period__c, ' +
                        'Margin_Amount__c, Margin_Percent__c ' +
                        'FROM Quote';
@@ -68,6 +69,7 @@ public with sharing class QuoteController {
                    CreatedDate, LastModifiedDate,
                    TotalPrice, GrandTotal, Discount,
                    Subtotal, ExpirationDate,
+                   Total_Amount__c, Subtotal__c,
                    Start_Date__c, End_Date__c,
                    Time_Period__c,
                    Margin_Amount__c, Margin_Percent__c
@@ -278,17 +280,21 @@ public with sharing class QuoteController {
 @AuraEnabled
 public static void recalculateQuoteTotals(Id quoteId) {
     List<Quote_Line_Item__c> qlis = [
-        SELECT Total_Price__c, Cost__c, Quantity__c, End_Date__c 
+        SELECT Total_Price__c, Unit_Price__c, Cost__c, Quantity__c, End_Date__c 
         FROM Quote_Line_Item__c 
         WHERE Quote__c = :quoteId
     ];
 
     Decimal revenue = 0;
+    Decimal subtotal = 0;
     Decimal totalCost = 0;
     Date maxEnd = null;
 
     for(Quote_Line_Item__c item : qlis) {
         if(item.Total_Price__c != null) revenue += item.Total_Price__c;
+        if(item.Unit_Price__c  != null && item.Quantity__c != null) {
+            subtotal += (item.Unit_Price__c * item.Quantity__c);
+        }
         if(item.Cost__c != null && item.Quantity__c != null) {
             totalCost += (item.Cost__c * item.Quantity__c);
         }
@@ -302,6 +308,8 @@ public static void recalculateQuoteTotals(Id quoteId) {
     
     q.Margin_Amount__c = revenue - totalCost;
     q.Margin_Percent__c = (revenue > 0) ? (q.Margin_Amount__c / revenue) * 100 : 0;
+    q.Total_Amount__c = revenue;
+    q.Subtotal__c = subtotal;
     
     // Automatically extend quote end date if a line item exceeds it
     if (maxEnd != null && (q.End_Date__c == null || maxEnd > q.End_Date__c)) {

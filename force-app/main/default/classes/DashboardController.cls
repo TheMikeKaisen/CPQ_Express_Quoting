@@ -5,7 +5,7 @@ public with sharing class DashboardController {
     public static Map<String, Object> getDraftPipeline() {
         AggregateResult result = [
             SELECT COUNT(Id) quoteCount,
-                   SUM(TotalPrice) totalAmount
+                   SUM(Total_Amount__c) totalAmount
             FROM Quote
             WHERE Status = 'Draft'
         ];
@@ -21,7 +21,7 @@ public with sharing class DashboardController {
     public static Map<String, Object> getHighMarginDeals() {
         AggregateResult result = [
             SELECT COUNT(Id) quoteCount,
-                   SUM(TotalPrice) totalAmount
+                   SUM(Total_Amount__c) totalAmount
             FROM Quote
             WHERE Margin_Percent__c >= 35
         ];
@@ -37,7 +37,7 @@ public with sharing class DashboardController {
     public static Map<String, Object> getWonThisMonth() {
         AggregateResult result = [
             SELECT COUNT(Id) quoteCount,
-                   SUM(TotalPrice) totalAmount
+                   SUM(Total_Amount__c) totalAmount
             FROM Quote
             WHERE Status = 'Approved'
             AND CreatedDate = THIS_MONTH
@@ -54,7 +54,7 @@ public with sharing class DashboardController {
     public static List<Quote> getRecentQuotes() {
         return [
             SELECT Id, QuoteNumber, Name, Status,
-                   Account.Name, TotalPrice,
+                   Account.Name, Total_Amount__c,
                    CreatedDate, Margin_Percent__c
             FROM Quote
             WHERE CreatedById = :UserInfo.getUserId()

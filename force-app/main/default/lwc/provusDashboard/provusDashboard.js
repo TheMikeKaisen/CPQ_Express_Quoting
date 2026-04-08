@@ -28,6 +28,11 @@ export default class ProvusDashboard extends LightningElement {
     @track recentQuotes      = [];
 
     userId = USER_ID;
+    
+    connectedCallback() {
+        // Refresh all dashboard metrics whenever we navigate to this tab
+        this.handleRefresh();
+    }
 
     // Wire results for refreshApex
     wiredDraftResult;
@@ -88,7 +93,7 @@ export default class ProvusDashboard extends LightningElement {
                 ...q,
                 accountName: q.Account
                     ? q.Account.Name : '-',
-                formattedAmount: this.formatCurrency(q.TotalPrice)
+                formattedAmount: this.formatCurrency(q.Total_Amount__c)
             }));
         }
     }

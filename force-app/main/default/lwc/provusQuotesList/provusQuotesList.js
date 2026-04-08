@@ -34,6 +34,13 @@ export default class ProvusQuotesList extends LightningElement {
         }
     }
 
+    connectedCallback() {
+        // Refresh the list every time we navigate back to it
+        if (this.wiredQuotesResult) {
+            refreshApex(this.wiredQuotesResult);
+        }
+    }
+
     // ── Wire accounts for filter ──────────────────────────────────────────
     @wire(getAccountsForFilter)
     wiredAccounts({ data, error }) {
@@ -65,15 +72,16 @@ export default class ProvusQuotesList extends LightningElement {
                         ? new Date(q.CreatedDate)
                             .toLocaleDateString('en-US')
                         : '-',
-                    formattedAmount: q.TotalPrice != null
-                        ? '$' + Number(q.TotalPrice)
+                    formattedAmount: q.Total_Amount__c != null
+                        ? '$' + Number(q.Total_Amount__c)
                             .toLocaleString('en-US', {
                                 minimumFractionDigits: 2,
                                 maximumFractionDigits: 2
                             })
                         : '$0.00',
-                    formattedDiscount: q.Discount
-                        ? q.Discount + '%' : '-',
+                    formattedDiscount: (q.Subtotal__c > 0 && q.Total_Amount__c != null)
+                        ? (Number((q.Subtotal__c - q.Total_Amount__c) / q.Subtotal__c * 100).toFixed(1) + '%')
+                        : '-',
                     formattedMargin: q.Margin_Percent__c != null
                         ? Number(q.Margin_Percent__c)
                             .toFixed(2) + '%'
@@ -154,6 +162,10 @@ export default class ProvusQuotesList extends LightningElement {
 
     handleQuoteCreated(event) {
         this.showCreateModal = false;
+        // ── Refresh cache so the list is ready when we come back ──────
+        if (this.wiredQuotesResult) {
+            refreshApex(this.wiredQuotesResult);
+        }
         // ── FIX: NO bubbles/composed ──────────────────────────────────
         this.dispatchEvent(new CustomEvent('viewquote', {
             detail: { quoteId: event.detail.quoteId }
