@@ -249,6 +249,102 @@ input[disabled] {
 .rate-cell { text-align: right; color: #374151; }
 .total-cell { text-align: right; color: #3b82f6; font-weight: 500; }
 
+/* ── Calculation Popovers ──────────────────────────────────────────────── */
+.clickable-value {
+    color: #3b82f6;
+    cursor: pointer;
+    text-decoration: underline;
+    text-decoration-style: dashed;
+    text-decoration-color: #9ca3af;
+    text-underline-offset: 4px;
+    display: inline-block;
+    padding: 2px 4px;
+    text-align: right;
+    width: 100%;
+}
+.clickable-value:hover {
+    color: #2563eb;
+    background: #f3f4f6;
+    border-radius: 4px;
+}
+
+.calc-popover {
+    position: absolute;
+    top: 100%;
+    right: 0;
+    margin-top: 4px;
+    background: white;
+    border: 1px solid #e5e7eb;
+    border-radius: 6px;
+    box-shadow: 0 10px 15px -3px rgba(0,0,0,0.1), 0 4px 6px -2px rgba(0,0,0,0.05);
+    width: 280px;
+    z-index: 100;
+    text-align: left;
+    overflow: hidden;
+}
+
+/* Offset for Total Price popover so it doesn't clip off screen */
+.tp-popover {
+    width: 320px;
+}
+
+.popover-header {
+    background: #f9fafb;
+    padding: 8px 12px;
+    border-bottom: 1px solid #e5e7eb;
+    font-weight: 600;
+    font-size: 13px;
+    color: #111827;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.close-btn {
+    cursor: pointer;
+    color: #9ca3af;
+    font-size: 14px;
+}
+.close-btn:hover { color: #4b5563; }
+
+.popover-body {
+    padding: 12px;
+}
+
+.calc-row {
+    display: flex;
+    justify-content: space-between;
+    font-size: 12.5px;
+    color: #4b5563;
+    margin-bottom: 6px;
+}
+
+.calc-row span:last-child {
+    font-weight: 500;
+    color: #111827;
+}
+
+.popover-body hr {
+    border: none;
+    border-top: 1px solid #e5e7eb;
+    margin: 10px 0;
+}
+
+.result-row {
+    margin-bottom: 0;
+    align-items: center;
+}
+.result-row span:first-child {
+    font-weight: 600;
+    color: #10b981; /* green text */
+}
+
+.highlight-val {
+    font-weight: 700 !important;
+    color: #10b981 !important; /* green value */
+    font-size: 14px;
+}
+
 .empty-cell {
     text-align: center;
     color: #9ca3af;

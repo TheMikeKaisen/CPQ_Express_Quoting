@@ -25,6 +25,10 @@ export default class ProvusQuoteLineItems extends LightningElement {
     @track dragOverPhase = null;
     @track targetPhase = '';
 
+    // Popover state
+    @track activePopoverId = null;
+    @track popoverType = null; // 'unitPrice' or 'totalPrice'
+
     wiredItemsResult = undefined;
     wiredPhaseListResult = undefined;
 
@@ -68,9 +72,10 @@ export default class ProvusQuoteLineItems extends LightningElement {
                 // Duration is only applicable for time-based billing (Hour, Day)
                 durationDisabled:       item.Billing_Unit__c === 'Each',
                 showEndDate:            item.Billing_Unit__c !== 'Each',
-                formattedBaseRate:      this.formatCurrency(item.Base_Rate__c),
-                formattedUnitPrice:     this.formatCurrency(item.Unit_Price__c),
-                formattedTotal:         this.formatCurrency(item.Line_Total__c),
+                
+                // Advanced popover calculation fields
+                ...this.getCalculationFields(item),
+                
                 selected:               this.selectedItemIds.has(item.Id)
             }));
         } else if (result.error) {
@@ -89,7 +94,12 @@ export default class ProvusQuoteLineItems extends LightningElement {
             rows.push({
                 isItem: true,
                 isPhase: false,
-                record: { ...item, selected: this.selectedItemIds.has(item.Id) },
+                record: { 
+                    ...item, 
+                    selected: this.selectedItemIds.has(item.Id),
+                    isUpPopoverOpen: this.activePopoverId === item.Id && this.popoverType === 'unitPrice',
+                    isTpPopoverOpen: this.activePopoverId === item.Id && this.popoverType === 'totalPrice'
+                },
                 rowClass: 'item-row root-item'
             });
         });
@@ -119,7 +129,12 @@ export default class ProvusQuoteLineItems extends LightningElement {
                     rows.push({
                         isItem: true,
                         isPhase: false,
-                        record: { ...item, selected: this.selectedItemIds.has(item.Id) },
+                        record: { 
+                            ...item, 
+                            selected: this.selectedItemIds.has(item.Id),
+                            isUpPopoverOpen: this.activePopoverId === item.Id && this.popoverType === 'unitPrice',
+                            isTpPopoverOpen: this.activePopoverId === item.Id && this.popoverType === 'totalPrice'
+                        },
                         rowClass: 'item-row nested-item'
                     });
                 });
@@ -133,6 +148,115 @@ export default class ProvusQuoteLineItems extends LightningElement {
     get grandTotal() {
         const total = this.lineItems.reduce((sum, item) => sum + (item.Line_Total__c || 0), 0);
         return this.formatCurrency(total);
+    }
+
+    getCalculationFields(item) {
+        const rawUnitPrice = item.Unit_Price__c || 0;
+        const timePeriod = (item.Quote__r && item.Quote__r.Time_Period__c) ? item.Quote__r.Time_Period__c : 'Days';
+        const hoursPerPeriod = this.getHoursPerPeriod(timePeriod);
+        
+        let calcUnitPrice = rawUnitPrice;
+        let upCalcFormula = '';
+        let upDesc = '';
+        const baseRate = this.formatCurrency(rawUnitPrice);
+
+        if (item.Billing_Unit__c === 'Hour') {
+            calcUnitPrice = rawUnitPrice * hoursPerPeriod;
+            upCalcFormula = `${baseRate} × ${hoursPerPeriod}`;
+            upDesc = `${baseRate}/hour`;
+        } else if (item.Billing_Unit__c === 'Day') {
+            calcUnitPrice = rawUnitPrice;
+            upCalcFormula = 'Daily rate';
+            upDesc = `${baseRate}/day`;
+        } else {
+            calcUnitPrice = rawUnitPrice;
+            upCalcFormula = 'Flat rate per item';
+            upDesc = `${baseRate}/each`;
+        }
+
+        const dur = item.Duration__c || 1;
+        const qty = item.Quantity__c || 1;
+        const disc = item.Discount_Percent__c || 0;
+        const discMultiplier = (1 - disc / 100);
+
+        let tpCalcFormula = '';
+        const fmtCalcUp = this.formatCurrency(calcUnitPrice);
+
+        if (item.Billing_Unit__c === 'Hour' || item.Billing_Unit__c === 'Day') {
+            tpCalcFormula = `${fmtCalcUp} × ${dur} × ${qty}`;
+            if (disc > 0) tpCalcFormula += ` × (1 - ${disc/100})`;
+        } else {
+            tpCalcFormula = `${fmtCalcUp} × ${qty}`;
+            if (disc > 0) tpCalcFormula += ` × (1 - ${disc/100})`;
+        }
+
+        const isUpPopoverOpen = this.activePopoverId === item.Id && this.popoverType === 'unitPrice';
+        const isTpPopoverOpen = this.activePopoverId === item.Id && this.popoverType === 'totalPrice';
+
+        return {
+            formattedBaseRate:      baseRate,
+            rawUnit_Price__c:       rawUnitPrice,
+            calcUnitPrice:          calcUnitPrice,
+            formattedUnitPrice:     fmtCalcUp,
+            formattedTotal:         this.formatCurrency(item.Line_Total__c),
+            
+            // Popover data
+            upDesc:                 upDesc,
+            timePeriod:             timePeriod,
+            timePeriodLabel:        `Time Period (${timePeriod}):`,
+            timePeriodHours:        `${hoursPerPeriod} hours`,
+            upCalcFormula:          upCalcFormula,
+            tpCalcFormula:          tpCalcFormula,
+            qtyLabel:               `${qty} item(s)`,
+            durLabel:               `${dur} ${timePeriod.toLowerCase()}`,
+            discLabel:              `${disc}%`,
+            showTimePeriodRow:      item.Billing_Unit__c === 'Hour',
+            showDurationRow:        item.Billing_Unit__c !== 'Each',
+            
+            // State
+            isUpPopoverOpen:        isUpPopoverOpen,
+            isTpPopoverOpen:        isTpPopoverOpen
+        };
+    }
+
+    getHoursPerPeriod(timePeriod) {
+        if (timePeriod === 'Days') return 8;
+        if (timePeriod === 'Weeks') return 40;
+        if (timePeriod === 'Months') return 160;
+        if (timePeriod === 'Quarters') return 480;
+        return 8;
+    }
+
+    // ── Popover Actions ───────────────────────────────────────────────────
+    handleToggleUnitPricePopover(event) {
+        const itemId = event.currentTarget.dataset.id;
+        if (this.activePopoverId === itemId && this.popoverType === 'unitPrice') {
+            this.activePopoverId = null;
+            this.popoverType = null;
+        } else {
+            this.activePopoverId = itemId;
+            this.popoverType = 'unitPrice';
+        }
+        // Force refresh table rows by rebuilding display array
+        this.lineItems = [...this.lineItems];
+    }
+
+    handleToggleTotalPricePopover(event) {
+        const itemId = event.currentTarget.dataset.id;
+        if (this.activePopoverId === itemId && this.popoverType === 'totalPrice') {
+            this.activePopoverId = null;
+            this.popoverType = null;
+        } else {
+            this.activePopoverId = itemId;
+            this.popoverType = 'totalPrice';
+        }
+        this.lineItems = [...this.lineItems];
+    }
+
+    closePopover() {
+        this.activePopoverId = null;
+        this.popoverType = null;
+        this.lineItems = [...this.lineItems];
     }
 
     // ── Phase Collapse ────────────────────────────────────────────────────

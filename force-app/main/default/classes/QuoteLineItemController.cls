@@ -13,7 +13,7 @@ public with sharing class QuoteLineItemController {
                    Duration__c, Quantity__c, Billing_Unit__c,
                    Base_Rate__c, Unit_Price__c,
                    Discount_Percent__c, Line_Total__c,
-                   Cost__c, Margin__c
+                   Cost__c, Margin__c, Quote__r.Time_Period__c
             FROM Quote_Line_Item__c
             WHERE Quote__c = :quoteId
             ORDER BY CreatedDate ASC

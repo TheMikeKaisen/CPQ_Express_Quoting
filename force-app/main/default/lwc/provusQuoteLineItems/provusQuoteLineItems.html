@@ -140,14 +140,39 @@
                                            onchange={handleFieldChange} />
                                 </td>
                                 <td class="rate-cell">{row.record.formattedBaseRate}</td>
-                                <td>
-                                    <div style="display: flex; align-items: center; justify-content: flex-end; gap: 4px;">
-                                        <span style="color: #6b7280; font-size: 13px;">$</span>
-                                        <input type="number" class="inline-input num-input"
-                                               value={row.record.Unit_Price__c} min="0" step="1"
-                                               data-id={row.record.Id} data-field="Unit_Price__c"
-                                               onchange={handleFieldChange} />
+                                <td style="position: relative">
+                                    <div class="clickable-value" data-id={row.record.Id} onclick={handleToggleUnitPricePopover}>
+                                        {row.record.formattedUnitPrice}
                                     </div>
+                                    <template if:true={row.record.isUpPopoverOpen}>
+                                        <div class="calc-popover">
+                                            <div class="popover-header">
+                                                <span>Unit Price Calculation</span>
+                                                <span class="close-btn" onclick={closePopover}>✕</span>
+                                            </div>
+                                            <div class="popover-body">
+                                                <div class="calc-row">
+                                                    <span>Base Rate:</span>
+                                                    <span>{row.record.upDesc}</span>
+                                                </div>
+                                                <template if:true={row.record.showTimePeriodRow}>
+                                                    <div class="calc-row">
+                                                        <span>{row.record.timePeriodLabel}</span>
+                                                        <span>{row.record.timePeriodHours}</span>
+                                                    </div>
+                                                </template>
+                                                <div class="calc-row">
+                                                    <span>Calculation:</span>
+                                                    <span>{row.record.upCalcFormula}</span>
+                                                </div>
+                                                <hr/>
+                                                <div class="calc-row result-row">
+                                                    <span>Unit Price:</span>
+                                                    <span class="highlight-val">{row.record.formattedUnitPrice}</span>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </template>
                                 </td>
                                 <td>
                                     <div class="discount-input-wrap">
@@ -159,7 +184,48 @@
                                         <span class="pct-sign">%</span>
                                     </div>
                                 </td>
-                                <td class="total-cell">{row.record.formattedTotal}</td>
+                                <td class="total-cell" style="position: relative">
+                                    <div class="clickable-value" data-id={row.record.Id} onclick={handleToggleTotalPricePopover}>
+                                        {row.record.formattedTotal}
+                                    </div>
+                                    <template if:true={row.record.isTpPopoverOpen}>
+                                        <div class="calc-popover tp-popover">
+                                            <div class="popover-header">
+                                                <span>Total Price Calculation</span>
+                                                <span class="close-btn" onclick={closePopover}>✕</span>
+                                            </div>
+                                            <div class="popover-body">
+                                                <div class="calc-row">
+                                                    <span>Unit Price:</span>
+                                                    <span>{row.record.formattedUnitPrice}</span>
+                                                </div>
+                                                <div class="calc-row">
+                                                    <span>Quantity:</span>
+                                                    <span>{row.record.qtyLabel}</span>
+                                                </div>
+                                                <template if:true={row.record.showDurationRow}>
+                                                    <div class="calc-row">
+                                                        <span>Duration:</span>
+                                                        <span>{row.record.durLabel}</span>
+                                                    </div>
+                                                </template>
+                                                <div class="calc-row">
+                                                    <span>Discount:</span>
+                                                    <span>{row.record.discLabel}</span>
+                                                </div>
+                                                <div class="calc-row">
+                                                    <span>Calculation:</span>
+                                                    <span>{row.record.tpCalcFormula}</span>
+                                                </div>
+                                                <hr/>
+                                                <div class="calc-row result-row">
+                                                    <span>Total Price:</span>
+                                                    <span class="highlight-val">{row.record.formattedTotal}</span>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </template>
+                                </td>
                             </tr>
                         </template>
 
