@@ -192,8 +192,8 @@ export default class ProvusGeneratePdfModal extends LightningElement {
 <title>Quote ${q.QuoteNumber || ''}</title>
 <style>
 *{box-sizing:border-box;margin:0;padding:0}
-body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;background:#f0f2f5;padding:40px 20px;color:#1a1a1a}
-.page{background:white;max-width:800px;margin:0 auto;padding:48px;border-radius:6px;box-shadow:0 4px 24px rgba(0,0,0,.1)}
+body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;background:#f0f2f5;padding:40px 20px;color:#1a1a1a;color-scheme:light;}
+.page{background:white !important;color:#1a1a1a !important;max-width:800px;margin:0 auto;padding:48px;border-radius:6px;box-shadow:0 4px 24px rgba(0,0,0,.1);min-height:1000px;}
 @media print{body{background:white;padding:0}.page{box-shadow:none;border-radius:0;max-width:100%}}
 h2{font-size:18px;font-weight:700;color:#111827;border-bottom:3px solid #1d4ed8;padding-bottom:8px;margin-bottom:16px}
 </style>
