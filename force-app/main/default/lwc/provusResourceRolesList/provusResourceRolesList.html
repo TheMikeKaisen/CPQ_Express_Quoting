@@ -184,9 +184,11 @@
                         Billing Unit <span class="req">*</span>
                     </label>
                     <select class="form-select"
-                            disabled
+                            onchange={handleFieldChange}
                             data-field="billingUnit">
                         <option value="Hour">Hour</option>
+                        <option value="Each">Each</option>
+                        <option value="Day">Day</option>
                     </select>
                 </div>
                 <div class="form-row">

@@ -167,6 +167,49 @@
 }
 .unit-price-link:hover { color: #2563eb; }
 
+/* ── Billing Badge ─────────────────────────────────────────────────────── */
+.billing-badge {
+    display: inline-block;
+    font-size: 10px;
+    font-weight: 600;
+    padding: 2px 6px;
+    border-radius: 99px;
+    text-transform: uppercase;
+    letter-spacing: 0.4px;
+    margin-left: 4px;
+}
+.billing-badge-hour { background: #dbeafe; color: #1d4ed8; }
+.billing-badge-each { background: #d1fae5; color: #065f46; }
+.billing-badge-day  { background: #fef3c7; color: #92400e; }
+
+/* ── Read-only End Date cell ────────────────────────────────────────────── */
+.date-cell-ro {
+    text-align: center;
+    color: #6b7280;
+    font-size: 12px;
+}
+.date-display {
+    display: inline-block;
+    background: #f9fafb;
+    border: 1px dashed #d1d5db;
+    border-radius: 4px;
+    padding: 4px 8px;
+    min-width: 80px;
+}
+.date-na {
+    color: #9ca3af;
+    font-size: 13px;
+    letter-spacing: 1px;
+}
+
+/* Disabled input — grayed out for non-applicable fields */
+input[disabled] {
+    background: #f3f4f6;
+    color: #9ca3af;
+    cursor: not-allowed;
+    border-color: #e5e7eb;
+}
+
 .discount-input-wrap {
     display: flex;
     align-items: center;
@@ -176,8 +219,10 @@
 
 /* ── Specific columns ──────────────────────────────────────────────────── */
 .col-check { width: 40px; text-align: center; }
-.col-drag { width: 30px; }
-.col-name { min-width: 200px; }
+.col-drag  { width: 30px; }
+.col-name  { min-width: 200px; }
+.col-dur   { width: 80px; text-align: right; }
+.col-qty   { width: 80px; text-align: right; }
 
 .name-cell {
     /* Removed flex to prevent breaking native table borders */

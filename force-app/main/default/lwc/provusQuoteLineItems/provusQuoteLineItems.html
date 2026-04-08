@@ -31,15 +31,17 @@
                         <th class="col-task">Task</th>
                         <th class="col-date">Start Date</th>
                         <th class="col-date">End Date</th>
-                        <th class="col-qty">Quantity</th>
+                        <th class="col-dur">Duration</th>
+                        <th class="col-qty">Qty</th>
                         <th class="col-rate">Base Rate</th>
                         <th class="col-price">Unit Price</th>
-                        <th class="col-disc">Discount %</th>
+                        <th class="col-disc">Disc %</th>
                         <th class="col-total">Total Price</th>
                     </tr>
                 </thead>
+
                 <!-- ROOT DROP TARGET (Out of Phases) -->
-                <tbody 
+                <tbody
                     class="root-drop-zone"
                     data-phase=""
                     ondragover={handleDragOver}
@@ -47,8 +49,8 @@
                     ondrop={handleDrop}>
                     <template if:true={isEmpty}>
                         <tr>
-                            <td colspan="11" class="empty-cell">
-                                No line items found. Click "+ Add Item" to get started.
+                            <td colspan="12" class="empty-cell">
+                                No line items found. Click &quot;+ Add Item&quot; to get started.
                             </td>
                         </tr>
                     </template>
@@ -57,27 +59,27 @@
                 <!-- Iterate over Computed displayRows which contains both Phase Headers & Items -->
                 <tbody>
                     <template for:each={displayRows} for:item="row" for:index="index">
-                        
+
                         <!-- PHASE HEADER ROW -->
                         <template if:true={row.isPhase}>
-                            <tr key={row.phaseName} 
+                            <tr key={row.phaseName}
                                 class={row.dragOverClass}
                                 data-phase={row.phaseName}
                                 ondragover={handleDragOver}
                                 ondragleave={handleDragLeave}
                                 ondrop={handleDrop}>
-                                
+
                                 <td class="check-col">
                                     <input type="checkbox" data-phase={row.phaseName} onchange={handleSelectPhase} checked={row.phaseSelected} />
                                 </td>
                                 <td class="drag-cell">⠿</td>
-                                <td colspan="9" class="phase-name-cell">
+                                <td colspan="10" class="phase-name-cell">
                                     <span class="chevron-btn" data-phase={row.phaseName} onclick={handleTogglePhase}>
                                         {row.chevron}
                                     </span>
                                     <span class="phase-title">{row.phaseName}</span>
-                                    <button class="btn-add-to-phase" 
-                                            data-phase={row.phaseName} 
+                                    <button class="btn-add-to-phase"
+                                            data-phase={row.phaseName}
                                             onclick={handleAddItem}>+ ADD ITEM</button>
                                 </td>
                             </tr>
@@ -85,12 +87,12 @@
 
                         <!-- LINE ITEM ROW -->
                         <template if:true={row.isItem}>
-                            <tr key={row.record.Id} 
+                            <tr key={row.record.Id}
                                 class={row.rowClass}
                                 draggable="true"
                                 data-id={row.record.Id}
                                 ondragstart={handleDragStart}>
-                                
+
                                 <td class="check-col">
                                     <input type="checkbox" data-id={row.record.Id} onchange={handleSelectItem} checked={row.record.selected} />
                                 </td>
@@ -99,45 +101,60 @@
                                     <div class="name-content">
                                         <span class={row.record.typeIconClass}>{row.record.typeIcon}</span>
                                         <span class="name-text">{row.record.Name}</span>
-                                        <span class="info-icon">ℹ️</span>
+                                        <!-- Billing Unit badge -->
+                                        <span class={row.record.billingBadgeClass}>{row.record.Billing_Unit__c}</span>
                                     </div>
                                 </td>
                                 <td>
-                                    <input type="text" class="inline-input" placeholder="Add task..." 
-                                           value={row.record.Task__c} data-id={row.record.Id} 
+                                    <input type="text" class="inline-input" placeholder="Add task..."
+                                           value={row.record.Task__c} data-id={row.record.Id}
                                            data-field="Task__c" onchange={handleFieldChange} />
                                 </td>
                                 <td>
-                                    <input type="date" class="inline-input" 
-                                           value={row.record.Start_Date__c} data-id={row.record.Id} 
+                                    <input type="date" class="inline-input"
+                                           value={row.record.Start_Date__c} data-id={row.record.Id}
                                            data-field="Start_Date__c" onchange={handleFieldChange} />
                                 </td>
-                                <td>
-                                    <input type="date" class="inline-input" 
-                                           value={row.record.End_Date__c} 
-                                           readonly disabled/>
+                                <!-- End Date: auto-computed (read-only), blank for Each billing -->
+                                <td class="date-cell-ro">
+                                    <template if:true={row.record.showEndDate}>
+                                        <span class="date-display">{row.record.End_Date__c}</span>
+                                    </template>
+                                    <template if:false={row.record.showEndDate}>
+                                        <span class="date-display date-na">—</span>
+                                    </template>
                                 </td>
+                                <!-- Duration: time units (weeks, months, etc.) — disabled for Each -->
                                 <td>
-                                    <input type="number" class="inline-input num-input" 
-                                           value={row.record.Quantity__c} min="0" step="0.1"
-                                           data-id={row.record.Id} data-field="Quantity__c" 
+                                    <input type="number" class="inline-input num-input"
+                                           value={row.record.Duration__c} min="0" step="0.01"
+                                           data-id={row.record.Id} data-field="Duration__c"
+                                           disabled={row.record.durationDisabled}
+                                           onchange={handleFieldChange} />
+                                </td>
+                                <!-- Quantity: headcount / unit count (whole numbers) -->
+                                <td>
+                                    <input type="number" class="inline-input num-input"
+                                           value={row.record.Quantity__c} min="1" step="1"
+                                           data-id={row.record.Id} data-field="Quantity__c"
                                            onchange={handleFieldChange} />
                                 </td>
                                 <td class="rate-cell">{row.record.formattedBaseRate}</td>
                                 <td>
                                     <div style="display: flex; align-items: center; justify-content: flex-end; gap: 4px;">
                                         <span style="color: #6b7280; font-size: 13px;">$</span>
-                                        <input type="number" class="inline-input num-input" 
-                                               value={row.record.Unit_Price__c} min="0" step="1" 
-                                               data-id={row.record.Id} data-field="Unit_Price__c" 
+                                        <input type="number" class="inline-input num-input"
+                                               value={row.record.Unit_Price__c} min="0" step="1"
+                                               data-id={row.record.Id} data-field="Unit_Price__c"
                                                onchange={handleFieldChange} />
                                     </div>
                                 </td>
                                 <td>
                                     <div class="discount-input-wrap">
-                                        <input type="number" class="inline-input num-input" 
-                                               value={row.record.Discount_Percent__c} min="0" max="100" 
-                                               data-id={row.record.Id} data-field="Discount_Percent__c" 
+                                        <input type="number" class="inline-input num-input"
+                                               value={row.record.Discount_Percent__c} min="0" max="100"
+                                               step="1"
+                                               data-id={row.record.Id} data-field="Discount_Percent__c"
                                                onchange={handleFieldChange} />
                                         <span class="pct-sign">%</span>
                                     </div>
@@ -156,7 +173,7 @@
                         ondragover={handleDragOver}
                         ondragleave={handleDragLeave}
                         ondrop={handleDrop}>
-                        <td colspan="10" class="total-label">
+                        <td colspan="11" class="total-label">
                             <strong>Total</strong>
                         </td>
                         <td class="total-amount">

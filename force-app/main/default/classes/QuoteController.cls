@@ -280,8 +280,8 @@ public with sharing class QuoteController {
 @AuraEnabled
 public static void recalculateQuoteTotals(Id quoteId) {
     List<Quote_Line_Item__c> qlis = [
-        SELECT Total_Price__c, Unit_Price__c, Cost__c, Quantity__c, End_Date__c 
-        FROM Quote_Line_Item__c 
+        SELECT Line_Total__c, Unit_Price__c, Cost__c, Quantity__c, Duration__c, End_Date__c
+        FROM Quote_Line_Item__c
         WHERE Quote__c = :quoteId
     ];
 
@@ -291,12 +291,14 @@ public static void recalculateQuoteTotals(Id quoteId) {
     Date maxEnd = null;
 
     for(Quote_Line_Item__c item : qlis) {
-        if(item.Total_Price__c != null) revenue += item.Total_Price__c;
+        if(item.Line_Total__c != null) revenue += item.Line_Total__c;
         if(item.Unit_Price__c  != null && item.Quantity__c != null) {
-            subtotal += (item.Unit_Price__c * item.Quantity__c);
+            Decimal dur = item.Duration__c != null ? item.Duration__c : 1;
+            subtotal += (item.Unit_Price__c * item.Quantity__c * dur);
         }
         if(item.Cost__c != null && item.Quantity__c != null) {
-            totalCost += (item.Cost__c * item.Quantity__c);
+            Decimal dur = item.Duration__c != null ? item.Duration__c : 1;
+            totalCost += (item.Cost__c * item.Quantity__c * dur);
         }
         if(item.End_Date__c != null) {
             if(maxEnd == null || item.End_Date__c > maxEnd) maxEnd = item.End_Date__c;

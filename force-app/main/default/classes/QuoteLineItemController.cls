@@ -10,14 +10,16 @@ public with sharing class QuoteLineItemController {
                    Add_On__c, Add_On__r.Name, Add_On__r.Name__c,
                    Phase__c, Task__c,
                    Start_Date__c, End_Date__c,
-                   Quantity__c, Base_Rate__c,
-                   Unit_Price__c, Discount_Percent__c,
-                   Total_Price__c, Cost__c, Margin__c
+                   Duration__c, Quantity__c, Billing_Unit__c,
+                   Base_Rate__c, Unit_Price__c,
+                   Discount_Percent__c, Line_Total__c,
+                   Cost__c, Margin__c
             FROM Quote_Line_Item__c
             WHERE Quote__c = :quoteId
             ORDER BY CreatedDate ASC
         ];
     }
+
     // ── Get empty phases stored on the Quote ──────────────────────────────
     @AuraEnabled(cacheable=true)
     public static String getPhaseList(Id quoteId) {
@@ -42,16 +44,16 @@ public with sharing class QuoteLineItemController {
             List<Id> addonIds) {
 
         Quote parentQuote = [
-            SELECT Start_Date__c, End_Date__c, Time_Period__c 
-            FROM Quote 
-            WHERE Id = :quoteId 
+            SELECT Start_Date__c, End_Date__c, Time_Period__c
+            FROM Quote
+            WHERE Id = :quoteId
             LIMIT 1
         ];
 
         List<Quote_Line_Item__c> itemsToInsert =
             new List<Quote_Line_Item__c>();
 
-        // Add Resource Roles
+        // ── Add Resource Roles ────────────────────────────────────────────
         if (resourceRoleIds != null && !resourceRoleIds.isEmpty()) {
             List<Resource_Role__c> roles = [
                 SELECT Id, Name, Name__c, Price__c, Cost__c, Billing_Unit__c
@@ -65,20 +67,26 @@ public with sharing class QuoteLineItemController {
                 item.Name                = role.Name__c;
                 item.Item_Type__c        = 'Resource Role';
                 item.Resource_Role__c    = role.Id;
+                item.Billing_Unit__c     = role.Billing_Unit__c != null ? role.Billing_Unit__c : 'Hour';
                 item.Base_Rate__c        = role.Cost__c;
                 item.Unit_Price__c       = role.Price__c;
                 item.Cost__c             = role.Cost__c;
                 item.Quantity__c         = 1;
+                item.Duration__c         = 1;
                 item.Discount_Percent__c = 0;
                 populateDates(item, parentQuote);
+                item.Line_Total__c = calculateTotalPrice(
+                    item.Unit_Price__c, item.Quantity__c, item.Duration__c,
+                    item.Billing_Unit__c, parentQuote.Time_Period__c, item.Discount_Percent__c
+                );
                 itemsToInsert.add(item);
             }
         }
 
-        // Add Products
+        // ── Add Products ──────────────────────────────────────────────────
         if (productIds != null && !productIds.isEmpty()) {
             List<Product__c> products = [
-                SELECT Id, Name, Name__c, Price__c, Cost__c
+                SELECT Id, Name, Name__c, Price__c, Cost__c, Billing_Unit__c
                 FROM Product__c
                 WHERE Id IN :productIds
             ];
@@ -89,20 +97,26 @@ public with sharing class QuoteLineItemController {
                 item.Name                = product.Name__c;
                 item.Item_Type__c        = 'Product';
                 item.Product__c          = product.Id;
+                item.Billing_Unit__c     = product.Billing_Unit__c != null ? product.Billing_Unit__c : 'Each';
                 item.Base_Rate__c        = product.Cost__c;
                 item.Unit_Price__c       = product.Price__c;
                 item.Cost__c             = product.Cost__c;
                 item.Quantity__c         = 1;
+                item.Duration__c         = 1;
                 item.Discount_Percent__c = 0;
                 populateDates(item, parentQuote);
+                item.Line_Total__c = calculateTotalPrice(
+                    item.Unit_Price__c, item.Quantity__c, item.Duration__c,
+                    item.Billing_Unit__c, parentQuote.Time_Period__c, item.Discount_Percent__c
+                );
                 itemsToInsert.add(item);
             }
         }
 
-        // Add Add-ons
+        // ── Add Add-ons ───────────────────────────────────────────────────
         if (addonIds != null && !addonIds.isEmpty()) {
             List<Add_On__c> addons = [
-                SELECT Id, Name, Name__c, Price__c, Cost__c
+                SELECT Id, Name, Name__c, Price__c, Cost__c, Billing_Unit__c
                 FROM Add_On__c
                 WHERE Id IN :addonIds
             ];
@@ -113,19 +127,24 @@ public with sharing class QuoteLineItemController {
                 item.Name                = addon.Name__c;
                 item.Item_Type__c        = 'Add-on';
                 item.Add_On__c           = addon.Id;
+                item.Billing_Unit__c     = addon.Billing_Unit__c != null ? addon.Billing_Unit__c : 'Each';
                 item.Base_Rate__c        = addon.Cost__c;
                 item.Unit_Price__c       = addon.Price__c;
                 item.Cost__c             = addon.Cost__c;
                 item.Quantity__c         = 1;
+                item.Duration__c         = 1;
                 item.Discount_Percent__c = 0;
                 populateDates(item, parentQuote);
+                item.Line_Total__c = calculateTotalPrice(
+                    item.Unit_Price__c, item.Quantity__c, item.Duration__c,
+                    item.Billing_Unit__c, parentQuote.Time_Period__c, item.Discount_Percent__c
+                );
                 itemsToInsert.add(item);
             }
         }
 
         if (!itemsToInsert.isEmpty()) {
             insert itemsToInsert;
-            // Recalculate quote totals after adding items
             QuoteController.recalculateQuoteTotals(quoteId);
         }
     }
@@ -133,85 +152,148 @@ public with sharing class QuoteLineItemController {
     // ── Update a single line item ─────────────────────────────────────────
     @AuraEnabled
     public static void updateLineItem(Quote_Line_Item__c item) {
-        // Query existing to get context for date recalculation
         Quote_Line_Item__c existing = [
-            SELECT Quantity__c, Start_Date__c, End_Date__c, Quote__c,
+            SELECT Quantity__c, Duration__c, Billing_Unit__c,
+                   Start_Date__c, End_Date__c, Line_Total__c,
+                   Unit_Price__c, Discount_Percent__c, Quote__c,
                    Quote__r.Start_Date__c, Quote__r.End_Date__c, Quote__r.Time_Period__c
             FROM Quote_Line_Item__c
             WHERE Id = :item.Id
             LIMIT 1
         ];
 
-        // Force recalculation if Quantity OR Start Date is present in the update
-        // (QLIs drive their own duration based on quantity if the Quote has a Time Period)
-        if (existing.Quote__r.Time_Period__c != null) {
-            Boolean hasChange = false;
-            // Check if quantity or start date is being updated
-            if (item.Quantity__c != null) hasChange = true;
-            if (item.Start_Date__c != null) hasChange = true;
+        String timePeriod = existing.Quote__r.Time_Period__c;
 
-            if (hasChange) {
-                Decimal qty = item.Quantity__c != null ? item.Quantity__c : existing.Quantity__c;
-                Date start = item.Start_Date__c != null ? item.Start_Date__c : existing.Start_Date__c;
-                item.End_Date__c = calculateEndDate(start, qty, existing.Quote__r.Time_Period__c);
-            }
+        // Merge provided updates with persisted values
+        Decimal qty        = item.Quantity__c         != null ? item.Quantity__c         : existing.Quantity__c;
+        Decimal duration   = item.Duration__c         != null ? item.Duration__c         : existing.Duration__c;
+        Date    start      = item.Start_Date__c        != null ? item.Start_Date__c       : existing.Start_Date__c;
+        Decimal unitPrice  = item.Unit_Price__c        != null ? item.Unit_Price__c       : existing.Unit_Price__c;
+        Decimal discountPct= item.Discount_Percent__c  != null ? item.Discount_Percent__c: existing.Discount_Percent__c;
+        String  billingUnit= existing.Billing_Unit__c; // Billing unit is fixed on the line item
+
+        // Recalculate End Date ONLY for time-based billing (Hour, Day).
+        // 'Each' billing has no time dimension — End Date stays null.
+        if (billingUnit == 'Each') {
+            item.End_Date__c = null;
+        } else if (timePeriod != null &&
+            (item.Quantity__c != null || item.Duration__c != null || item.Start_Date__c != null)) {
+            item.End_Date__c = calculateEndDate(start, duration, timePeriod);
+        }
+
+        // Recalculate Line Total whenever a pricing-relevant field changes
+        if (item.Quantity__c != null || item.Duration__c != null ||
+            item.Unit_Price__c != null || item.Discount_Percent__c != null) {
+            item.Line_Total__c = calculateTotalPrice(
+                unitPrice, qty, duration, billingUnit, timePeriod, discountPct
+            );
         }
 
         update item;
-        // Recalculate quote totals after update
         QuoteController.recalculateQuoteTotals(existing.Quote__c);
     }
 
+    /**
+     * Calculates total price for a line item based on billing unit type.
+     *
+     * 'Hour' billing: UnitPrice is an hourly rate.
+     *   Total = UnitPrice x HoursPerPeriod x Duration x Quantity x (1 - Discount% / 100)
+     *   Example: 3 engineers x 5 weeks x 40hrs/week x $100/hr = $60,000
+     *
+     * 'Each' billing: Flat rate per unit — no time dimension.
+     *   Total = UnitPrice x Quantity x (1 - Discount% / 100)
+     *
+     * 'Day' billing: UnitPrice is a daily rate.
+     *   Total = UnitPrice x Duration x Quantity x (1 - Discount% / 100)
+     *
+     * discountPct is stored as a whole percentage (e.g. 10 = 10% off).
+     */
+    @TestVisible
+    private static Decimal calculateTotalPrice(
+        Decimal unitPrice, Decimal quantity, Decimal duration,
+        String billingUnit, String timePeriod, Decimal discountPct) {
+
+        if (unitPrice == null)   unitPrice   = 0;
+        if (quantity  == null)   quantity    = 1;
+        if (duration  == null)   duration    = 1;
+        if (discountPct == null) discountPct = 0;
+
+        Decimal total;
+        if (billingUnit == 'Hour') {
+            Decimal hoursPerPeriod = getHoursPerPeriod(timePeriod);
+            total = unitPrice * hoursPerPeriod * duration * quantity;
+        } else if (billingUnit == 'Day') {
+            // Daily rate — duration is in days (within the time period unit)
+            total = unitPrice * duration * quantity;
+        } else {
+            // 'Each': flat per-unit price, no time dimension
+            total = unitPrice * quantity;
+        }
+
+        // discountPct stored as 0-100 (e.g. 10 = 10% discount)
+        return total * (1 - discountPct / 100);
+    }
+
+    /**
+     * Standard work hours per time period (8 hrs/day, 5 days/week).
+     */
+    private static Decimal getHoursPerPeriod(String timePeriod) {
+        if (timePeriod == 'Days')     return 8;    // 8 hrs/day
+        if (timePeriod == 'Weeks')    return 40;   // 8 * 5 days
+        if (timePeriod == 'Months')   return 160;  // 40 * 4 weeks
+        if (timePeriod == 'Quarters') return 480;  // 160 * 3 months
+        return 8; // default to daily if unrecognised
+    }
+
+    // ── Date Helpers ──────────────────────────────────────────────────────
     private static void populateDates(Quote_Line_Item__c item, Quote parentQuote) {
         if (parentQuote.Start_Date__c != null) {
             item.Start_Date__c = parentQuote.Start_Date__c;
-            
-            // 1. If Time Period exists, quantity drives the end date
-            if (parentQuote.Time_Period__c != null) {
-                item.End_Date__c = calculateEndDate(parentQuote.Start_Date__c, item.Quantity__c, parentQuote.Time_Period__c);
-            } 
-            // 2. Fallback to fixed Quote End Date if no Time Period
-            else if (parentQuote.End_Date__c != null) {
-                item.End_Date__c = parentQuote.End_Date__c;
+
+            // Only compute End Date for time-based billing (Hour, Day).
+            // 'Each' billing has no time dimension — End Date stays null.
+            if (item.Billing_Unit__c != 'Each') {
+                if (parentQuote.Time_Period__c != null) {
+                    item.End_Date__c = calculateEndDate(
+                        parentQuote.Start_Date__c,
+                        item.Duration__c,
+                        parentQuote.Time_Period__c
+                    );
+                } else if (parentQuote.End_Date__c != null) {
+                    item.End_Date__c = parentQuote.End_Date__c;
+                }
             }
         }
     }
 
-    private static Date calculateEndDate(Date startDate, Decimal quantity, String timePeriod) {
-        if (startDate == null || quantity == null || String.isBlank(timePeriod)) {
+    private static Date calculateEndDate(Date startDate, Decimal duration, String timePeriod) {
+        if (startDate == null || duration == null || String.isBlank(timePeriod)) {
             return null;
         }
 
         if (timePeriod == 'Days') {
-            return startDate.addDays((Integer)Math.round(quantity));
+            return startDate.addDays((Integer) Math.round(duration));
         } else if (timePeriod == 'Weeks') {
-            return startDate.addDays((Integer)Math.round(quantity * 7));
-        } else if (timePeriod == 'Months' || timePeriod == 'Quarters' || timePeriod == 'Years') {
-            // Calculate total months based on period
-            Decimal totalMonths = (timePeriod == 'Months') ? quantity 
-                                 : (timePeriod == 'Quarters') ? quantity * 3 
-                                 : quantity * 12; // Years
-
-            Integer wholeMonths = (Integer)Math.floor(totalMonths);
-            Decimal fraction = totalMonths - wholeMonths;
-            
+            return startDate.addDays((Integer) Math.round(duration * 7));
+        } else if (timePeriod == 'Months') {
+            Integer wholeMonths = (Integer) Math.floor(duration);
+            Decimal fraction    = duration - wholeMonths;
             Date d = startDate.addMonths(wholeMonths);
             if (fraction > 0) {
-                d = d.addDays((Integer)Math.round(fraction * 30));
+                d = d.addDays((Integer) Math.round(fraction * 30));
             }
-            // Typically end date is inclusive duration, but standard addDays logic 
-            // often needs a -1 adjustment if we count the start day as Day 1.
-            // However, user said "2 months ahead", so we'll stick to clear addMonths logic.
             return d;
+        } else if (timePeriod == 'Quarters') {
+            Integer wholeMonths = (Integer) Math.round(duration * 3);
+            return startDate.addMonths(wholeMonths);
         }
-        
+
         return null;
     }
 
     // ── Delete a single line item ─────────────────────────────────────────
     @AuraEnabled
     public static void deleteLineItem(Id itemId) {
-        // Get quoteId before deleting
         Quote_Line_Item__c item = [
             SELECT Quote__c
             FROM Quote_Line_Item__c
@@ -219,10 +301,7 @@ public with sharing class QuoteLineItemController {
             LIMIT 1
         ];
         Id quoteId = item.Quote__c;
-
         delete item;
-
-        // Recalculate quote totals after delete
         QuoteController.recalculateQuoteTotals(quoteId);
     }
 
@@ -231,18 +310,15 @@ public with sharing class QuoteLineItemController {
     public static void deleteLineItems(List<Id> itemIds) {
         if (itemIds == null || itemIds.isEmpty()) return;
 
-        // Get quoteId from the first item to trigger recalculation
         Quote_Line_Item__c firstItem = [
-            SELECT Quote__c 
-            FROM Quote_Line_Item__c 
-            WHERE Id IN :itemIds 
+            SELECT Quote__c
+            FROM Quote_Line_Item__c
+            WHERE Id IN :itemIds
             LIMIT 1
         ];
         Id quoteId = firstItem.Quote__c;
 
         delete [SELECT Id FROM Quote_Line_Item__c WHERE Id IN :itemIds];
-
-        // Recalculate quote totals after delete
         QuoteController.recalculateQuoteTotals(quoteId);
     }
 
@@ -251,7 +327,7 @@ public with sharing class QuoteLineItemController {
     public static Map<String, Object> getLineItemSummary(Id quoteId) {
         AggregateResult[] results = [
             SELECT Item_Type__c type,
-                   SUM(Total_Price__c) totalRevenue,
+                   SUM(Line_Total__c) totalRevenue,
                    SUM(Margin__c) totalMargin,
                    COUNT(Id) itemCount
             FROM Quote_Line_Item__c
@@ -269,16 +345,11 @@ public with sharing class QuoteLineItemController {
 
         for (AggregateResult r : results) {
             String type = (String) r.get('type');
-            Decimal revenue = (Decimal) r.get('totalRevenue') != null ? (Decimal) r.get('totalRevenue') : 0;
-            Decimal margin = (Decimal) r.get('totalMargin') != null ? (Decimal) r.get('totalMargin') : 0;
-            Integer count = (Integer) r.get('itemCount');
-
-            // Derive cost: Revenue - Margin = Total Cost
-            Decimal cost = revenue - margin;
-
-            Decimal percentage = grandTotal > 0
-                ? (revenue / grandTotal * 100).setScale(1)
-                : 0;
+            Decimal revenue    = (Decimal) r.get('totalRevenue')  != null ? (Decimal) r.get('totalRevenue')  : 0;
+            Decimal margin     = (Decimal) r.get('totalMargin')   != null ? (Decimal) r.get('totalMargin')   : 0;
+            Integer count      = (Integer) r.get('itemCount');
+            Decimal cost       = revenue - margin;
+            Decimal percentage = grandTotal > 0 ? (revenue / grandTotal * 100).setScale(1) : 0;
 
             summary.put(type, new Map<String, Object>{
                 'revenue'    => revenue,
@@ -289,17 +360,19 @@ public with sharing class QuoteLineItemController {
             });
         }
 
-        // Calculate Subtotal (Unit Price * Quantity before discount)
+        // Subtotal = sum of (Unit Price x Quantity x Duration) before discount
         List<Quote_Line_Item__c> items = [
-            SELECT Unit_Price__c, Quantity__c 
-            FROM Quote_Line_Item__c 
+            SELECT Unit_Price__c, Quantity__c, Duration__c, Billing_Unit__c
+            FROM Quote_Line_Item__c
             WHERE Quote__c = :quoteId
         ];
-        
+
         Decimal subtotal = 0;
         for (Quote_Line_Item__c item : items) {
-            if (item.Unit_Price__c != null && item.Quantity__c != null) {
-                subtotal += (item.Unit_Price__c * item.Quantity__c);
+            if (item.Unit_Price__c != null) {
+                Decimal qty      = item.Quantity__c  != null ? item.Quantity__c  : 1;
+                Decimal dur      = item.Duration__c  != null ? item.Duration__c  : 1;
+                subtotal += (item.Unit_Price__c * qty * dur);
             }
         }
 
@@ -310,13 +383,12 @@ public with sharing class QuoteLineItemController {
 
     // ── Get line items grouped by phase for phase table ───────────────────
     @AuraEnabled(cacheable=true)
-    public static List<Map<String, Object>> getLineItemsByPhase(
-            Id quoteId) {
+    public static List<Map<String, Object>> getLineItemsByPhase(Id quoteId) {
 
         AggregateResult[] results = [
             SELECT Phase__c phase,
                    Item_Type__c type,
-                   SUM(Total_Price__c) totalPrice,
+                   SUM(Line_Total__c) totalPrice,
                    COUNT(Id) itemCount
             FROM Quote_Line_Item__c
             WHERE Quote__c = :quoteId
@@ -324,7 +396,6 @@ public with sharing class QuoteLineItemController {
             ORDER BY Phase__c
         ];
 
-        // Group by phase
         Map<String, Map<String, Object>> phaseMap =
             new Map<String, Map<String, Object>>();
 
