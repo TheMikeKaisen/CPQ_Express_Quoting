@@ -1,4 +1,4 @@
-public without sharing class QuoteController {
+public with sharing class QuoteController {
 
     // ── Get all quotes with optional filters ──────────────────────────────
     @AuraEnabled(cacheable=true)
@@ -46,15 +46,19 @@ public without sharing class QuoteController {
 
     // ── Helper: check if current user is Manager/Admin ────────
     private static Boolean isManagerOrAdmin() {
-        User currentUser = [
-            SELECT Id, Profile.Name
-            FROM User
-            WHERE Id = :UserInfo.getUserId()
-            LIMIT 1
-        ];
-        String profileName = currentUser.Profile.Name;
-        return profileName == 'System Administrator' ||
-               profileName == 'CPQ Manager';
+        Id userId = UserInfo.getUserId();
+        User u = [SELECT Profile.Name FROM User WHERE Id = :userId LIMIT 1];
+        
+        Boolean hasManagerPS = [
+            SELECT count() 
+            FROM PermissionSetAssignment 
+            WHERE AssigneeId = :userId 
+            AND PermissionSet.Name = 'CPQ_Manager_Access'
+        ] > 0;
+
+        return u.Profile.Name == 'System Administrator' || 
+               u.Profile.Name == 'CPQ Manager' || 
+               hasManagerPS;
     }
 
     // ── Get single quote by Id ────────────────────────────────────────────

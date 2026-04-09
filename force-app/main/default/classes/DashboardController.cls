@@ -1,4 +1,4 @@
-public without sharing class DashboardController {
+public with sharing class DashboardController {
 
     // ── Awaiting Approval card ────────────────────────────────────────────
     @AuraEnabled(cacheable=true)
@@ -89,11 +89,16 @@ public without sharing class DashboardController {
         String query = 'SELECT Id, QuoteNumber, Name, Status, ' +
                        'Account.Name, Total_Amount__c, ' +
                        'CreatedDate, Margin_Percent__c ' +
-                       'FROM Quote ' +
-                       'WHERE CreatedById = \'' + UserInfo.getUserId() + '\'';
+                       'FROM Quote';
+        
+        List<String> conditions = new List<String>();
         
         if (String.isNotBlank(statusFilter) && statusFilter != 'All') {
-            query += ' AND Status = \'' + String.escapeSingleQuotes(statusFilter) + '\'';
+            conditions.add('Status = \'' + String.escapeSingleQuotes(statusFilter) + '\'');
+        }
+
+        if (!conditions.isEmpty()) {
+            query += ' WHERE ' + String.join(conditions, ' AND ');
         }
 
         query += ' ORDER BY CreatedDate DESC LIMIT 5';
@@ -103,11 +108,10 @@ public without sharing class DashboardController {
     // ── Total quote count for "X quotes total" label ──────────────────────
     @AuraEnabled(cacheable=true)
     public static Integer getTotalQuoteCount(String statusFilter) {
-        String query = 'SELECT COUNT() FROM Quote ' +
-                       'WHERE CreatedById = \'' + UserInfo.getUserId() + '\'';
+        String query = 'SELECT COUNT() FROM Quote';
         
         if (String.isNotBlank(statusFilter) && statusFilter != 'All') {
-            query += ' AND Status = \'' + String.escapeSingleQuotes(statusFilter) + '\'';
+            query += ' WHERE Status = \'' + String.escapeSingleQuotes(statusFilter) + '\'';
         }
 
         return Database.countQuery(query);
