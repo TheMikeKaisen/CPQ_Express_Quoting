@@ -73,6 +73,19 @@
 
         <!-- BOTTOM LINKS -->
         <div class="sidebar-bottom">
+            <!-- User Role Card -->
+            <div class="user-profile-section">
+                <div class="user-profile-card">
+                    <div class="user-avatar">
+                        {userInitials}
+                    </div>
+                    <div class="user-details">
+                        <div class="user-display-name">{userName}</div>
+                        <div class={roleBadgeClass}>{userRole}</div>
+                    </div>
+                </div>
+            </div>
+
             <template if:true={isManager}>
                 <div class={settingsClass} data-page="settings" onclick={handleNavClick}>
                     <span class="nav-icon">
