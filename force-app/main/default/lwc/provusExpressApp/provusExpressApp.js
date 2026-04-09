@@ -3,9 +3,10 @@ import getCurrentUserContext from '@salesforce/apex/UserContextController.getCur
 
 export default class ProvusExpressApp extends LightningElement {
 
-    @track activePage = 'dashboard';
-    @track selectedQuoteId = null;
-    @track isManager = false;
+    @track activePage          = 'dashboard';
+    @track selectedQuoteId     = null;
+    @track isManager           = false;
+    @track quotesStatusFilter  = '';
 
     @wire(getCurrentUserContext)
     wiredContext({ data }) {
@@ -42,7 +43,6 @@ export default class ProvusExpressApp extends LightningElement {
 
     // ── Sidebar navigation ────────────────────────────────────────────────
     handleNavigation(event) {
-        // Guard: make sure event.detail exists
         if (!event || !event.detail || !event.detail.page) {
             return;
         }
@@ -55,6 +55,8 @@ export default class ProvusExpressApp extends LightningElement {
             return;
         }
 
+        // Capture optional status filter passed from dashboard cards
+        this.quotesStatusFilter = event.detail.statusFilter || '';
         this.activePage = targetPage;
         this.selectedQuoteId = null;
     }

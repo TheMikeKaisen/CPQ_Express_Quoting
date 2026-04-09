@@ -1,4 +1,4 @@
-public with sharing class DashboardController {
+public without sharing class DashboardController {
 
     // ── Awaiting Approval card ────────────────────────────────────────────
     @AuraEnabled(cacheable=true)
@@ -7,7 +7,7 @@ public with sharing class DashboardController {
             SELECT COUNT(Id) quoteCount,
                    SUM(Total_Amount__c) totalAmount
             FROM Quote
-            WHERE Status = 'Pending'
+            WHERE Status = 'Pending Approval'
         ];
 
         return new Map<String, Object>{

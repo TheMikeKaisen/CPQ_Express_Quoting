@@ -1,4 +1,4 @@
-import { LightningElement, track, wire } from 'lwc';
+import { LightningElement, api, track, wire } from 'lwc';
 import { refreshApex } from '@salesforce/apex';
 import getQuotes from
     '@salesforce/apex/QuoteController.getQuotes';
@@ -21,6 +21,8 @@ export default class ProvusQuotesList extends LightningElement {
     @track searchTerm = '';
     @track currentPage = 1;
 
+    @api initialStatusFilter = ''; // passed from dashboard card click
+
     // ── IMPORTANT: initialize to undefined ───────────────────────────────
     wiredQuotesResult = undefined;
     @track allQuotes = [];
@@ -35,7 +37,10 @@ export default class ProvusQuotesList extends LightningElement {
     }
 
     connectedCallback() {
-        // Refresh the list every time we navigate back to it
+        // Apply filter passed from dashboard card, if any
+        if (this.initialStatusFilter) {
+            this.statusFilter = this.initialStatusFilter;
+        }
         if (this.wiredQuotesResult) {
             refreshApex(this.wiredQuotesResult);
         }

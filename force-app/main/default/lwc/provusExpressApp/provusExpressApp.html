@@ -16,7 +16,9 @@
 
             <!-- QUOTES LIST PAGE -->
             <template if:true={showQuotes}>
-                <c-provus-quotes-list onviewquote={handleViewQuote}>
+                <c-provus-quotes-list
+                    initial-status-filter={quotesStatusFilter}
+                    onviewquote={handleViewQuote}>
                 </c-provus-quotes-list>
             </template>
 

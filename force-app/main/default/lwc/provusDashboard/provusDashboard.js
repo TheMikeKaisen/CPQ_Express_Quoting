@@ -14,6 +14,8 @@ import getRecentQuotes from
     '@salesforce/apex/DashboardController.getRecentQuotes';
 import getTotalQuoteCount from
     '@salesforce/apex/DashboardController.getTotalQuoteCount';
+import getCurrentUserContext from
+    '@salesforce/apex/UserContextController.getCurrentUserContext';
 import USER_ID from '@salesforce/user/Id';
 import { getRecord, getFieldValue } from 'lightning/uiRecordApi';
 import NAME_FIELD from '@salesforce/schema/User.Name';
@@ -21,6 +23,7 @@ import NAME_FIELD from '@salesforce/schema/User.Name';
 export default class ProvusDashboard extends LightningElement {
 
     @track showCreateModal   = false;
+    @track isManager         = false;
     
     // Metrics
     @track awaitingCount     = 0;
@@ -52,6 +55,12 @@ export default class ProvusDashboard extends LightningElement {
     wiredWonResult;
     wiredRecentResult;
     wiredCountResult;
+
+    // ── Wire: user context (isManager) ─────────────────────────────────────
+    @wire(getCurrentUserContext)
+    wiredUserCtx({ data }) {
+        if (data) this.isManager = data.isManager;
+    }
 
     // ── Get current user name ─────────────────────────────────────────────
     @wire(getRecord, {
@@ -177,10 +186,10 @@ export default class ProvusDashboard extends LightningElement {
         return past.toLocaleDateString();
     }
 
-    // Tab Classes
+    // Tab Classes — note 'Pending Approval' is the actual status value
     get allTabClass()      { return this.getTabClass('All'); }
     get draftTabClass()    { return this.getTabClass('Draft'); }
-    get pendingTabClass()  { return this.getTabClass('Pending'); }
+    get pendingTabClass()  { return this.getTabClass('Pending Approval'); }
     get approvedTabClass() { return this.getTabClass('Approved'); }
     get rejectedTabClass() { return this.getTabClass('Rejected'); }
 
@@ -248,9 +257,10 @@ export default class ProvusDashboard extends LightningElement {
     }
 
     handleViewNav(event) {
-        const page = event.currentTarget.dataset.page;
+        const page         = event.currentTarget.dataset.page;
+        const statusFilter = event.currentTarget.dataset.filter || '';
         this.dispatchEvent(new CustomEvent('navigation', {
-            detail: { page: page }
+            detail: { page: page, statusFilter: statusFilter }
         }));
     }
 }
