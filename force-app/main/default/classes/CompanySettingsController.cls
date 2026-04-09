@@ -1,46 +1,5 @@
 public without sharing class CompanySettingsController {
 
-    // ── Get company profile ───────────────────────────────────────────────
-    @AuraEnabled(cacheable=true)
-    public static Map<String, String> getCompanySettings() {
-        try {
-            List<Company_Profile__c> profiles = [
-                SELECT Company_Name__c, Email__c, Phone__c, Website__c,
-                       Address__c, City__c, State__c, Zip_Code__c,
-                       Country__c, Logo_Base64__c
-                FROM Company_Profile__c
-                ORDER BY CreatedDate ASC
-                LIMIT 1
-            ];
-
-            if (profiles.isEmpty()) {
-                return new Map<String, String>{
-                    'companyName' => '', 'email'    => '',
-                    'phone'       => '', 'website'  => '',
-                    'address'     => '', 'city'     => '',
-                    'state'       => '', 'zipCode'  => '',
-                    'country'     => '', 'logoBase64' => ''
-                };
-            }
-
-            Company_Profile__c s = profiles[0];
-            return new Map<String, String>{
-                'companyName' => s.Company_Name__c  != null ? s.Company_Name__c  : '',
-                'email'       => s.Email__c         != null ? s.Email__c         : '',
-                'phone'       => s.Phone__c         != null ? s.Phone__c         : '',
-                'website'     => s.Website__c       != null ? s.Website__c       : '',
-                'address'     => s.Address__c       != null ? s.Address__c       : '',
-                'city'        => s.City__c          != null ? s.City__c          : '',
-                'state'       => s.State__c         != null ? s.State__c         : '',
-                'zipCode'     => s.Zip_Code__c      != null ? s.Zip_Code__c      : '',
-                'country'     => s.Country__c       != null ? s.Country__c       : '',
-                'logoBase64'  => s.Logo_Base64__c   != null ? s.Logo_Base64__c   : ''
-            };
-        } catch (Exception e) {
-            throw new AuraHandledException(e.getMessage());
-        }
-    }
-
     // ── Save company profile ──────────────────────────────────────────────
     @AuraEnabled
     public static void saveCompanySettings(

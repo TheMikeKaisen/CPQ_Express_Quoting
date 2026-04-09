@@ -1,17 +1,24 @@
 import { LightningElement, api, track, wire } from 'lwc';
 import { ShowToastEvent } from 'lightning/platformShowToastEvent';
 import getLineItems from '@salesforce/apex/QuoteLineItemController.getLineItems';
-import getCompanySettings from '@salesforce/apex/CompanySettingsController.getCompanySettings';
+import getCompanySettings from '@salesforce/apex/QuoteController.getCompanySettings';
 import saveQuoteDocument from '@salesforce/apex/QuotePdfController.saveQuoteDocument';
 
 export default class ProvusGeneratePdfModal extends LightningElement {
 
-    @api isOpen = false;
+    @api 
+    get isOpen() { return this._isOpen; }
+    set isOpen(value) {
+        this._isOpen = value;
+        if (value) {
+            this.fetchBranding();
+        }
+    }
+    _isOpen = false;
     @api quoteId;
     @api quote;
 
     @track lineItems   = [];
-    @track companyData = {};
     @track isSaving    = false;
     @track zoomLevel   = 100;
 
@@ -22,11 +29,25 @@ export default class ProvusGeneratePdfModal extends LightningElement {
         if (error) console.error('PDF modal - line items error:', error);
     }
 
-    // ── Wire: company settings ────────────────────────────────────────────
-    @wire(getCompanySettings)
-    wiredCompany({ data, error }) {
-        if (data)  this.companyData = data;
-        if (error) console.error('PDF modal - company settings error:', error);
+    companyData = {};
+    isBrandingLoading = false;
+
+    fetchBranding() {
+        this.isBrandingLoading = true;
+        getCompanySettings()
+            .then(data => {
+                this.companyData = data || {};
+                this.isBrandingLoading = false;
+            })
+            .catch(error => {
+                console.error('PDF Branding Error:', error);
+                this.isBrandingLoading = false;
+                this.dispatchEvent(new ShowToastEvent({
+                    title: 'Error Loading Branding',
+                    message: 'Could not fetch company logo/address. Please check permissions.',
+                    variant: 'error'
+                }));
+            });
     }
 
     // ── Company computed values ───────────────────────────────────────────
@@ -75,8 +96,21 @@ export default class ProvusGeneratePdfModal extends LightningElement {
     }
 
     get accountName() {
-        return (this.quote && this.quote.Account)
-            ? this.quote.Account.Name : '';
+        if (!this.quote) return '';
+        
+        let name = '';
+        if (this.quote.Account && this.quote.Account.Name) {
+            name = this.quote.Account.Name;
+        } else if (this.quote.QuoteAccount && this.quote.QuoteAccount.Name) {
+            name = this.quote.QuoteAccount.Name;
+        } else if (this.quote.Opportunity && this.quote.Opportunity.Account && this.quote.Opportunity.Account.Name) {
+            name = this.quote.Opportunity.Account.Name;
+        }
+
+        if (!name) {
+            console.warn('PDF Diagnostic - Account Name not found. Quote Data:', JSON.parse(JSON.stringify(this.quote)));
+        }
+        return name;
     }
 
     get quoteDescription() {
@@ -169,7 +203,17 @@ export default class ProvusGeneratePdfModal extends LightningElement {
             ? new Date(q.ExpirationDate).toLocaleDateString('en-US', { month: 'short', day: '2-digit', year: 'numeric' })
             : 'N/A';
         const preparedBy  = q.CreatedBy ? q.CreatedBy.Name : '';
-        const accountName = q.Account   ? q.Account.Name   : '';
+        
+        // Account Name Fallback (Multi-layer)
+        let accountName = '';
+        if (q.Account && q.Account.Name) {
+            accountName = q.Account.Name;
+        } else if (q.QuoteAccount && q.QuoteAccount.Name) {
+            accountName = q.QuoteAccount.Name;
+        } else if (q.Opportunity && q.Opportunity.Account && q.Opportunity.Account.Name) {
+            accountName = q.Opportunity.Account.Name;
+        }
+
         const description = q.Description || 'Professional Services Project';
 
         let itemRowsHtml = '';

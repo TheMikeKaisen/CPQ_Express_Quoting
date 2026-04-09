@@ -8,7 +8,7 @@ public with sharing class QuoteController {
 
         // Build dynamic query
         String query = 'SELECT Id, QuoteNumber, Name, Status, ' +
-                       'OpportunityId, Opportunity.Name, ' +
+                       'OpportunityId, Opportunity.Name, Opportunity.Account.Name, ' +
                        'AccountId, Account.Name, ' +
                        'QuoteAccountId, QuoteAccount.Name, ' +
                        'CreatedById, CreatedBy.Name, CreatedDate, ' +
@@ -33,6 +33,10 @@ public with sharing class QuoteController {
         if (String.isNotBlank(accountFilter) &&
             accountFilter != 'All') {
             conditions.add('(AccountId = \'' + String.escapeSingleQuotes(accountFilter) + '\' OR QuoteAccountId = \'' + String.escapeSingleQuotes(accountFilter) + '\')');
+        }
+
+        if (!isManagerOrAdmin()) {
+            conditions.add('OwnerId = \'' + UserInfo.getUserId() + '\'');
         }
 
         if (!conditions.isEmpty()) {
@@ -61,12 +65,53 @@ public with sharing class QuoteController {
                hasManagerPS;
     }
 
+    // ── Get company settings (Relocated for better access) ────────────────
+    @AuraEnabled
+    public static Map<String, String> getCompanySettings() {
+        return BrandingWorker.getSettings();
+    }
+
+    private without sharing class BrandingWorker {
+        public static Map<String, String> getSettings() {
+            List<Company_Profile__c> profiles = [
+                SELECT Company_Name__c, Email__c, Phone__c, Website__c,
+                       Address__c, City__c, State__c, Zip_Code__c,
+                       Country__c, Logo_Base64__c
+                FROM Company_Profile__c
+                ORDER BY LastModifiedDate DESC
+                LIMIT 1
+            ];
+
+            if (profiles.isEmpty()) {
+                return new Map<String, String>{
+                    'companyName' => '', 'email' => '', 'phone' => '',
+                    'website' => '', 'address' => '', 'city' => '',
+                    'state' => '', 'zipCode' => '', 'country' => '', 'logoBase64' => ''
+                };
+            }
+
+            Company_Profile__c s = profiles[0];
+            return new Map<String, String>{
+                'companyName' => s.Company_Name__c != null ? s.Company_Name__c : '',
+                'email'       => s.Email__c != null ? s.Email__c : '',
+                'phone'       => s.Phone__c != null ? s.Phone__c : '',
+                'website'     => s.Website__c != null ? s.Website__c : '',
+                'address'     => s.Address__c != null ? s.Address__c : '',
+                'city'        => s.City__c != null ? s.City__c : '',
+                'state'       => s.State__c != null ? s.State__c : '',
+                'zipCode'     => s.Zip_Code__c != null ? s.Zip_Code__c : '',
+                'country'     => s.Country__c != null ? s.Country__c : '',
+                'logoBase64'  => s.Logo_Base64__c != null ? s.Logo_Base64__c : ''
+            };
+        }
+    }
+
     // ── Get single quote by Id ────────────────────────────────────────────
     @AuraEnabled(cacheable=true)
     public static Quote getQuoteById(Id quoteId) {
         return [
             SELECT Id, QuoteNumber, Name, Status,
-                   OpportunityId, Opportunity.Name,
+                   OpportunityId, Opportunity.Name, Opportunity.Account.Name,
                    AccountId, Account.Name,
                    QuoteAccountId, QuoteAccount.Name,
                    CreatedById, CreatedBy.Name,
