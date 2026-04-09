@@ -68,11 +68,11 @@ public with sharing class QuoteController {
     // ── Get company settings (Relocated for better access) ────────────────
     @AuraEnabled
     public static Map<String, String> getCompanySettings() {
-        return BrandingWorker.getSettings();
+        return new BrandingWorker().getSettings();
     }
 
-    private without sharing class BrandingWorker {
-        public static Map<String, String> getSettings() {
+    public without sharing class BrandingWorker {
+        public Map<String, String> getSettings() {
             List<Company_Profile__c> profiles = [
                 SELECT Company_Name__c, Email__c, Phone__c, Website__c,
                        Address__c, City__c, State__c, Zip_Code__c,

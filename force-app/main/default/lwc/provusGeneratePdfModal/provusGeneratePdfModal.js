@@ -216,17 +216,24 @@ export default class ProvusGeneratePdfModal extends LightningElement {
 
         const description = q.Description || 'Professional Services Project';
 
-        let itemRowsHtml = '';
+        // ── Grouping & Totals Calculation ────────────────────────────────────
         let total    = 0;
         let subtotal = 0;
+        const phaseGroups = {};
+
         (this.lineItems || []).forEach(item => {
+            const phase = item.Phase__c || 'General';
+            if (!phaseGroups[phase]) {
+                phaseGroups[phase] = { items: [], total: 0 };
+            }
+
             const t   = Number(item.Line_Total__c   || 0);
             const u   = Number(item.Unit_Price__c    || 0);
             const qty = Number(item.Quantity__c      || 1);
             const dur = Number(item.Duration__c      || 1);
-            const d   = Number(item.Discount_Percent__c || 0);
             const bu  = item.Billing_Unit__c;
             const tp  = item.Quote__r ? item.Quote__r.Time_Period__c : 'Days';
+            
             let hrs = 8;
             if (tp === 'Weeks') hrs = 40;
             else if (tp === 'Months') hrs = 160;
@@ -237,19 +244,52 @@ export default class ProvusGeneratePdfModal extends LightningElement {
             else if (bu === 'Day') subtotal += (u * dur * qty);
             else subtotal += (u * qty);
 
-            itemRowsHtml += `
-                <tr>
-                    <td style="padding:10px 14px;border-bottom:1px solid #f3f4f6;">${item.Name || ''}</td>
-                    <td style="padding:10px 14px;border-bottom:1px solid #f3f4f6;">${item.Phase__c || '—'}</td>
-                    <td style="padding:10px 14px;border-bottom:1px solid #f3f4f6;text-align:center;">${qty}</td>
-                    <td style="padding:10px 14px;border-bottom:1px solid #f3f4f6;text-align:right;">${this.fmt(u)}</td>
-                    <td style="padding:10px 14px;border-bottom:1px solid #f3f4f6;text-align:center;">${d}%</td>
-                    <td style="padding:10px 14px;border-bottom:1px solid #f3f4f6;text-align:right;font-weight:600;color:#111;">${this.fmt(t)}</td>
-                </tr>`;
+            phaseGroups[phase].items.push(item);
+            phaseGroups[phase].total += t;
         });
 
-        if (!itemRowsHtml) {
+        // ── Build Sectioned Rows HTML ────────────────────────────────────────
+        let itemRowsHtml = '';
+        const phases = Object.keys(phaseGroups).sort();
+
+        if (phases.length === 0) {
             itemRowsHtml = `<tr><td colspan="6" style="padding:24px;text-align:center;color:#9ca3af;">No line items added to this quote.</td></tr>`;
+        } else {
+            phases.forEach(phase => {
+                // Phase Header Row
+                itemRowsHtml += `
+                    <tr style="background:#f9fafb;">
+                        <td colspan="6" style="padding:12px 14px;font-weight:700;color:#1d4ed8;border-bottom:2px solid #e5e7eb;text-transform:uppercase;font-size:11px;letter-spacing:1px;">
+                            Phase: ${phase}
+                        </td>
+                    </tr>`;
+
+                // Phase Items
+                phaseGroups[phase].items.forEach(item => {
+                    const t = Number(item.Line_Total__c || 0);
+                    const u = Number(item.Unit_Price__c  || 0);
+                    const q_item = Number(item.Quantity__c    || 1);
+                    const d = Number(item.Discount_Percent__c || 0);
+                    
+                    itemRowsHtml += `
+                        <tr>
+                            <td style="padding:10px 14px;border-bottom:1px solid #f3f4f6;">${item.Name || ''}</td>
+                            <td style="padding:10px 14px;border-bottom:1px solid #f3f4f6;color:#6b7280;font-size:12px;">${item.Phase__c || 'General'}</td>
+                            <td style="padding:10px 14px;border-bottom:1px solid #f3f4f6;text-align:center;">${q_item}</td>
+                            <td style="padding:10px 14px;border-bottom:1px solid #f3f4f6;text-align:right;">${this.fmt(u)}</td>
+                            <td style="padding:10px 14px;border-bottom:1px solid #f3f4f6;text-align:center;">${d}%</td>
+                            <td style="padding:10px 14px;border-bottom:1px solid #f3f4f6;text-align:right;font-weight:600;color:#111;">${this.fmt(t)}</td>
+                        </tr>`;
+                });
+
+                // Phase Subtotal Row
+                itemRowsHtml += `
+                    <tr style="background:#fff;">
+                        <td colspan="5" style="padding:10px 14px;text-align:right;font-size:12px;color:#6b7280;font-weight:600;">Subtotal for ${phase}</td>
+                        <td style="padding:10px 14px;text-align:right;font-weight:700;color:#111;border-top:1px solid #e5e7eb;">${this.fmt(phaseGroups[phase].total)}</td>
+                    </tr>
+                    <tr><td colspan="6" style="height:12px;border:none;"></td></tr> <!-- Spacer -->`;
+            });
         }
 
         return `<!DOCTYPE html>

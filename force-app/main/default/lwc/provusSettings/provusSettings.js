@@ -4,7 +4,7 @@ import getUsers from '@salesforce/apex/UserController.getUsers';
 import getUserStats from '@salesforce/apex/UserController.getUserStats';
 import createUser from '@salesforce/apex/UserController.createUser';
 import deactivateUser from '@salesforce/apex/UserController.deactivateUser';
-import getCompanySettings from '@salesforce/apex/CompanySettingsController.getCompanySettings';
+import getCompanySettings from '@salesforce/apex/QuoteController.getCompanySettings';
 import saveCompanySettings from '@salesforce/apex/CompanySettingsController.saveCompanySettings';
 import removeLogo from '@salesforce/apex/CompanySettingsController.removeLogo';
 
