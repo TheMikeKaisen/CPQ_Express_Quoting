@@ -22,6 +22,7 @@ public with sharing class UserContextController {
             ] > 0;
 
             Boolean isManager = profileName == 'System Administrator' || hasManagerPS;
+            Boolean isAdmin   = profileName == 'System Administrator';
             // Managers and Salespeople can both create business data.
             Boolean canCreateData = isManager || profileName == 'CPQ Salesperson' || profileName == 'Standard User';
             
@@ -30,6 +31,7 @@ public with sharing class UserContextController {
                 'userName'      => u.Name,
                 'email'         => u.Email,
                 'isManager'     => isManager,
+                'isAdmin'       => isAdmin,
                 'canCreateData' => canCreateData,
                 'profileName'   => profileName
             };

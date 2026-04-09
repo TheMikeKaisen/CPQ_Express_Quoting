@@ -107,7 +107,9 @@ export default class ProvusQuoteLineItems extends LightningElement {
                     ...item,
                     selected: this.selectedItemIds.has(item.Id),
                     isUpPopoverOpen: this.activePopoverId === item.Id && this.popoverType === 'unitPrice',
-                    isTpPopoverOpen: this.activePopoverId === item.Id && this.popoverType === 'totalPrice'
+                    isTpPopoverOpen: this.activePopoverId === item.Id && this.popoverType === 'totalPrice',
+                    // Combined lock logic
+                    durationDisabledOrLocked: item.Billing_Unit__c === 'Each' || this.isLocked
                 },
                 rowClass: 'item-row root-item'
             });
@@ -146,7 +148,9 @@ export default class ProvusQuoteLineItems extends LightningElement {
                             ...item,
                             selected: this.selectedItemIds.has(item.Id),
                             isUpPopoverOpen: this.activePopoverId === item.Id && this.popoverType === 'unitPrice',
-                            isTpPopoverOpen: this.activePopoverId === item.Id && this.popoverType === 'totalPrice'
+                            isTpPopoverOpen: this.activePopoverId === item.Id && this.popoverType === 'totalPrice',
+                            // Combined lock logic
+                            durationDisabledOrLocked: item.Billing_Unit__c === 'Each' || this.isLocked
                         },
                         rowClass: 'item-row nested-item'
                     });

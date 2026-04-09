@@ -91,8 +91,8 @@ export default class ProvusQuoteDetail extends LightningElement {
     get isApproved() { return this.quote && this.quote.Status === 'Approved'; }
     get isRejected() { return this.quote && this.quote.Status === 'Rejected'; }
 
-    // Quote is locked once Approved or Rejected — no one can edit
-    get isLocked() { return this.isApproved || this.isRejected; }
+    // Quote is locked once Pending, Approved, or Rejected — no one can edit
+    get isLocked() { return this.isPending || this.isApproved || this.isRejected; }
 
     // Approve/Reject visible only to Manager/Admin, and only when Pending
     get canApproveReject() { return this.isManager && this.isPending; }

@@ -4,6 +4,7 @@ import getUsers from '@salesforce/apex/UserController.getUsers';
 import getUserStats from '@salesforce/apex/UserController.getUserStats';
 import createUser from '@salesforce/apex/UserController.createUser';
 import deactivateUser from '@salesforce/apex/UserController.deactivateUser';
+import getCurrentUserContext from '@salesforce/apex/UserContextController.getCurrentUserContext';
 import getCompanySettings from '@salesforce/apex/QuoteController.getCompanySettings';
 import saveCompanySettings from '@salesforce/apex/CompanySettingsController.saveCompanySettings';
 import removeLogo from '@salesforce/apex/CompanySettingsController.removeLogo';
@@ -18,6 +19,17 @@ export default class ProvusSettings extends LightningElement {
 
     // ── Active tab ────────────────────────────────────────────────────────
     @track activeTab = 'companyInfo';
+    @track isAdmin = false;
+    @track currentUserId = '';
+
+    // ── User Context ──────────────────────────────────────────────────────
+    @wire(getCurrentUserContext)
+    wiredUser({ data }) {
+        if (data) {
+            this.isAdmin = data.isAdmin;
+            this.currentUserId = data.userId;
+        }
+    }
 
     // ── Company Info state ────────────────────────────────────────────────
     @track companyForm = {
@@ -198,13 +210,29 @@ export default class ProvusSettings extends LightningElement {
             // Priority: Explicit role from Apex > Calculated from Profile
             const role = u.AssignedRole || this.getRoleFromProfile(u.ProfileName || (u.Profile ? u.Profile.Name : ''));
 
+            // Deactivation authority:
+            // 1. Cannot deactivate self
+            // 2. Admins can deactivate anyone else
+            // 3. Managers can ONLY deactivate 'User' role
+            const isSelf = u.Id === this.currentUserId;
+            let canDeactivate = false;
+            
+            if (!isSelf) {
+                if (this.isAdmin) {
+                    canDeactivate = true;
+                } else if (role === 'User') { // Manager case
+                    canDeactivate = true;
+                }
+            }
+
             return {
                 ...u,
                 initials,
                 avatarStyle:      `background-color:${color}`,
                 roleDisplay:      role,
                 roleBadgeClass:   this.getRoleBadgeClass(role),
-                lastActiveDisplay:this.getLastActive(u.LastLoginDate)
+                lastActiveDisplay:this.getLastActive(u.LastLoginDate),
+                canDeactivate:    canDeactivate
             };
         });
     }

@@ -1,4 +1,4 @@
-public with sharing class UserController {
+public without sharing class UserController {
 
     // ── Get all users ─────────────────────────────────────────────────────
     @AuraEnabled(cacheable=true)
@@ -124,6 +124,16 @@ public with sharing class UserController {
             String role) {
         try {
             ensureManagerAccess();
+
+            // Safety check: Only System Admins can create other Admins/Managers
+            String currentProfileId = UserInfo.getProfileId();
+            String currentProfileName = [SELECT Name FROM Profile WHERE Id = :currentProfileId].Name;
+            Boolean isSystemAdmin = (currentProfileName == 'System Administrator');
+
+            if (!isSystemAdmin && (role == 'Admin' || role == 'Manager')) {
+                throw new AuraHandledException('Security Restriction: You do not have authority to create Admin or Manager roles. Only System Administrators can perform this action.');
+            }
+
             // Step 1: Find the correct Profile
             String profileName = getProfileName(role);
             List<Profile> profiles = [
@@ -227,12 +237,39 @@ public with sharing class UserController {
     public static void deactivateUser(Id userId) {
         try {
             ensureManagerAccess();
-            // Cannot deactivate yourself
+
+            // 1. Cannot deactivate yourself
             if (userId == UserInfo.getUserId()) {
-                throw new AuraHandledException(
-                    'You cannot deactivate your own account.'
-                );
+                throw new AuraHandledException('You cannot deactivate your own account.');
             }
+
+            // 2. Hierarchy Check: Fetch target user's info
+            User target = [
+                SELECT Id, Profile.Name 
+                FROM User 
+                WHERE Id = :userId 
+                LIMIT 1
+            ];
+            
+            // Identify target profile/role
+            Boolean targetIsAdmin = target.Profile.Name.contains('Administrator');
+            Boolean targetIsManager = !targetIsAdmin && [
+                SELECT count() 
+                FROM PermissionSetAssignment 
+                WHERE AssigneeId = :target.Id 
+                AND PermissionSet.Name = 'CPQ_Manager_Access'
+            ] > 0;
+
+            // Identify current user's Admin status
+            String currentProfileId = UserInfo.getProfileId();
+            String currentProfileName = [SELECT Name FROM Profile WHERE Id = :currentProfileId].Name;
+            Boolean isCurrentAdmin = (currentProfileName == 'System Administrator');
+
+            // Enforce rules
+            if (!isCurrentAdmin && (targetIsAdmin || targetIsManager)) {
+                throw new AuraHandledException('Access Denied: You do not have permission to deactivate other Managers or Administrators. Only System Administrators can perform this action.');
+            }
+
             User u     = new User(Id = userId);
             u.IsActive = false;
             update u;

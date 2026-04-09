@@ -879,3 +879,21 @@
     color: #2563eb;
     font-weight: 700;
 }
+
+/* Fixed Role Display */
+.fixed-role-box {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 12px 16px;
+    background: #f9fafb;
+    border: 1px solid #e5e7eb;
+    border-radius: 8px;
+    margin-top: 4px;
+}
+
+.role-fixed-text {
+    font-size: 13px;
+    color: #64748b;
+    font-style: italic;
+}
