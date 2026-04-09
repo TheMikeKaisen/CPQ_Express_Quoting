@@ -70,11 +70,16 @@
                             </td>
                             <td>{prod.rowNumber}</td>
                             <td>
-                                <span class="id-link"
-                                      onclick={handleEdit}
-                                      data-id={prod.Id}>
-                                    {prod.autoName}
-                                </span>
+                                <template if:true={isManager}>
+                                    <span class="id-link"
+                                          onclick={handleEdit}
+                                          data-id={prod.Id}>
+                                        {prod.autoName}
+                                    </span>
+                                </template>
+                                <template if:false={isManager}>
+                                    <span>{prod.autoName}</span>
+                                </template>
                             </td>
                             <td>{prod.displayName}</td>
                             <td>

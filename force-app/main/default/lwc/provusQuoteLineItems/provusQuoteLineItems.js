@@ -37,7 +37,7 @@ export default class ProvusQuoteLineItems extends LightningElement {
 
     // ── Getters for UI ─────────────────────────────────────────────────────
     get selectedCount() { return this.selectedItemIds.size; }
-    get hasSelection()  { return this.selectedItemIds.size > 0; }
+    get hasSelection() { return this.selectedItemIds.size > 0; }
     get isAllSelected() {
         return this.lineItems.length > 0 && this.selectedItemIds.size === this.lineItems.length;
     }
@@ -55,7 +55,7 @@ export default class ProvusQuoteLineItems extends LightningElement {
         if (result.data) {
             try {
                 this.phases = JSON.parse(result.data);
-            } catch(e) {
+            } catch (e) {
                 this.phases = result.data.split(',').map(s => s.trim()).filter(x => x);
             }
         } else if (result.error) {
@@ -70,22 +70,22 @@ export default class ProvusQuoteLineItems extends LightningElement {
         if (result.data) {
             this.lineItems = result.data.map(item => ({
                 ...item,
-                Task__c:                item.Task__c || '',
-                Start_Date__c:          item.Start_Date__c || '',
-                End_Date__c:            item.End_Date__c || '',
-                Duration__c:            item.Duration__c != null ? item.Duration__c : 1,
-                Quantity__c:            item.Quantity__c != null ? item.Quantity__c : 1,
-                typeIcon:               this.getTypeIcon(item.Item_Type__c),
-                typeIconClass:          this.getTypeIconClass(item.Item_Type__c),
-                billingBadgeClass:      this.getBillingBadgeClass(item.Billing_Unit__c),
+                Task__c: item.Task__c || '',
+                Start_Date__c: item.Start_Date__c || '',
+                End_Date__c: item.End_Date__c || '',
+                Duration__c: item.Duration__c != null ? item.Duration__c : 1,
+                Quantity__c: item.Quantity__c != null ? item.Quantity__c : 1,
+                typeIcon: this.getTypeIcon(item.Item_Type__c),
+                typeIconClass: this.getTypeIconClass(item.Item_Type__c),
+                billingBadgeClass: this.getBillingBadgeClass(item.Billing_Unit__c),
                 // Duration is only applicable for time-based billing (Hour, Day)
-                durationDisabled:       item.Billing_Unit__c === 'Each',
-                showEndDate:            item.Billing_Unit__c !== 'Each',
-                
+                durationDisabled: item.Billing_Unit__c === 'Each',
+                showEndDate: item.Billing_Unit__c !== 'Each',
+
                 // Advanced popover calculation fields
                 ...this.getCalculationFields(item),
-                
-                selected:               this.selectedItemIds.has(item.Id)
+
+                selected: this.selectedItemIds.has(item.Id)
             }));
         } else if (result.error) {
             console.error('Line items error:', result.error);
@@ -103,8 +103,8 @@ export default class ProvusQuoteLineItems extends LightningElement {
             rows.push({
                 isItem: true,
                 isPhase: false,
-                record: { 
-                    ...item, 
+                record: {
+                    ...item,
                     selected: this.selectedItemIds.has(item.Id),
                     isUpPopoverOpen: this.activePopoverId === item.Id && this.popoverType === 'unitPrice',
                     isTpPopoverOpen: this.activePopoverId === item.Id && this.popoverType === 'totalPrice'
@@ -115,25 +115,25 @@ export default class ProvusQuoteLineItems extends LightningElement {
 
         // All distinct phases
         const itemPhases = new Set(this.lineItems.filter(i => i.Phase__c).map(i => i.Phase__c));
-        const allPhases  = Array.from(new Set([...this.phases, ...itemPhases]));
+        const allPhases = Array.from(new Set([...this.phases, ...itemPhases]));
 
         allPhases.forEach(phaseName => {
-            const children   = this.lineItems.filter(i => i.Phase__c === phaseName);
+            const children = this.lineItems.filter(i => i.Phase__c === phaseName);
             const isCollapsed = this.collapsedPhases.has(phaseName);
-            const isDragOver  = this.dragOverPhase === phaseName;
+            const isDragOver = this.dragOverPhase === phaseName;
             const phaseSelected = children.length > 0 && children.every(c => this.selectedItemIds.has(c.Id));
-            
+
             const phaseTotal = children.reduce((sum, item) => sum + (item.Line_Total__c || 0), 0);
             const formattedPhaseTotal = this.formatCurrency(phaseTotal);
 
             rows.push({
                 isPhase: true,
                 isItem: false,
-                phaseName:    phaseName,
-                isCollapsed:  isCollapsed,
+                phaseName: phaseName,
+                isCollapsed: isCollapsed,
                 phaseSelected: phaseSelected,
-                phaseTotal:   formattedPhaseTotal,
-                chevron:      isCollapsed ? '›' : 'v',
+                phaseTotal: formattedPhaseTotal,
+                chevron: isCollapsed ? '›' : 'v',
                 dragOverClass: isDragOver ? 'phase-row drop-target-active' : 'phase-row'
             });
 
@@ -142,8 +142,8 @@ export default class ProvusQuoteLineItems extends LightningElement {
                     rows.push({
                         isItem: true,
                         isPhase: false,
-                        record: { 
-                            ...item, 
+                        record: {
+                            ...item,
                             selected: this.selectedItemIds.has(item.Id),
                             isUpPopoverOpen: this.activePopoverId === item.Id && this.popoverType === 'unitPrice',
                             isTpPopoverOpen: this.activePopoverId === item.Id && this.popoverType === 'totalPrice'
@@ -157,7 +157,7 @@ export default class ProvusQuoteLineItems extends LightningElement {
         return rows;
     }
 
-    get isEmpty()    { return this.lineItems.length === 0 && this.phases.length === 0; }
+    get isEmpty() { return this.lineItems.length === 0 && this.phases.length === 0; }
     get grandTotal() {
         const total = this.lineItems.reduce((sum, item) => sum + (item.Line_Total__c || 0), 0);
         return this.formatCurrency(total);
@@ -167,7 +167,7 @@ export default class ProvusQuoteLineItems extends LightningElement {
         const rawUnitPrice = item.Unit_Price__c || 0;
         const timePeriod = (item.Quote__r && item.Quote__r.Time_Period__c) ? item.Quote__r.Time_Period__c : 'Days';
         const hoursPerPeriod = this.getHoursPerPeriod(timePeriod);
-        
+
         let calcUnitPrice = rawUnitPrice;
         let upCalcFormula = '';
         let upDesc = '';
@@ -197,38 +197,38 @@ export default class ProvusQuoteLineItems extends LightningElement {
 
         if (item.Billing_Unit__c === 'Hour' || item.Billing_Unit__c === 'Day') {
             tpCalcFormula = `${fmtCalcUp} × ${dur} × ${qty}`;
-            if (disc > 0) tpCalcFormula += ` × (1 - ${disc/100})`;
+            if (disc > 0) tpCalcFormula += ` × (1 - ${disc / 100})`;
         } else {
             tpCalcFormula = `${fmtCalcUp} × ${qty}`;
-            if (disc > 0) tpCalcFormula += ` × (1 - ${disc/100})`;
+            if (disc > 0) tpCalcFormula += ` × (1 - ${disc / 100})`;
         }
 
         const isUpPopoverOpen = this.activePopoverId === item.Id && this.popoverType === 'unitPrice';
         const isTpPopoverOpen = this.activePopoverId === item.Id && this.popoverType === 'totalPrice';
 
         return {
-            formattedBaseRate:      baseRate,
-            rawUnit_Price__c:       rawUnitPrice,
-            calcUnitPrice:          calcUnitPrice,
-            formattedUnitPrice:     fmtCalcUp,
-            formattedTotal:         this.formatCurrency(item.Line_Total__c),
-            
+            formattedBaseRate: baseRate,
+            rawUnit_Price__c: rawUnitPrice,
+            calcUnitPrice: calcUnitPrice,
+            formattedUnitPrice: fmtCalcUp,
+            formattedTotal: this.formatCurrency(item.Line_Total__c),
+
             // Popover data
-            upDesc:                 upDesc,
-            timePeriod:             timePeriod,
-            timePeriodLabel:        `Time Period (${timePeriod}):`,
-            timePeriodHours:        `${hoursPerPeriod} hours`,
-            upCalcFormula:          upCalcFormula,
-            tpCalcFormula:          tpCalcFormula,
-            qtyLabel:               `${qty} item(s)`,
-            durLabel:               `${dur} ${timePeriod.toLowerCase()}`,
-            discLabel:              `${disc}%`,
-            showTimePeriodRow:      item.Billing_Unit__c === 'Hour',
-            showDurationRow:        item.Billing_Unit__c !== 'Each',
-            
+            upDesc: upDesc,
+            timePeriod: timePeriod,
+            timePeriodLabel: `Time Period (${timePeriod}):`,
+            timePeriodHours: `${hoursPerPeriod} hours`,
+            upCalcFormula: upCalcFormula,
+            tpCalcFormula: tpCalcFormula,
+            qtyLabel: `${qty} item(s)`,
+            durLabel: `${dur} ${timePeriod.toLowerCase()}`,
+            discLabel: `${disc}%`,
+            showTimePeriodRow: item.Billing_Unit__c === 'Hour',
+            showDurationRow: item.Billing_Unit__c !== 'Each',
+
             // State
-            isUpPopoverOpen:        isUpPopoverOpen,
-            isTpPopoverOpen:        isTpPopoverOpen
+            isUpPopoverOpen: isUpPopoverOpen,
+            isTpPopoverOpen: isTpPopoverOpen
         };
     }
 
@@ -294,7 +294,7 @@ export default class ProvusQuoteLineItems extends LightningElement {
 
     // ── Selection Logic ──────────────────────────────────────────────────
     handleSelectItem(event) {
-        const itemId  = event.target.dataset.id;
+        const itemId = event.target.dataset.id;
         const checked = event.target.checked;
         if (checked) {
             this.selectedItemIds.add(itemId);
@@ -312,8 +312,8 @@ export default class ProvusQuoteLineItems extends LightningElement {
     }
 
     handleSelectPhase(event) {
-        const phaseName   = event.target.dataset.phase;
-        const checked     = event.target.checked;
+        const phaseName = event.target.dataset.phase;
+        const checked = event.target.checked;
         const phaseItemIds = this.lineItems.filter(i => i.Phase__c === phaseName).map(i => i.Id);
 
         if (checked) {
@@ -398,8 +398,8 @@ export default class ProvusQuoteLineItems extends LightningElement {
     // ── Field Editing ─────────────────────────────────────────────────────
     handleFieldChange(event) {
         const itemId = event.currentTarget.dataset.id;
-        const field  = event.currentTarget.dataset.field;
-        let   value  = event.target.value;
+        const field = event.currentTarget.dataset.field;
+        let value = event.target.value;
 
         // Validate Quantity — whole numbers only
         if (field === 'Quantity__c') {
@@ -509,7 +509,7 @@ export default class ProvusQuoteLineItems extends LightningElement {
         const promises = [];
         if (this.wiredItemsResult) promises.push(refreshApex(this.wiredItemsResult));
         if (this.wiredPhaseListResult) promises.push(refreshApex(this.wiredPhaseListResult));
-        
+
         if (promises.length > 0) {
             Promise.all(promises).then(() => {
                 this.dispatchEvent(new CustomEvent('lineitemsupdated'));
@@ -520,8 +520,8 @@ export default class ProvusQuoteLineItems extends LightningElement {
     // ── Formatters & Helpers ──────────────────────────────────────────────
     getTypeIcon(type) {
         if (type === 'Resource Role') return '👤';
-        if (type === 'Product')       return '📦';
-        if (type === 'Add-on')        return '✨';
+        if (type === 'Product') return '📦';
+        if (type === 'Add-on') return '✨';
         return '📋';
     }
 
@@ -531,7 +531,7 @@ export default class ProvusQuoteLineItems extends LightningElement {
 
     getBillingBadgeClass(billingUnit) {
         if (billingUnit === 'Hour') return 'billing-badge billing-badge-hour';
-        if (billingUnit === 'Day')  return 'billing-badge billing-badge-day';
+        if (billingUnit === 'Day') return 'billing-badge billing-badge-day';
         return 'billing-badge billing-badge-each';
     }
 

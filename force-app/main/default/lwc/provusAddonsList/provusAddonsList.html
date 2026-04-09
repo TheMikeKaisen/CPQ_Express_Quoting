@@ -70,11 +70,16 @@
                             </td>
                             <td>{addon.rowNumber}</td>
                             <td>
-                                <span class="id-link"
-                                      onclick={handleEdit}
-                                      data-id={addon.Id}>
-                                    {addon.autoName}
-                                </span>
+                                <template if:true={isManager}>
+                                    <span class="id-link"
+                                          onclick={handleEdit}
+                                          data-id={addon.Id}>
+                                        {addon.autoName}
+                                    </span>
+                                </template>
+                                <template if:false={isManager}>
+                                    <span>{addon.autoName}</span>
+                                </template>
                             </td>
                             <td>{addon.displayName}</td>
                             <td>

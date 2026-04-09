@@ -122,6 +122,7 @@ export default class ProvusResourceRolesList
     }
 
     handleEdit(event) {
+        if (!this.isManager) return;
         const roleId = event.currentTarget.dataset.id;
         const role = this.allRoles.find(r => r.Id === roleId);
         if (role) {

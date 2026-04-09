@@ -85,11 +85,16 @@
                             </td>
                             <td>{role.rowNumber}</td>
                             <td>
-                                <span class="id-link"
-                                      onclick={handleEdit}
-                                      data-id={role.Id}>
-                                    {role.Name}
-                                </span>
+                                <template if:true={isManager}>
+                                    <span class="id-link"
+                                          onclick={handleEdit}
+                                          data-id={role.Id}>
+                                        {role.Name}
+                                    </span>
+                                </template>
+                                <template if:false={isManager}>
+                                    <span>{role.Name}</span>
+                                </template>
                             </td>
                             <td>{role.displayName}</td>
                             <td>{role.locationDisplay}</td>

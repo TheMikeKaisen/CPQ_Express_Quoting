@@ -114,6 +114,7 @@ export default class ProvusProductsList extends LightningElement {
     }
 
     handleEdit(event) {
+        if (!this.isManager) return;
         const productId = event.currentTarget.dataset.id;
         const prod = this.allProducts.find(p => p.Id === productId);
         if (prod) {

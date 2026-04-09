@@ -113,6 +113,7 @@ export default class ProvusAddonsList extends LightningElement {
     }
 
     handleEdit(event) {
+        if (!this.isManager) return;
         const addonId = event.currentTarget.dataset.id;
         const addon = this.allAddons.find(a => a.Id === addonId);
         if (addon) {
