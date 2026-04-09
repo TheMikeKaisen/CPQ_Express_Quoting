@@ -85,13 +85,23 @@
                                 </td>
                                 <td class="drag-cell">⠿</td>
                                 <td colspan="10" class="phase-name-cell">
-                                    <span class="chevron-btn" data-phase={row.phaseName} onclick={handleTogglePhase}>
-                                        {row.chevron}
-                                    </span>
-                                    <span class="phase-title">{row.phaseName}</span>
-                                    <button class="btn-add-to-phase"
-                                            data-phase={row.phaseName}
-                                            onclick={handleAddItem}>+ ADD ITEM</button>
+                                    <div class="phase-cell-content">
+                                        <div class="phase-left">
+                                            <span class="chevron-btn" data-phase={row.phaseName} onclick={handleTogglePhase}>
+                                                {row.chevron}
+                                            </span>
+                                            <span class="phase-title">{row.phaseName}</span>
+                                        </div>
+                                        <div class="phase-right">
+                                            <span class="phase-total">
+                                                <span class="pt-label">Total:</span> 
+                                                <span class="pt-amt">{row.phaseTotal}</span>
+                                            </span>
+                                            <button class="btn-add-to-phase"
+                                                    data-phase={row.phaseName}
+                                                    onclick={handleAddItem}>+ ADD ITEM</button>
+                                        </div>
+                                    </div>
                                 </td>
                             </tr>
                         </template>
@@ -289,5 +299,26 @@
         onclose={handleModalClose}
         onitemsadded={handleItemsAdded}>
     </c-provus-add-items-modal>
+
+    <!-- ADD PHASE MODAL -->
+    <template if:true={showPhaseModal}>
+        <div class="modal-overlay" onclick={handlePhaseModalClose}></div>
+        <div class="modal-box">
+            <div class="modal-header">
+                <h2 class="modal-title">Create New Phase</h2>
+                <button class="close-btn" onclick={handlePhaseModalClose}>✕</button>
+            </div>
+            <div class="modal-body">
+                <div class="form-group">
+                    <label class="form-label">Phase Name <span style="color:#ef4444">*</span></label>
+                    <input type="text" class="form-input" value={newPhaseName} onchange={handlePhaseNameChange} placeholder="e.g. Phase 1" />
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn-cancel" onclick={handlePhaseModalClose}>Cancel</button>
+                <button class="btn-create" onclick={handleSavePhase}>Create Phase</button>
+            </div>
+        </div>
+    </template>
 
 </template>

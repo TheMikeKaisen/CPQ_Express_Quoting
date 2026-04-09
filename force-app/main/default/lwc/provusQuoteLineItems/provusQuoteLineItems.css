@@ -186,6 +186,25 @@ input[type="checkbox"]:checked::before {
     font-weight: 700;
     color: #0f172a;
     font-size: 14px;
+    padding-right: 16px !important;
+}
+
+.phase-cell-content {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    width: 100%;
+}
+
+.phase-left {
+    display: flex;
+    align-items: center;
+}
+
+.phase-right {
+    display: flex;
+    align-items: center;
+    gap: 16px;
 }
 
 .chevron-btn {
@@ -215,6 +234,29 @@ input[type="checkbox"]:checked::before {
     margin-right: 16px;
 }
 
+.phase-total {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 13px;
+    background: #ecfdf5;
+    padding: 6px 12px;
+    border-radius: 6px;
+    border: 1px solid #d1fae5;
+    white-space: nowrap;
+}
+
+.pt-label {
+    color: #047857;
+    font-weight: 600;
+}
+
+.pt-amt {
+    color: #059669;
+    font-weight: 800;
+    font-size: 14px;
+}
+
 .btn-add-to-phase {
     background: none;
     border: 1px solid transparent;
@@ -224,9 +266,10 @@ input[type="checkbox"]:checked::before {
     text-transform: uppercase;
     cursor: pointer;
     letter-spacing: 0.5px;
-    padding: 4px 10px;
+    padding: 6px 12px;
     border-radius: 6px;
     transition: all 0.2s;
+    white-space: nowrap;
 }
 .btn-add-to-phase:hover { 
     background: rgba(99, 102, 241, 0.08);
@@ -576,3 +619,56 @@ input[disabled]:hover {
 }
 
 .trash-icon { font-size: 14px; }
+
+/* ── Modal ───────────────────────────────────────────────────────────── */
+.modal-overlay {
+    position: fixed;
+    top: 0; left: 0; right: 0; bottom: 0;
+    background: rgba(15, 23, 42, 0.4);
+    backdrop-filter: blur(4px);
+    z-index: 1000;
+}
+
+.modal-box {
+    position: fixed;
+    top: 50%; left: 50%;
+    transform: translate(-50%, -50%);
+    background: white;
+    width: 400px;
+    border-radius: 12px;
+    box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 8px 10px -6px rgba(0, 0, 0, 0.1);
+    z-index: 1001;
+    overflow: hidden;
+}
+
+.modal-header {
+    padding: 16px 24px;
+    border-bottom: 1px solid #e2e8f0;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+.modal-title { margin: 0; font-size: 18px; font-weight: 700; color: #1e293b; }
+.modal-body { padding: 24px; }
+.form-group { margin-bottom: 16px; }
+.form-label { display: block; font-size: 13px; font-weight: 600; color: #475569; margin-bottom: 8px; }
+.form-input { 
+    width: 100%; 
+    padding: 10px 12px; 
+    border: 1px solid #cbd5e1; 
+    border-radius: 8px; 
+    font-size: 14px; 
+    box-sizing: border-box;
+}
+.form-input:focus { outline: none; border-color: #3b82f6; box-shadow: 0 0 0 3px rgba(59,130,246,0.1); }
+.modal-footer {
+    padding: 16px 24px;
+    background: #f8fafc;
+    border-top: 1px solid #e2e8f0;
+    display: flex;
+    justify-content: flex-end;
+    gap: 12px;
+}
+.btn-cancel { padding: 8px 16px; border: 1px solid #cbd5e1; background: white; border-radius: 8px; cursor: pointer; font-weight: 600; color: #475569; }
+.btn-create { padding: 8px 24px; background: #2563eb; color: white; border: none; border-radius: 8px; cursor: pointer; font-weight: 600; }
+.btn-create:hover { background: #1d4ed8; }

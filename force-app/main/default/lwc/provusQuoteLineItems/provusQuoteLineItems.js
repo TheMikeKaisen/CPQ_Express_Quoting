@@ -14,6 +14,8 @@ export default class ProvusQuoteLineItems extends LightningElement {
     @api isLocked = false;
 
     @track showAddModal = false;
+    @track showPhaseModal = false;
+    @track newPhaseName = '';
     @track lineItems = [];
     @track phases = [];
     @track collapsedPhases = new Set();
@@ -120,6 +122,9 @@ export default class ProvusQuoteLineItems extends LightningElement {
             const isCollapsed = this.collapsedPhases.has(phaseName);
             const isDragOver  = this.dragOverPhase === phaseName;
             const phaseSelected = children.length > 0 && children.every(c => this.selectedItemIds.has(c.Id));
+            
+            const phaseTotal = children.reduce((sum, item) => sum + (item.Line_Total__c || 0), 0);
+            const formattedPhaseTotal = this.formatCurrency(phaseTotal);
 
             rows.push({
                 isPhase: true,
@@ -127,6 +132,7 @@ export default class ProvusQuoteLineItems extends LightningElement {
                 phaseName:    phaseName,
                 isCollapsed:  isCollapsed,
                 phaseSelected: phaseSelected,
+                phaseTotal:   formattedPhaseTotal,
                 chevron:      isCollapsed ? '›' : 'v',
                 dragOverClass: isDragOver ? 'phase-row drop-target-active' : 'phase-row'
             });
@@ -457,17 +463,30 @@ export default class ProvusQuoteLineItems extends LightningElement {
 
     // ── Add Phase / Add Item ──────────────────────────────────────────────
     handleAddPhase() {
-        // eslint-disable-next-line no-alert
-        const phaseName = prompt('Enter new Phase Name:');
-        if (!phaseName || !phaseName.trim()) return;
+        this.newPhaseName = '';
+        this.showPhaseModal = true;
+    }
 
-        const newPhase = phaseName.trim();
+    handlePhaseNameChange(event) {
+        this.newPhaseName = event.target.value;
+    }
+
+    handlePhaseModalClose() {
+        this.showPhaseModal = false;
+        this.newPhaseName = '';
+    }
+
+    handleSavePhase() {
+        const newPhase = this.newPhaseName.trim();
+        if (!newPhase) return;
+
         if (!this.phases.includes(newPhase)) {
             const newPhases = [...this.phases, newPhase];
             savePhaseList({ quoteId: this.quoteId, phaseList: JSON.stringify(newPhases) })
                 .then(() => refreshApex(this.wiredPhaseListResult))
                 .catch(err => console.error('Error saving phase', err));
         }
+        this.showPhaseModal = false;
     }
 
     handleAddItem(event) {

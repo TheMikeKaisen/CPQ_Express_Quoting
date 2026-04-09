@@ -9,141 +9,111 @@
         <template if:false={isLoading}>
             <template if:true={quote}>
 
-                <!-- BREADCRUMB + HEADER -->
-                <div class="detail-header">
+                <!-- UNIFIED DASHBOARD HEADER -->
+                <div class="unified-header">
+                    <!-- Top section: Breadcrumb left, Actions right -->
+                    <div class="header-top">
+                        <!-- Breadcrumb -->
+                        <div class="breadcrumb">
+                            <span class="breadcrumb-link" onclick={handleBack}>Quotes</span>
+                            <span class="breadcrumb-sep">/</span>
+                            <span class="breadcrumb-current">{quote.QuoteNumber}</span>
+                            <c-provus-status-badge status={quote.Status}></c-provus-status-badge>
+                        </div>
+                        
+                        <!-- Actions -->
+                        <div class="action-buttons">
+                            <!-- Submit — only when Draft -->
+                            <template if:true={isDraft}>
+                                <button class="btn-action outline" onclick={handleSubmit}>Submit for Approval</button>
+                            </template>
 
-                    <!-- Breadcrumb -->
-                    <div class="breadcrumb">
-                        <span class="breadcrumb-link" onclick={handleBack}>
-                            Quotes
-                        </span>
-                        <span class="breadcrumb-sep">›</span>
-                        <span class="breadcrumb-current">
-                            {quote.QuoteNumber}
-                        </span>
-                        <c-provus-status-badge status={quote.Status}>
-                        </c-provus-status-badge>
-                    </div>
+                            <!-- Recall — only Manager/Admin when Pending, Approved, or Rejected -->
+                            <template if:true={showRecall}>
+                                <button class="btn-action outline" onclick={handleRecall}>🔄 Recall</button>
+                            </template>
 
-                    <!-- Quote Name (editable) -->
-                    <div class="quote-name-row">
-                        <template if:false={isEditingName}>
-                            <span class="quote-name">
-                                {quote.Name}
-                            </span>
-                            <button class="edit-name-btn" onclick={handleEditName}>
-                                ✏️
+                            <!-- Approve & Reject — only Manager/Admin when Pending -->
+                            <template if:true={canApproveReject}>
+                                <button class="btn-action success" onclick={handleApprove}>✓ Approve</button>
+                                <button class="btn-action danger" onclick={handleReject}>✕ Reject</button>
+                            </template>
+
+                            <!-- Locked badge -->
+                            <template if:true={isLocked}>
+                                <span class="locked-badge">🔒 Locked</span>
+                            </template>
+
+                            <!-- Document Gen -->
+                            <button class="btn-action primary" onclick={handleGeneratePdf}>⬇ Generate PDF</button>
+
+                            <!-- Refresh -->
+                            <button class="btn-action secondary icon-btn" onclick={handleRefresh} title="Sync latest data">
+                                🔄 Refresh
                             </button>
-                        </template>
-                        <template if:true={isEditingName}>
-                            <input type="text" class="name-input" value={quote.Name} onchange={handleNameChange}
-                                onblur={handleNameSave} onkeydown={handleNameKeyDown} />
-                        </template>
+                        </div>
                     </div>
 
-                    <!-- Action Buttons -->
-                    <div class="action-buttons">
-
-                        <!-- Submit — only when Draft -->
-                        <template if:true={isDraft}>
-                            <button class="btn-submit" onclick={handleSubmit}>
-                                Submit for Approval
-                            </button>
-                        </template>
-
-                        <!-- Recall — only Manager/Admin when Pending, Approved, or Rejected -->
-                        <template if:true={showRecall}>
-                            <button class="btn-recall" onclick={handleRecall}>
-                                🔄 Recall
-                            </button>
-                        </template>
-
-                        <!-- Approve — only Manager/Admin when Pending -->
-                        <template if:true={canApproveReject}>
-                            <button class="btn-approve" onclick={handleApprove}>
-                                ✓ Approve
-                            </button>
-                        </template>
-
-                        <!-- Reject — only Manager/Admin when Pending -->
-                        <template if:true={canApproveReject}>
-                            <button class="btn-reject" onclick={handleReject}>
-                                ✕ Reject
-                            </button>
-                        </template>
-
-                        <!-- Generate PDF -->
-                        <button class="btn-pdf" onclick={handleGeneratePdf}>
-                            ⬇ Generate PDF
-                        </button>
-
-                        <!-- Save — hidden when quote is locked (Approved or Rejected) -->
-                        <template if:false={isLocked}>
-                            <button class="btn-save" onclick={handleSave}>
-                                Save
-                            </button>
-                        </template>
-
-                        <!-- Locked badge -->
-                        <template if:true={isLocked}>
-                            <span class="locked-badge">🔒 Locked</span>
-                        </template>
-
-                        <!-- Refresh -->
-                        <button class="btn-icon" onclick={handleRefresh}>
-                            🔄 Refresh
-                        </button>
-
+                    <!-- Middle section: Quote Title -->
+                    <div class="header-middle">
+                        <div class="quote-title-wrapper">
+                            <template if:false={isEditingName}>
+                                <h1 class="quote-title">{quote.Name}</h1>
+                                <button class="btn-edit-title" onclick={handleEditName} title="Edit Quote Name">✏️</button>
+                            </template>
+                            <template if:true={isEditingName}>
+                                <input type="text" class="input-title-edit" value={quote.Name} onchange={handleNameChange} onblur={handleNameSave} onkeydown={handleNameKeyDown} />
+                            </template>
+                        </div>
                     </div>
-                </div>
 
-                <!-- METRIC STRIP -->
-                <div class="metric-strip">
-                    <div class="metric">
-                        <span class="metric-label">
-                            Total amount
-                        </span>
-                        <span class="metric-value metric-total">
-                            {formattedTotal}
-                        </span>
-                    </div>
-                    <div class="metric">
-                        <span class="metric-label">Subtotal</span>
-                        <span class="metric-value">
-                            {formattedSubtotal}
-                        </span>
-                    </div>
-                    <div class="metric">
-                        <span class="metric-label">Margin</span>
-                        <span class="metric-value">
-                            {formattedMargin}
-                        </span>
-                    </div>
-                    <div class="metric">
-                        <span class="metric-label">Discount</span>
-                        <span class="metric-value">
-                            {formattedDiscount}
-                        </span>
-                    </div>
-                    <div class="metric">
-                        <span class="metric-label">Start date</span>
-                        <span class="metric-value">
-                            {formattedStartDate}
-                        </span>
-                    </div>
-                    <div class="metric">
-                        <span class="metric-label">End date</span>
-                        <span class="metric-value">
-                            {formattedEndDate}
-                        </span>
-                    </div>
-                    <div class="metric">
-                        <span class="metric-label">
-                            Quote time period
-                        </span>
-                        <span class="metric-value">
-                            {quote.Time_Period__c}
-                        </span>
+                    <!-- Bottom section: High-end Metric strip -->
+                    <div class="header-metrics">
+                        <div class="metric-block">
+                            <div class="metric-label">Total Amount</div>
+                            <div class="metric-value grand-total">{formattedTotal}</div>
+                        </div>
+                        <div class="metric-divider"></div>
+                        <div class="metric-block">
+                            <div class="metric-label">Subtotal</div>
+                            <div class="metric-value">{formattedSubtotal}</div>
+                        </div>
+                        <div class="metric-divider"></div>
+                        <div class="metric-block block-margin">
+                            <div class="metric-label">Expected Margin</div>
+                            <div class="metric-value value-margin">{formattedMargin}</div>
+                        </div>
+                        <div class="metric-divider"></div>
+                        <div class="metric-block">
+                            <div class="metric-label">Total Discount</div>
+                            <div class="metric-value value-discount">{formattedDiscount}</div>
+                        </div>
+                        <div class="metric-divider"></div>
+                        <div class="metric-block">
+                            <div class="metric-label">Start Date</div>
+                            <div class="metric-value">{formattedStartDate}</div>
+                        </div>
+                        <div class="metric-divider"></div>
+                        <div class="metric-block">
+                            <div class="metric-label">End Date</div>
+                            <div class="metric-value-wrapper">
+                                <template if:false={isEditingEndDate}>
+                                    <div class="metric-value">{formattedEndDate}</div>
+                                    <template if:true={canEditEndDate}>
+                                        <button class="btn-metric-edit" onclick={handleEditEndDate} title="Edit End Date">✏️</button>
+                                    </template>
+                                </template>
+                                <template if:true={isEditingEndDate}>
+                                    <input type="date" class="input-metric-edit" value={editedEndDate} 
+                                        onchange={handleEndDateChange} onblur={handleEndDateSave} onkeydown={handleEndDateKeyDown} />
+                                </template>
+                            </div>
+                        </div>
+                        <div class="metric-divider"></div>
+                        <div class="metric-block">
+                            <div class="metric-label">Time Period</div>
+                            <div class="metric-value"><span class="badge-period">{quote.Time_Period__c}</span></div>
+                        </div>
                     </div>
                 </div>
 

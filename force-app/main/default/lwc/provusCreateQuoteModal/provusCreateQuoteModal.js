@@ -12,9 +12,7 @@ export default class ProvusCreateQuoteModal extends LightningElement {
     @track opportunityId  = '';
     @track accountName    = '';
     @track accountId      = '';
-    @track description    = '';
     @track startDate      = new Date().toISOString().split('T')[0];
-    @track endDate        = '';
     @track timePeriod     = 'Days';
 
     // UI state
@@ -46,10 +44,7 @@ export default class ProvusCreateQuoteModal extends LightningElement {
         }
     }
 
-    // Character count
-    get descriptionLength() {
-        return this.description ? this.description.length : 0;
-    }
+
 
     get isAccountDisabled() {
         return !!this.opportunityId;
@@ -89,17 +84,13 @@ export default class ProvusCreateQuoteModal extends LightningElement {
         this.accountId = event.target.value;
     }
 
-    handleDescriptionChange(event) {
-        this.description = event.target.value;
-    }
+
 
     handleStartDateChange(event) {
         this.startDate = event.target.value;
     }
 
-    handleEndDateChange(event) {
-        this.endDate = event.target.value;
-    }
+
 
     handleTimePeriodChange(event) {
         this.timePeriod = event.target.value;
@@ -133,9 +124,9 @@ export default class ProvusCreateQuoteModal extends LightningElement {
         createQuote({
             opportunityId: this.opportunityId || null,
             accountId: this.accountId || null,
-            description: this.description,
+            description: null,
             startDate: this.startDate || null,
-            endDate: this.endDate || null,
+            endDate: null,
             timePeriod: this.timePeriod
         })
         .then(newQuoteId => {
@@ -170,9 +161,7 @@ export default class ProvusCreateQuoteModal extends LightningElement {
         this.opportunityId = '';
         this.accountName   = '';
         this.accountId     = '';
-        this.description   = '';
         this.startDate     = new Date().toISOString().split('T')[0];
-        this.endDate       = '';
         this.timePeriod    = 'Days';
         this.errorMessage  = '';
     }

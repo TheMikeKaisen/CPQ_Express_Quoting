@@ -19,10 +19,12 @@ export default class ProvusQuoteDetail extends LightningElement {
 
     @track quote           = null;
     @track isLoading       = true;
-    @track isEditingName   = false;
-    @track activeTab       = 'lineItems';
-    @track errorMessage    = '';
-    @track editedName      = '';
+    @track isEditingName     = false;
+    @track isEditingEndDate  = false;
+    @track activeTab         = 'lineItems';
+    @track errorMessage      = '';
+    @track editedName        = '';
+    @track editedEndDate     = '';
     @track showPdfModal    = false;
     @track savedDocuments  = [];
     @track isManager       = false;
@@ -46,9 +48,10 @@ export default class ProvusQuoteDetail extends LightningElement {
         this.wiredQuoteResult = result;
         this.isLoading = false;
         if (result.data) {
-            this.quote      = result.data;
-            this.editedName = result.data.Name;
-            this.errorMessage = '';
+            this.quote         = result.data;
+            this.editedName    = result.data.Name;
+            this.editedEndDate = result.data.End_Date__c;
+            this.errorMessage  = '';
         } else if (result.error) {
             this.errorMessage = 'Error loading quote.';
             console.error('Quote error:', result.error);
@@ -96,6 +99,9 @@ export default class ProvusQuoteDetail extends LightningElement {
 
     // Recall visible only to Manager/Admin; shown when Pending (to pull back) OR once Approved/Rejected (to reopen)
     get showRecall() { return this.isManager && (this.isPending || this.isApproved || this.isRejected); }
+
+    // Only allow manual date/title edits if in Draft
+    get canEditEndDate() { return this.isDraft; }
 
     // ── Tab CSS ───────────────────────────────────────────────────────────
     get summaryTabClass()   { return this.activeTab === 'summary'   ? 'tab-btn tab-btn-active' : 'tab-btn'; }
@@ -177,6 +183,29 @@ export default class ProvusQuoteDetail extends LightningElement {
         updateQuote({ quote: { Id: this.quoteId, Name: this.editedName } })
             .then(() => refreshApex(this.wiredQuoteResult))
             .catch(err => { console.error('Name update error:', err); this.editedName = this.quote.Name; });
+    }
+
+    // ── End Date editing ──────────────────────────────────────────────────
+    handleEditEndDate()    { if (this.canEditEndDate) this.isEditingEndDate = true; }
+    handleEndDateChange(e) { this.editedEndDate = e.target.value; }
+
+    handleEndDateKeyDown(event) {
+        if (event.key === 'Enter')  this.handleEndDateSave();
+        if (event.key === 'Escape') { this.isEditingEndDate = false; this.editedEndDate = this.quote.End_Date__c; }
+    }
+
+    handleEndDateSave() {
+        this.isEditingEndDate = false;
+        if (this.editedEndDate === this.quote.End_Date__c) return;
+        updateQuote({ quote: { Id: this.quoteId, End_Date__c: this.editedEndDate } })
+            .then(() => refreshApex(this.wiredQuoteResult))
+            .catch(err => { 
+                console.error('End Date update error:', err); 
+                this.editedEndDate = this.quote.End_Date__c; 
+                this.dispatchEvent(new ShowToastEvent({
+                    title: 'Error', message: 'Could not update end date.', variant: 'error'
+                }));
+            });
     }
 
     // ── Save / Refresh ────────────────────────────────────────────────────
