@@ -159,9 +159,9 @@ public with sharing class QuoteController {
         
         // Target a different account if provided
         if (accountId != null) {
+            cloned.put('QuoteAccountId', accountId);
             
-            // If we change Account and it's Master-Detail to Opportunity,
-            // we should try to find an Opportunity for the target account.
+            // Try to find a recent Opportunity for the target account, but don't force it
             List<Opportunity> targetOpps = [
                 SELECT Id FROM Opportunity 
                 WHERE AccountId = :accountId 
@@ -172,11 +172,17 @@ public with sharing class QuoteController {
             if (!targetOpps.isEmpty()) {
                 cloned.OpportunityId = targetOpps[0].Id;
             } else {
-                throw new AuraHandledException('No Opportunity found for the target Account. Quotes must be linked to an Opportunity belonging to the Account.');
+                // If accountId is provided but no Opportunity found, clear it
+                cloned.Id = null; 
+                cloned.OpportunityId = null;
             }
         }
 
-        insert cloned;
+        try {
+            insert cloned;
+        } catch (DmlException e) {
+            throw new AuraHandledException('Unable to create cloned Quote. Please ensure you have "Create" permissions on the Quote object. Error: ' + e.getMessage());
+        }
 
         // Clone line items too
         List<Quote_Line_Item__c> originalItems = [
@@ -197,7 +203,11 @@ public with sharing class QuoteController {
         }
 
         if (!clonedItems.isEmpty()) {
-            insert clonedItems;
+            try {
+                insert clonedItems;
+            } catch (DmlException e) {
+                throw new AuraHandledException('Quote was created but failed to clone line items. Please check your permissions for Quote Line Items. Error: ' + e.getMessage());
+            }
         }
 
         return cloned.Id;
