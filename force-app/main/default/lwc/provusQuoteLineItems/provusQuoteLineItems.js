@@ -11,6 +11,7 @@ export default class ProvusQuoteLineItems extends LightningElement {
 
     @api quoteId;
     @api quoteStatus;
+    @api isLocked = false;
 
     @track showAddModal = false;
     @track lineItems = [];

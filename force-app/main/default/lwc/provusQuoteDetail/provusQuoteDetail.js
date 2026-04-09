@@ -10,6 +10,7 @@ import submitForApproval from '@salesforce/apex/QuoteController.submitForApprova
 import approveQuote from '@salesforce/apex/QuoteController.approveQuote';
 import rejectQuote from '@salesforce/apex/QuoteController.rejectQuote';
 import recallQuote from '@salesforce/apex/QuoteController.recallQuote';
+import getCurrentUserContext from '@salesforce/apex/UserContextController.getCurrentUserContext';
 import { ShowToastEvent } from 'lightning/platformShowToastEvent';
 
 export default class ProvusQuoteDetail extends LightningElement {
@@ -24,6 +25,7 @@ export default class ProvusQuoteDetail extends LightningElement {
     @track editedName      = '';
     @track showPdfModal    = false;
     @track savedDocuments  = [];
+    @track isManager       = false;
 
     wiredQuoteResult   = undefined;
     wiredSummaryResult = undefined;
@@ -31,6 +33,12 @@ export default class ProvusQuoteDetail extends LightningElement {
 
     @track dynamicSubtotal = 0;
     @track dynamicTotal    = 0;
+
+    // ── Wire: user context ────────────────────────────────────────────────
+    @wire(getCurrentUserContext)
+    wiredUser({ data }) {
+        if (data) this.isManager = data.isManager;
+    }
 
     // ── Wire: quote ───────────────────────────────────────────────────────
     @wire(getQuoteById, { quoteId: '$quoteId' })
@@ -79,6 +87,15 @@ export default class ProvusQuoteDetail extends LightningElement {
     get isPending()  { return this.quote && this.quote.Status === 'Pending Approval'; }
     get isApproved() { return this.quote && this.quote.Status === 'Approved'; }
     get isRejected() { return this.quote && this.quote.Status === 'Rejected'; }
+
+    // Quote is locked once Approved or Rejected — no one can edit
+    get isLocked() { return this.isApproved || this.isRejected; }
+
+    // Approve/Reject visible only to Manager/Admin, and only when Pending
+    get canApproveReject() { return this.isManager && this.isPending; }
+
+    // Recall visible only to Manager/Admin; shown when Pending (to pull back) OR once Approved/Rejected (to reopen)
+    get showRecall() { return this.isManager && (this.isPending || this.isApproved || this.isRejected); }
 
     // ── Tab CSS ───────────────────────────────────────────────────────────
     get summaryTabClass()   { return this.activeTab === 'summary'   ? 'tab-btn tab-btn-active' : 'tab-btn'; }
@@ -205,7 +222,12 @@ export default class ProvusQuoteDetail extends LightningElement {
 
     handleRecall() {
         recallQuote({ quoteId: this.quoteId })
-            .then(() => refreshApex(this.wiredQuoteResult))
+            .then(() => {
+                this.dispatchEvent(new ShowToastEvent({
+                    title: 'Recalled', message: 'Quote has been recalled to Draft.', variant: 'success'
+                }));
+                return refreshApex(this.wiredQuoteResult);
+            })
             .catch(err => console.error('Recall error:', err));
     }
 

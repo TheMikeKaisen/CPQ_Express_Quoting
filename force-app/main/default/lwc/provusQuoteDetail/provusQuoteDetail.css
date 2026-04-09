@@ -167,6 +167,16 @@
 }
 .btn-icon:hover { background: #f9fafb; }
 
+.locked-badge {
+    padding: 6px 14px;
+    background: #fef3c7;
+    border: 1px solid #fcd34d;
+    border-radius: 8px;
+    font-size: 13px;
+    font-weight: 600;
+    color: #92400e;
+}
+
 /* Metric strip */
 .metric-strip {
     background: white;

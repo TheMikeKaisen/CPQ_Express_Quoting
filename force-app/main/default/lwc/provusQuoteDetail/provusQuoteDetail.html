@@ -51,22 +51,22 @@
                             </button>
                         </template>
 
-                        <!-- Recall — only when Pending -->
-                        <template if:true={isPending}>
+                        <!-- Recall — only Manager/Admin when Pending, Approved, or Rejected -->
+                        <template if:true={showRecall}>
                             <button class="btn-recall" onclick={handleRecall}>
                                 🔄 Recall
                             </button>
                         </template>
 
-                        <!-- Approve — only when Pending -->
-                        <template if:true={isPending}>
+                        <!-- Approve — only Manager/Admin when Pending -->
+                        <template if:true={canApproveReject}>
                             <button class="btn-approve" onclick={handleApprove}>
                                 ✓ Approve
                             </button>
                         </template>
 
-                        <!-- Reject — only when Pending -->
-                        <template if:true={isPending}>
+                        <!-- Reject — only Manager/Admin when Pending -->
+                        <template if:true={canApproveReject}>
                             <button class="btn-reject" onclick={handleReject}>
                                 ✕ Reject
                             </button>
@@ -77,10 +77,17 @@
                             ⬇ Generate PDF
                         </button>
 
-                        <!-- Save -->
-                        <button class="btn-save" onclick={handleSave}>
-                            Save
-                        </button>
+                        <!-- Save — hidden when quote is locked (Approved or Rejected) -->
+                        <template if:false={isLocked}>
+                            <button class="btn-save" onclick={handleSave}>
+                                Save
+                            </button>
+                        </template>
+
+                        <!-- Locked badge -->
+                        <template if:true={isLocked}>
+                            <span class="locked-badge">🔒 Locked</span>
+                        </template>
 
                         <!-- Refresh -->
                         <button class="btn-icon" onclick={handleRefresh}>
@@ -168,7 +175,10 @@
 
                         <!-- LINE ITEMS TAB -->
                         <template if:true={showLineItems}>
-                            <c-provus-quote-line-items quote-id={quoteId} quote-status={quote.Status}
+                            <c-provus-quote-line-items
+                                quote-id={quoteId}
+                                quote-status={quote.Status}
+                                is-locked={isLocked}
                                 onlineitemsupdated={handleLineItemsUpdated}>
                             </c-provus-quote-line-items>
                         </template>

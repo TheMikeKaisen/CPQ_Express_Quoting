@@ -1,4 +1,4 @@
-public with sharing class QuoteController {
+public without sharing class QuoteController {
 
     // ── Get all quotes with optional filters ──────────────────────────────
     @AuraEnabled(cacheable=true)
@@ -238,6 +238,7 @@ public with sharing class QuoteController {
     @AuraEnabled
     public static void approveQuote(Id quoteId) {
         try {
+            unlockIfLocked(quoteId);
             Quote q = new Quote(Id = quoteId);
             q.Status = 'Approved';
             update q;
@@ -250,6 +251,7 @@ public with sharing class QuoteController {
     @AuraEnabled
     public static void rejectQuote(Id quoteId, String reason) {
         try {
+            unlockIfLocked(quoteId);
             Quote q = new Quote(Id = quoteId);
             q.Status = 'Rejected';
             update q;
@@ -262,11 +264,27 @@ public with sharing class QuoteController {
     @AuraEnabled
     public static void recallQuote(Id quoteId) {
         try {
+            unlockIfLocked(quoteId);
             Quote q = new Quote(Id = quoteId);
             q.Status = 'Draft';
             update q;
         } catch (Exception e) {
             throw new AuraHandledException('Failed to recall: ' + e.getMessage());
+        }
+    }
+
+    // ── Silently unlock a record if locked by an approval process ─────────
+    // Gracefully skips if the Apex Approval Lock/Unlock org preference
+    // is not yet enabled in Setup → Process Automation Settings.
+    private static void unlockIfLocked(Id recordId) {
+        try {
+            if (Approval.isLocked(recordId)) {
+                Approval.unlock(recordId);
+            }
+        } catch (Exception e) {
+            // Preference not enabled — log and continue.
+            // The DML below may still succeed if the record is not truly locked.
+            System.debug('Approval unlock skipped: ' + e.getMessage());
         }
     }
 

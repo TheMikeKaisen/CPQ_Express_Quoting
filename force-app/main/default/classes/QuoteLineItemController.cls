@@ -41,7 +41,8 @@ public with sharing class QuoteLineItemController {
             Id quoteId,
             List<Id> resourceRoleIds,
             List<Id> productIds,
-            List<Id> addonIds) {
+            List<Id> addonIds,
+            String phaseName) {
 
         Quote parentQuote = [
             SELECT Start_Date__c, End_Date__c, Time_Period__c
@@ -66,6 +67,7 @@ public with sharing class QuoteLineItemController {
                 item.Quote__c            = quoteId;
                 item.Name                = role.Name__c;
                 item.Item_Type__c        = 'Resource Role';
+                item.Phase__c            = phaseName;
                 item.Resource_Role__c    = role.Id;
                 item.Billing_Unit__c     = role.Billing_Unit__c != null ? role.Billing_Unit__c : 'Hour';
                 item.Base_Rate__c        = role.Cost__c;
@@ -96,6 +98,7 @@ public with sharing class QuoteLineItemController {
                 item.Quote__c            = quoteId;
                 item.Name                = product.Name__c;
                 item.Item_Type__c        = 'Product';
+                item.Phase__c            = phaseName;
                 item.Product__c          = product.Id;
                 item.Billing_Unit__c     = product.Billing_Unit__c != null ? product.Billing_Unit__c : 'Each';
                 item.Base_Rate__c        = product.Cost__c;
@@ -126,6 +129,7 @@ public with sharing class QuoteLineItemController {
                 item.Quote__c            = quoteId;
                 item.Name                = addon.Name__c;
                 item.Item_Type__c        = 'Add-on';
+                item.Phase__c            = phaseName;
                 item.Add_On__c           = addon.Id;
                 item.Billing_Unit__c     = addon.Billing_Unit__c != null ? addon.Billing_Unit__c : 'Each';
                 item.Base_Rate__c        = addon.Cost__c;
