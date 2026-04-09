@@ -1,4 +1,4 @@
-public with sharing class QuoteLineItemController {
+public without sharing class QuoteLineItemController {
 
     // ── Get all line items for a quote ────────────────────────────────────
     @AuraEnabled(cacheable=true)

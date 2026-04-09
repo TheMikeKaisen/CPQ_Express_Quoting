@@ -40,6 +40,12 @@ export default class ProvusQuoteLineItems extends LightningElement {
         return this.lineItems.length > 0 && this.selectedItemIds.size === this.lineItems.length;
     }
 
+    get durationPeriodLabel() {
+        const itemWithQuote = this.lineItems.find(i => i.Quote__r && i.Quote__r.Time_Period__c);
+        const period = itemWithQuote ? itemWithQuote.Quote__r.Time_Period__c : '';
+        return period ? `(${period})` : '';
+    }
+
     // ── Wire Phase List ───────────────────────────────────────────────────
     @wire(getPhaseList, { quoteId: '$quoteId' })
     wiredPhaseList(result) {
@@ -475,6 +481,21 @@ export default class ProvusQuoteLineItems extends LightningElement {
         this.showAddModal = false;
         if (this.wiredItemsResult) refreshApex(this.wiredItemsResult);
         this.dispatchEvent(new CustomEvent('lineitemsupdated'));
+    }
+
+    // ── Public Refresh API ────────────────────────────────────────────────
+    @api
+    refreshItems() {
+        // Expose a way for the parent component to force a refresh on the line items
+        const promises = [];
+        if (this.wiredItemsResult) promises.push(refreshApex(this.wiredItemsResult));
+        if (this.wiredPhaseListResult) promises.push(refreshApex(this.wiredPhaseListResult));
+        
+        if (promises.length > 0) {
+            Promise.all(promises).then(() => {
+                this.dispatchEvent(new CustomEvent('lineitemsupdated'));
+            });
+        }
     }
 
     // ── Formatters & Helpers ──────────────────────────────────────────────

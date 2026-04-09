@@ -181,7 +181,19 @@ export default class ProvusQuoteDetail extends LightningElement {
 
     // ── Save / Refresh ────────────────────────────────────────────────────
     handleSave()    { refreshApex(this.wiredQuoteResult); }
-    handleRefresh() { if (this.wiredQuoteResult) refreshApex(this.wiredQuoteResult); }
+    handleRefresh() { 
+        if (this.wiredQuoteResult) refreshApex(this.wiredQuoteResult); 
+        if (this.wiredSummaryResult) refreshApex(this.wiredSummaryResult);
+        
+        // Also refresh child line items table if it's currently rendered
+        const lineItemsCmp = this.template.querySelector('c-provus-quote-line-items');
+        if (lineItemsCmp) {
+            lineItemsCmp.refreshItems();
+        } else {
+            // If the user isn't on the line items tab, clicking refresh will still
+            // fetch the summary and quote fields, but the table itself isn't mounted.
+        }
+    }
 
     // ── Line items updated ────────────────────────────────────────────────
     handleLineItemsUpdated() {

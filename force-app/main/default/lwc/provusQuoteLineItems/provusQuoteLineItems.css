@@ -94,15 +94,24 @@
 }
 
 .items-table th {
-    background: #f8fafc;
-    padding: 16px 12px;
+    background-color: #f8fafc;
+    color: #475569;
+    font-size: 11px;
     font-weight: 700;
-    color: #64748b;
+    text-transform: uppercase;
+    letter-spacing: 0.025em;
+    padding: 12px;
+    text-align: left;
     border-bottom: 2px solid #e2e8f0;
     white-space: nowrap;
+}
+
+.header-unit-label {
+    font-size: 9px;
+    color: #94a3b8;
+    font-weight: 600;
+    margin-top: 2px;
     text-transform: uppercase;
-    letter-spacing: 0.05em;
-    font-size: 11px;
 }
 
 .items-table td {
@@ -355,7 +364,7 @@ input[disabled]:hover {
 .col-name  { min-width: 240px; }
 .col-task  { min-width: 160px; }
 .col-date  { min-width: 130px; }
-.col-dur   { width: 80px; min-width: 80px; text-align: right; }
+.col-dur   { width: 90px; min-width: 90px; text-align: right; }
 .col-qty   { width: 80px; min-width: 80px; text-align: right; }
 .col-rate  { min-width: 100px; text-align: right; }
 .col-price { min-width: 110px; text-align: right; }
