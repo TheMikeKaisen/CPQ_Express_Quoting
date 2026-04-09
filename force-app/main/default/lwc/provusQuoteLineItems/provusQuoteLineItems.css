@@ -104,7 +104,15 @@
     text-align: left;
     border-bottom: 2px solid #e2e8f0;
     white-space: nowrap;
+    position: sticky;
+    top: 0;
+    z-index: 30; /* Higher than sticky body cells */
 }
+
+/* ── Sticky Column Header Overrides ────────────────────────────────────── */
+.items-table th.col-check { left: 0; z-index: 40; }
+.items-table th.col-drag  { left: 44px; z-index: 40; }
+.items-table th.col-name  { left: 74px; z-index: 40; box-shadow: 4px 0 4px -2px rgba(0,0,0,0.05); }
 
 .header-unit-label {
     font-size: 9px;
@@ -120,11 +128,28 @@
     vertical-align: middle;
     color: #334155;
     transition: background-color 0.2s;
+    background-color: #ffffff; /* Ensure background is solid for sticky effect */
+}
+
+/* ── Sticky Column Cell Overrides ───────────────────────────────────────── */
+.items-table td.check-col { position: sticky; left: 0; z-index: 20; background-color: #ffffff; }
+.items-table td.drag-cell  { position: sticky; left: 44px; z-index: 20; background-color: #ffffff; }
+.items-table td.name-cell  { position: sticky; left: 74px; z-index: 20; background-color: #ffffff; box-shadow: 4px 0 4px -2px rgba(0,0,0,0.1); }
+.items-table td.phase-name-cell { position: sticky; left: 74px; z-index: 20; background-color: #f8fafc; box-shadow: 4px 0 4px -2px rgba(0,0,0,0.1); }
+
+.item-row:hover td.check-col,
+.item-row:hover td.drag-cell,
+.item-row:hover td.name-cell {
+    background-color: #f8fafc;
 }
 
 .item-row:hover td {
     background-color: #f8fafc;
 }
+
+/* Ensure background color is maintained even when sticky */
+.item-row td { background-color: #ffffff; }
+.item-row:hover td { background-color: #f8fafc; }
 
 .items-table tr:last-child td {
     border-bottom: none;
@@ -178,22 +203,26 @@ input[type="checkbox"]:checked::before {
     border-bottom: 1px solid #e2e8f0;
 }
 
+/* Required so sticky cells in phase rows also have the correct background */
+.phase-row .check-col,
+.phase-row .drag-cell,
+.phase-row .phase-name-cell {
+    background-color: #f8fafc;
+}
+
 .phase-row.drop-target-active td {
-    background: #eff6ff;
+    background: #eff6ff !important;
 }
 
 .phase-name-cell {
     font-weight: 700;
     color: #0f172a;
     font-size: 14px;
-    padding-right: 16px !important;
+    min-width: 240px; /* Aligned with Name column */
 }
 
-.phase-cell-content {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    width: 100%;
+.phase-actions-cell {
+    background-color: #f8fafc;
 }
 
 .phase-left {
@@ -204,7 +233,9 @@ input[type="checkbox"]:checked::before {
 .phase-right {
     display: flex;
     align-items: center;
+    justify-content: flex-end;
     gap: 16px;
+    width: 100%;
 }
 
 .chevron-btn {

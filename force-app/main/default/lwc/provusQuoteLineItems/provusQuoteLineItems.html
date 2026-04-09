@@ -84,23 +84,23 @@
                                     <input type="checkbox" data-phase={row.phaseName} onchange={handleSelectPhase} checked={row.phaseSelected} />
                                 </td>
                                 <td class="drag-cell">⠿</td>
-                                <td colspan="10" class="phase-name-cell">
-                                    <div class="phase-cell-content">
-                                        <div class="phase-left">
-                                            <span class="chevron-btn" data-phase={row.phaseName} onclick={handleTogglePhase}>
-                                                {row.chevron}
-                                            </span>
-                                            <span class="phase-title">{row.phaseName}</span>
-                                        </div>
-                                        <div class="phase-right">
-                                            <span class="phase-total">
-                                                <span class="pt-label">Total:</span> 
-                                                <span class="pt-amt">{row.phaseTotal}</span>
-                                            </span>
-                                            <button class="btn-add-to-phase"
-                                                    data-phase={row.phaseName}
-                                                    onclick={handleAddItem}>+ ADD ITEM</button>
-                                        </div>
+                                <td class="phase-name-cell">
+                                    <div class="phase-left">
+                                        <span class="chevron-btn" data-phase={row.phaseName} onclick={handleTogglePhase}>
+                                            {row.chevron}
+                                        </span>
+                                        <span class="phase-title">{row.phaseName}</span>
+                                    </div>
+                                </td>
+                                <td colspan="9" class="phase-actions-cell">
+                                    <div class="phase-right">
+                                        <span class="phase-total">
+                                            <span class="pt-label">Total:</span> 
+                                            <span class="pt-amt">{row.phaseTotal}</span>
+                                        </span>
+                                        <button class="btn-add-to-phase"
+                                                data-phase={row.phaseName}
+                                                onclick={handleAddItem}>+ ADD ITEM</button>
                                     </div>
                                 </td>
                             </tr>
