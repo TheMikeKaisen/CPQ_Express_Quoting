@@ -20,7 +20,7 @@
                             <span class="breadcrumb-current">{quote.QuoteNumber}</span>
                             <c-provus-status-badge status={quote.Status}></c-provus-status-badge>
                         </div>
-                        
+
                         <!-- Actions -->
                         <div class="action-buttons">
                             <!-- Submit — only when Draft -->
@@ -48,7 +48,8 @@
                             <button class="btn-action primary" onclick={handleGeneratePdf}>⬇ Generate PDF</button>
 
                             <!-- Refresh -->
-                            <button class="btn-action secondary icon-btn" onclick={handleRefresh} title="Sync latest data">
+                            <button class="btn-action secondary icon-btn" onclick={handleRefresh}
+                                title="Sync latest data">
                                 🔄 Refresh
                             </button>
                         </div>
@@ -59,10 +60,12 @@
                         <div class="quote-title-wrapper">
                             <template if:false={isEditingName}>
                                 <h1 class="quote-title">{quote.Name}</h1>
-                                <button class="btn-edit-title" onclick={handleEditName} title="Edit Quote Name">✏️</button>
+                                <button class="btn-edit-title" onclick={handleEditName}
+                                    title="Edit Quote Name">✏️</button>
                             </template>
                             <template if:true={isEditingName}>
-                                <input type="text" class="input-title-edit" value={quote.Name} onchange={handleNameChange} onblur={handleNameSave} onkeydown={handleNameKeyDown} />
+                                <input type="text" class="input-title-edit" value={quote.Name}
+                                    onchange={handleNameChange} onblur={handleNameSave} onkeydown={handleNameKeyDown} />
                             </template>
                         </div>
                     </div>
@@ -100,12 +103,14 @@
                                 <template if:false={isEditingEndDate}>
                                     <div class="metric-value">{formattedEndDate}</div>
                                     <template if:true={canEditEndDate}>
-                                        <button class="btn-metric-edit" onclick={handleEditEndDate} title="Edit End Date">✏️</button>
+                                        <button class="btn-metric-edit" onclick={handleEditEndDate}
+                                            title="Edit End Date">✏️</button>
                                     </template>
                                 </template>
                                 <template if:true={isEditingEndDate}>
-                                    <input type="date" class="input-metric-edit" value={editedEndDate} 
-                                        onchange={handleEndDateChange} onblur={handleEndDateSave} onkeydown={handleEndDateKeyDown} />
+                                    <input type="date" class="input-metric-edit" value={editedEndDate}
+                                        onchange={handleEndDateChange} onblur={handleEndDateSave}
+                                        onkeydown={handleEndDateKeyDown} />
                                 </template>
                             </div>
                         </div>
@@ -145,11 +150,9 @@
 
                         <!-- LINE ITEMS TAB -->
                         <template if:true={showLineItems}>
-                            <c-provus-quote-line-items
-                                quote-id={quoteId}
-                                quote-status={quote.Status}
-                                is-locked={isLocked}
-                                onlineitemsupdated={handleLineItemsUpdated}>
+                            <c-provus-quote-line-items quote-id={quoteId} quote-status={quote.Status}
+                                quote-start-date={quote.Start_Date__c}
+                                is-locked={isLocked} onlineitemsupdated={handleLineItemsUpdated}>
                             </c-provus-quote-line-items>
                         </template>
 
@@ -185,17 +188,13 @@
                                                     </div>
                                                 </div>
                                                 <div class="doc-actions">
-                                                    <button class="doc-btn doc-btn-download"
-                                                            data-id={doc.Id}
-                                                            data-name={doc.Name}
-                                                            onclick={handleDownloadSavedDoc}
-                                                            title="Download">
+                                                    <button class="doc-btn doc-btn-download" data-id={doc.Id}
+                                                        data-name={doc.Name} onclick={handleDownloadSavedDoc}
+                                                        title="Download">
                                                         ⬇ Download
                                                     </button>
-                                                    <button class="doc-btn doc-btn-delete"
-                                                            data-id={doc.Id}
-                                                            onclick={handleDeleteSavedDoc}
-                                                            title="Delete">
+                                                    <button class="doc-btn doc-btn-delete" data-id={doc.Id}
+                                                        onclick={handleDeleteSavedDoc} title="Delete">
                                                         🗑️
                                                     </button>
                                                 </div>
@@ -231,12 +230,8 @@
         </template>
 
     </div>
-     <!-- PDF GENERATION MODAL -->
-    <c-provus-generate-pdf-modal
-        is-open={showPdfModal}
-        quote-id={quoteId}
-        quote={quote}
-        onclose={handlePdfModalClose}
+    <!-- PDF GENERATION MODAL -->
+    <c-provus-generate-pdf-modal is-open={showPdfModal} quote-id={quoteId} quote={quote} onclose={handlePdfModalClose}
         onsaved={handlePdfSaved}>
     </c-provus-generate-pdf-modal>
 

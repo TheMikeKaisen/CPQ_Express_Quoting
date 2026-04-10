@@ -159,8 +159,14 @@ export default class ProvusGeneratePdfModal extends LightningElement {
         }, 0);
     }
 
+    get discountTotal() {
+        const disc = this.subtotal - this.grandTotal;
+        return disc > 0 ? disc : 0;
+    }
+
     get formattedTotal()    { return this.fmt(this.grandTotal); }
     get formattedSubtotal() { return this.fmt(this.subtotal);   }
+    get formattedDiscountTotal() { return this.fmt(this.discountTotal); }
 
     // ── Zoom ─────────────────────────────────────────────────────────────
     get pageStyle() {
@@ -367,6 +373,10 @@ h2{font-size:18px;font-weight:700;color:#111827;border-bottom:3px solid #1d4ed8;
         <div style="display:flex;justify-content:space-between;padding:13px 20px;background:#f9fafb;font-size:14px">
           <span style="color:#6b7280">Subtotal:</span>
           <span style="font-weight:600">${this.fmt(subtotal)}</span>
+        </div>
+        <div style="display:flex;justify-content:space-between;padding:13px 20px;background:#f9fafb;font-size:14px;border-top:1px solid #eee;">
+          <span style="color:#6b7280">Total Discount:</span>
+          <span style="font-weight:600;color:#ef4444">-${this.fmt(subtotal - total).replace('$', '')}</span>
         </div>
         <div style="display:flex;justify-content:space-between;padding:16px 20px;background:#1d4ed8;color:white">
           <span style="font-weight:700;font-size:15px">Total Project Cost:</span>

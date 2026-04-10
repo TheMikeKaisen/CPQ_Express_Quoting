@@ -292,6 +292,17 @@
 }
 .subtotal-row span:last-child { font-weight: 600; color: #111827; }
 
+.discount-row {
+    display: flex;
+    justify-content: space-between;
+    padding: 13px 20px;
+    background: #f9fafb;
+    font-size: 14px;
+    color: #6b7280;
+    border-top: 1px solid #f1f5f9;
+}
+.discount-value { font-weight: 600; color: #ef4444; }
+
 .grand-total-row {
     display: flex;
     justify-content: space-between;

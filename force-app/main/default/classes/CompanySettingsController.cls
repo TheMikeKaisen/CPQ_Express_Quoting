@@ -6,10 +6,7 @@ public without sharing class CompanySettingsController {
             String companyName, String email,    String phone,
             String website,     String address,  String city,
             String state,       String zipCode,  String country,
-            String logoBase64,
-            Decimal maxDiscountResourceRole,
-            Decimal maxDiscountProduct,
-            Decimal maxDiscountAddon) {
+            String logoBase64) {
         try {
             List<Company_Profile__c> existing = [
                 SELECT Id FROM Company_Profile__c
@@ -32,10 +29,6 @@ public without sharing class CompanySettingsController {
             if (String.isNotBlank(logoBase64)) {
                 s.Logo_Base64__c = logoBase64;
             }
-            // Discount policy — only update if explicitly provided
-            if (maxDiscountResourceRole != null) s.Max_Discount_Resource_Role__c = maxDiscountResourceRole;
-            if (maxDiscountProduct != null)      s.Max_Discount_Product__c       = maxDiscountProduct;
-            if (maxDiscountAddon != null)        s.Max_Discount_Addon__c         = maxDiscountAddon;
 
             upsert s;
         } catch (Exception e) {

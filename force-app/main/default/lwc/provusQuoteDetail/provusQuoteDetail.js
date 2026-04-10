@@ -17,24 +17,24 @@ export default class ProvusQuoteDetail extends LightningElement {
 
     @api quoteId;
 
-    @track quote           = null;
-    @track isLoading       = true;
-    @track isEditingName     = false;
-    @track isEditingEndDate  = false;
-    @track activeTab         = 'lineItems';
-    @track errorMessage      = '';
-    @track editedName        = '';
-    @track editedEndDate     = '';
-    @track showPdfModal    = false;
-    @track savedDocuments  = [];
-    @track isManager       = false;
+    @track quote = null;
+    @track isLoading = true;
+    @track isEditingName = false;
+    @track isEditingEndDate = false;
+    @track activeTab = 'lineItems';
+    @track errorMessage = '';
+    @track editedName = '';
+    @track editedEndDate = '';
+    @track showPdfModal = false;
+    @track savedDocuments = [];
+    @track isManager = false;
 
-    wiredQuoteResult   = undefined;
+    wiredQuoteResult = undefined;
     wiredSummaryResult = undefined;
-    wiredDocsResult    = undefined;
+    wiredDocsResult = undefined;
 
     @track dynamicSubtotal = 0;
-    @track dynamicTotal    = 0;
+    @track dynamicTotal = 0;
 
     // ── Wire: user context ────────────────────────────────────────────────
     @wire(getCurrentUserContext)
@@ -48,10 +48,10 @@ export default class ProvusQuoteDetail extends LightningElement {
         this.wiredQuoteResult = result;
         this.isLoading = false;
         if (result.data) {
-            this.quote         = result.data;
-            this.editedName    = result.data.Name;
+            this.quote = result.data;
+            this.editedName = result.data.Name;
             this.editedEndDate = result.data.End_Date__c;
-            this.errorMessage  = '';
+            this.errorMessage = '';
         } else if (result.error) {
             this.errorMessage = 'Error loading quote.';
             console.error('Quote error:', result.error);
@@ -63,8 +63,8 @@ export default class ProvusQuoteDetail extends LightningElement {
     wiredSummary(result) {
         this.wiredSummaryResult = result;
         if (result.data) {
-            this.dynamicSubtotal = result.data.subtotal  || 0;
-            this.dynamicTotal    = result.data.grandTotal || 0;
+            this.dynamicSubtotal = result.data.subtotal || 0;
+            this.dynamicTotal = result.data.grandTotal || 0;
         }
     }
 
@@ -79,15 +79,15 @@ export default class ProvusQuoteDetail extends LightningElement {
                     ? new Date(doc.Generated_Date__c).toLocaleString('en-US', {
                         month: 'short', day: '2-digit', year: 'numeric',
                         hour: '2-digit', minute: '2-digit'
-                      })
+                    })
                     : ''
             }));
         }
     }
 
     // ── Status computed ───────────────────────────────────────────────────
-    get isDraft()    { return this.quote && this.quote.Status === 'Draft'; }
-    get isPending()  { return this.quote && this.quote.Status === 'Pending Approval'; }
+    get isDraft() { return this.quote && this.quote.Status === 'Draft'; }
+    get isPending() { return this.quote && this.quote.Status === 'Pending Approval'; }
     get isApproved() { return this.quote && this.quote.Status === 'Approved'; }
     get isRejected() { return this.quote && this.quote.Status === 'Rejected'; }
 
@@ -104,16 +104,16 @@ export default class ProvusQuoteDetail extends LightningElement {
     get canEditEndDate() { return this.isDraft; }
 
     // ── Tab CSS ───────────────────────────────────────────────────────────
-    get summaryTabClass()   { return this.activeTab === 'summary'   ? 'tab-btn tab-btn-active' : 'tab-btn'; }
+    get summaryTabClass() { return this.activeTab === 'summary' ? 'tab-btn tab-btn-active' : 'tab-btn'; }
     get lineItemsTabClass() { return this.activeTab === 'lineItems' ? 'tab-btn tab-btn-active' : 'tab-btn'; }
-    get timelineTabClass()  { return this.activeTab === 'timeline'  ? 'tab-btn tab-btn-active' : 'tab-btn'; }
-    get pdfsTabClass()      { return this.activeTab === 'pdfs'      ? 'tab-btn tab-btn-active' : 'tab-btn'; }
+    get timelineTabClass() { return this.activeTab === 'timeline' ? 'tab-btn tab-btn-active' : 'tab-btn'; }
+    get pdfsTabClass() { return this.activeTab === 'pdfs' ? 'tab-btn tab-btn-active' : 'tab-btn'; }
 
     // ── Tab visibility ────────────────────────────────────────────────────
-    get showSummary()   { return this.activeTab === 'summary';   }
+    get showSummary() { return this.activeTab === 'summary'; }
     get showLineItems() { return this.activeTab === 'lineItems'; }
-    get showTimeline()  { return this.activeTab === 'timeline';  }
-    get showPdfs()      { return this.activeTab === 'pdfs';      }
+    get showTimeline() { return this.activeTab === 'timeline'; }
+    get showPdfs() { return this.activeTab === 'pdfs'; }
 
     get hasSavedDocuments() { return this.savedDocuments && this.savedDocuments.length > 0; }
 
@@ -126,7 +126,7 @@ export default class ProvusQuoteDetail extends LightningElement {
         const amt = this.quote.Margin_Amount__c || 0;
         const pct = this.quote.Margin_Percent__c || 0;
         return '$' + Number(amt).toLocaleString('en-US', { minimumFractionDigits: 2 }) +
-               ' (' + Number(pct).toFixed(1) + '%)';
+            ' (' + Number(pct).toFixed(1) + '%)';
     }
 
     get formattedDiscount() {
@@ -169,11 +169,11 @@ export default class ProvusQuoteDetail extends LightningElement {
     }
 
     // ── Name editing ──────────────────────────────────────────────────────
-    handleEditName()     { this.isEditingName = true; }
-    handleNameChange(e)  { this.editedName    = e.target.value; }
+    handleEditName() { this.isEditingName = true; }
+    handleNameChange(e) { this.editedName = e.target.value; }
 
     handleNameKeyDown(event) {
-        if (event.key === 'Enter')  this.handleNameSave();
+        if (event.key === 'Enter') this.handleNameSave();
         if (event.key === 'Escape') { this.isEditingName = false; this.editedName = this.quote.Name; }
     }
 
@@ -186,11 +186,11 @@ export default class ProvusQuoteDetail extends LightningElement {
     }
 
     // ── End Date editing ──────────────────────────────────────────────────
-    handleEditEndDate()    { if (this.canEditEndDate) this.isEditingEndDate = true; }
+    handleEditEndDate() { if (this.canEditEndDate) this.isEditingEndDate = true; }
     handleEndDateChange(e) { this.editedEndDate = e.target.value; }
 
     handleEndDateKeyDown(event) {
-        if (event.key === 'Enter')  this.handleEndDateSave();
+        if (event.key === 'Enter') this.handleEndDateSave();
         if (event.key === 'Escape') { this.isEditingEndDate = false; this.editedEndDate = this.quote.End_Date__c; }
     }
 
@@ -199,9 +199,9 @@ export default class ProvusQuoteDetail extends LightningElement {
         if (this.editedEndDate === this.quote.End_Date__c) return;
         updateQuote({ quote: { Id: this.quoteId, End_Date__c: this.editedEndDate } })
             .then(() => refreshApex(this.wiredQuoteResult))
-            .catch(err => { 
-                console.error('End Date update error:', err); 
-                this.editedEndDate = this.quote.End_Date__c; 
+            .catch(err => {
+                console.error('End Date update error:', err);
+                this.editedEndDate = this.quote.End_Date__c;
                 this.dispatchEvent(new ShowToastEvent({
                     title: 'Error', message: 'Could not update end date.', variant: 'error'
                 }));
@@ -209,11 +209,11 @@ export default class ProvusQuoteDetail extends LightningElement {
     }
 
     // ── Save / Refresh ────────────────────────────────────────────────────
-    handleSave()    { refreshApex(this.wiredQuoteResult); }
-    handleRefresh() { 
-        if (this.wiredQuoteResult) refreshApex(this.wiredQuoteResult); 
+    handleSave() { refreshApex(this.wiredQuoteResult); }
+    handleRefresh() {
+        if (this.wiredQuoteResult) refreshApex(this.wiredQuoteResult);
         if (this.wiredSummaryResult) refreshApex(this.wiredSummaryResult);
-        
+
         // Also refresh child line items table if it's currently rendered
         const lineItemsCmp = this.template.querySelector('c-provus-quote-line-items');
         if (lineItemsCmp) {
@@ -226,7 +226,7 @@ export default class ProvusQuoteDetail extends LightningElement {
 
     // ── Line items updated ────────────────────────────────────────────────
     handleLineItemsUpdated() {
-        if (this.wiredQuoteResult)   refreshApex(this.wiredQuoteResult);
+        if (this.wiredQuoteResult) refreshApex(this.wiredQuoteResult);
         if (this.wiredSummaryResult) refreshApex(this.wiredSummaryResult);
     }
 
@@ -290,13 +290,13 @@ export default class ProvusQuoteDetail extends LightningElement {
 
     // ── Download a previously saved document ──────────────────────────────
     handleDownloadSavedDoc(event) {
-        const docId   = event.currentTarget.dataset.id;
+        const docId = event.currentTarget.dataset.id;
         const docName = event.currentTarget.dataset.name;
 
         getDocumentHtml({ documentId: docId })
             .then(html => {
-                const a    = document.createElement('a');
-                a.href     = 'data:text/html;charset=utf-8,' + encodeURIComponent(html);
+                const a = document.createElement('a');
+                a.href = 'data:text/html;charset=utf-8,' + encodeURIComponent(html);
                 a.download = (docName || 'Quote') + '.html';
                 a.click();
             })

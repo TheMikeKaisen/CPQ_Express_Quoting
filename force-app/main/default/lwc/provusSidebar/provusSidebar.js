@@ -45,7 +45,7 @@ export default class ProvusSidebar extends LightningElement {
     get resourceRolesClass() { return this.getItemClass('resourceRoles'); }
     get productsClass() { return this.getItemClass('products'); }
     get addonsClass() { return this.getItemClass('addons'); }
-    get aiClass() { return this.getItemClass('ai'); }
+
     get settingsClass() { return this.getItemClass('settings'); }
 
     getItemClass(page) {
