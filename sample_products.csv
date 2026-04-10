@@ -1,0 +1,6 @@
+Name,Billing Unit,Price,Cost,Tags
+Software License,Each,1200.00,800.00,"Software, Recurring"
+Premium Implementation,Each,5000.00,3500.00,"Service, One-time"
+Data Migration Kit,Each,750.00,300.00,"Tools, Setup"
+Basic Maintenance,Each,200.00,100.00,"Support, Annual"
+Standard Training,Each,1500.00,900.00,"Enablement, Education"

@@ -1,0 +1,3 @@
+Name, Billing Unit, Price, Cost, Tags
+Consulting Package, Hour, 150.00, 100.00, "Service, Strategy"
+Server License, Each, "5,000.00", 3000, "License, Software"

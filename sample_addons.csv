@@ -1,0 +1,6 @@
+Name,Billing Unit,Price,Cost,Tags
+Extended Warranty,Each,450.00,150.00,"Insurance, Protection"
+Priority Support,Hour,180.00,90.00,"Service, Support"
+Post-Go-Live Cleanup,Hour,220.00,130.00,"Service, Post-Implementation"
+User-Acceptance-Testing support,Day,1200.00,750.00,"Testing, Quality"
+Security Audit,Each,3500.00,2000.00,"Security, Compliance"

@@ -74,11 +74,33 @@ public with sharing class ProductController {
         update p;
     }
 
-    // ── Delete product ────────────────────────────────────────────────────
     @AuraEnabled
     public static void deleteProduct(Id productId) {
         Product__c p = new Product__c();
         p.Id = productId;
         delete p;
+    }
+
+    // ── Import from CSV JSON ──────────────────────────────────────────────
+    @AuraEnabled
+    public static void importProductsData(String jsonData) {
+        List<Product__c> productsToInsert = new List<Product__c>();
+        List<Object> rawRecords = (List<Object>) JSON.deserializeUntyped(jsonData);
+        for (Object obj : rawRecords) {
+            Map<String, Object> record = (Map<String, Object>) obj;
+            Product__c p = new Product__c();
+            p.Name__c = (String) record.get('Name');
+            p.Billing_Unit__c = (String) record.get('Billing Unit');
+            
+            Object rawPrice = record.get('Price');
+            Object rawCost = record.get('Cost');
+            
+            p.Price__c = rawPrice != null && String.isNotBlank(String.valueOf(rawPrice)) ? Decimal.valueOf(String.valueOf(rawPrice).replaceAll(',', '')) : 0;
+            p.Cost__c = rawCost != null && String.isNotBlank(String.valueOf(rawCost)) ? Decimal.valueOf(String.valueOf(rawCost).replaceAll(',', '')) : 0;
+            p.Tags__c = (String) record.get('Tags');
+            p.Is_Active__c = true;
+            productsToInsert.add(p);
+        }
+        insert productsToInsert;
     }
 }

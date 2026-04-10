@@ -2,6 +2,8 @@ import { LightningElement, track, wire } from 'lwc';
 import { refreshApex } from '@salesforce/apex';
 import getResourceRoles from
     '@salesforce/apex/ResourceRoleController.getResourceRoles';
+import importResourceRolesData from
+    '@salesforce/apex/ResourceRoleController.importResourceRolesData';
 import createResourceRole from
     '@salesforce/apex/ResourceRoleController.createResourceRole';
 import toggleActiveStatus from
@@ -229,5 +231,75 @@ export default class ProvusResourceRolesList
     }
     handleNextPage() {
         if (!this.isLastPage) this.currentPage++;
+    }
+
+    // ── CSV Import Logic ────────────────────────────────────────────────
+    handleImportClick() {
+        const fileInput = this.template.querySelector('.hidden-csv-input');
+        if (fileInput) fileInput.click();
+    }
+
+    handleFileChange(event) {
+        const file = event.target.files[0];
+        if (!file) return;
+
+        const reader = new FileReader();
+        reader.onload = (e) => {
+            const csv = e.target.result;
+            this.processCsv(csv);
+            // clear input
+            event.target.value = '';
+        };
+        reader.readAsText(file);
+    }
+
+    processCsv(csvStr) {
+        const rows = this.parseCSV(csvStr);
+        if (rows.length < 2) {
+            // eslint-disable-next-line no-alert
+            alert('CSV does not contain valid data or headers.');
+            return;
+        }
+        const headers = rows[0].map(h => h.trim());
+        const data = [];
+        
+        for (let i = 1; i < rows.length; i++) {
+            if (rows[i].length === 1 && !rows[i][0].trim()) continue; // skip empty rows
+            let record = {};
+            headers.forEach((h, index) => {
+                record[h] = rows[i][index] ? rows[i][index].trim() : '';
+            });
+            data.push(record);
+        }
+
+        importResourceRolesData({ jsonData: JSON.stringify(data) })
+            .then(() => {
+                if (this.wiredRolesResult) refreshApex(this.wiredRolesResult);
+            })
+            .catch(error => {
+                const msg = error.body ? error.body.message : 'Error importing resource roles';
+                // eslint-disable-next-line no-alert
+                alert('Import Failed: ' + msg);
+            });
+    }
+
+    // Handles standard CSV quoting
+    parseCSV(str) {
+        const arr = [];
+        let quote = false;
+        let row = 0, col = 0;
+        for (let c = 0; c < str.length; c++) {
+            let cc = str[c], nc = str[c+1];
+            if (!arr[row]) arr[row] = [];
+            if (arr[row][col] === undefined) arr[row][col] = '';
+            if (cc === '"' && quote && nc === '"') { arr[row][col] += cc; ++c; continue; }
+            if (cc === '"') { quote = !quote; continue; }
+            if (cc === ',' && !quote) { ++col; continue; }
+            if (cc === '\r' && nc === '\n' && !quote) { ++row; col = 0; ++c; continue; }
+            if (cc === '\n' && !quote) { ++row; col = 0; continue; }
+            if (cc === '\r' && !quote) { ++row; col = 0; continue; }
+            arr[row][col] += cc;
+        }
+        return arr;
     }
 }

@@ -71,11 +71,34 @@ public with sharing class ResourceRoleController {
         update role;
     }
 
-    // ── Delete resource role ──────────────────────────────────────────────
     @AuraEnabled
     public static void deleteResourceRole(Id roleId) {
         Resource_Role__c role = new Resource_Role__c();
         role.Id = roleId;
         delete role;
+    }
+
+    // ── Import from CSV JSON ──────────────────────────────────────────────
+    @AuraEnabled
+    public static void importResourceRolesData(String jsonData) {
+        List<Resource_Role__c> rolesToInsert = new List<Resource_Role__c>();
+        List<Object> rawRecords = (List<Object>) JSON.deserializeUntyped(jsonData);
+        for (Object obj : rawRecords) {
+            Map<String, Object> record = (Map<String, Object>) obj;
+            Resource_Role__c role = new Resource_Role__c();
+            role.Name__c = (String) record.get('Name');
+            role.Location__c = (String) record.get('Location');
+            role.Billing_Unit__c = (String) record.get('Billing Unit');
+            
+            Object rawPrice = record.get('Price');
+            Object rawCost = record.get('Cost');
+            
+            role.Price__c = rawPrice != null && String.isNotBlank(String.valueOf(rawPrice)) ? Decimal.valueOf(String.valueOf(rawPrice).replaceAll(',', '')) : 0;
+            role.Cost__c = rawCost != null && String.isNotBlank(String.valueOf(rawCost)) ? Decimal.valueOf(String.valueOf(rawCost).replaceAll(',', '')) : 0;
+            role.Tags__c = (String) record.get('Tags');
+            role.Is_Active__c = true;
+            rolesToInsert.add(role);
+        }
+        insert rolesToInsert;
     }
 }

@@ -1,0 +1,7 @@
+Name,Location,Billing Unit,Price,Cost,Tags
+UI/UX Designer,Remote,Hour,165.00,110.00,"Design, Frontend"
+Senior DevOps Engineer,Austin,Hour,210.00,145.00,"Operations, Cloud"
+Project Manager,Chicago,Day,1500.00,1000.00,"Management, Delivery"
+QA Automation Lead,Remote,Hour,140.00,95.00,"Testing, QA"
+Technical Writer,San Francisco,Hour,120.00,80.00,"Documentation, Enablement"
+Solution Architect,New York,Hour,275.00,190.00,"Architecture, Technical"

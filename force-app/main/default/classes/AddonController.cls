@@ -73,11 +73,33 @@ public with sharing class AddonController {
         update a;
     }
 
-    // ── Delete add-on ─────────────────────────────────────────────────────
     @AuraEnabled
     public static void deleteAddon(Id addonId) {
         Add_On__c a = new Add_On__c();
         a.Id = addonId;
         delete a;
+    }
+
+    // ── Import from CSV JSON ──────────────────────────────────────────────
+    @AuraEnabled
+    public static void importAddonsData(String jsonData) {
+        List<Add_On__c> addonsToInsert = new List<Add_On__c>();
+        List<Object> rawRecords = (List<Object>) JSON.deserializeUntyped(jsonData);
+        for (Object obj : rawRecords) {
+            Map<String, Object> record = (Map<String, Object>) obj;
+            Add_On__c a = new Add_On__c();
+            a.Name__c = (String) record.get('Name');
+            a.Billing_Unit__c = (String) record.get('Billing Unit');
+            
+            Object rawPrice = record.get('Price');
+            Object rawCost = record.get('Cost');
+            
+            a.Price__c = rawPrice != null && String.isNotBlank(String.valueOf(rawPrice)) ? Decimal.valueOf(String.valueOf(rawPrice).replaceAll(',', '')) : 0;
+            a.Cost__c = rawCost != null && String.isNotBlank(String.valueOf(rawCost)) ? Decimal.valueOf(String.valueOf(rawCost).replaceAll(',', '')) : 0;
+            a.Tags__c = (String) record.get('Tags');
+            a.Is_Active__c = true;
+            addonsToInsert.add(a);
+        }
+        insert addonsToInsert;
     }
 }
