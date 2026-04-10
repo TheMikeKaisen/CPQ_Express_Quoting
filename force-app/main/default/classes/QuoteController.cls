@@ -71,12 +71,37 @@ public with sharing class QuoteController {
         return new BrandingWorker().getSettings();
     }
 
+    // ── Get discount policy thresholds ────────────────────────────────────
+    @AuraEnabled(cacheable=true)
+    public static Map<String, Decimal> getDiscountPolicy() {
+        List<Company_Profile__c> profiles = [
+            SELECT Max_Discount_Resource_Role__c, Max_Discount_Product__c, Max_Discount_Addon__c
+            FROM Company_Profile__c
+            ORDER BY LastModifiedDate DESC
+            LIMIT 1
+        ];
+        if (profiles.isEmpty()) {
+            return new Map<String, Decimal>{
+                'maxDiscountResourceRole' => 100,
+                'maxDiscountProduct'      => 100,
+                'maxDiscountAddon'        => 100
+            };
+        }
+        Company_Profile__c s = profiles[0];
+        return new Map<String, Decimal>{
+            'maxDiscountResourceRole' => s.Max_Discount_Resource_Role__c != null ? s.Max_Discount_Resource_Role__c : 100,
+            'maxDiscountProduct'      => s.Max_Discount_Product__c != null ? s.Max_Discount_Product__c : 100,
+            'maxDiscountAddon'        => s.Max_Discount_Addon__c != null ? s.Max_Discount_Addon__c : 100
+        };
+    }
+
     public without sharing class BrandingWorker {
         public Map<String, String> getSettings() {
             List<Company_Profile__c> profiles = [
                 SELECT Company_Name__c, Email__c, Phone__c, Website__c,
                        Address__c, City__c, State__c, Zip_Code__c,
-                       Country__c, Logo_Base64__c
+                       Country__c, Logo_Base64__c,
+                       Max_Discount_Resource_Role__c, Max_Discount_Product__c, Max_Discount_Addon__c
                 FROM Company_Profile__c
                 ORDER BY LastModifiedDate DESC
                 LIMIT 1
@@ -86,7 +111,8 @@ public with sharing class QuoteController {
                 return new Map<String, String>{
                     'companyName' => '', 'email' => '', 'phone' => '',
                     'website' => '', 'address' => '', 'city' => '',
-                    'state' => '', 'zipCode' => '', 'country' => '', 'logoBase64' => ''
+                    'state' => '', 'zipCode' => '', 'country' => '', 'logoBase64' => '',
+                    'maxDiscountResourceRole' => '100', 'maxDiscountProduct' => '100', 'maxDiscountAddon' => '100'
                 };
             }
 
@@ -101,7 +127,10 @@ public with sharing class QuoteController {
                 'state'       => s.State__c != null ? s.State__c : '',
                 'zipCode'     => s.Zip_Code__c != null ? s.Zip_Code__c : '',
                 'country'     => s.Country__c != null ? s.Country__c : '',
-                'logoBase64'  => s.Logo_Base64__c != null ? s.Logo_Base64__c : ''
+                'logoBase64'  => s.Logo_Base64__c != null ? s.Logo_Base64__c : '',
+                'maxDiscountResourceRole' => s.Max_Discount_Resource_Role__c != null ? String.valueOf(s.Max_Discount_Resource_Role__c) : '100',
+                'maxDiscountProduct'      => s.Max_Discount_Product__c != null ? String.valueOf(s.Max_Discount_Product__c) : '100',
+                'maxDiscountAddon'        => s.Max_Discount_Addon__c != null ? String.valueOf(s.Max_Discount_Addon__c) : '100'
             };
         }
     }

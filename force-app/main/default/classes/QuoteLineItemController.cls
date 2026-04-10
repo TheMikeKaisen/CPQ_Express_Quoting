@@ -452,4 +452,23 @@ public without sharing class QuoteLineItemController {
 
         return phaseMap.values();
     }
+
+    // ── Batch-update QLI records (for pending discount saves before Submit) ─
+    @AuraEnabled
+    public static void batchUpdateLineItems(String itemsJson) {
+        List<Object> rawItems = (List<Object>) JSON.deserializeUntyped(itemsJson);
+        List<Quote_Line_Item__c> toUpdate = new List<Quote_Line_Item__c>();
+        for (Object obj : rawItems) {
+            Map<String, Object> m = (Map<String, Object>) obj;
+            Quote_Line_Item__c item = new Quote_Line_Item__c();
+            item.Id = (Id) m.get('Id');
+            if (m.containsKey('Discount_Percent__c') && m.get('Discount_Percent__c') != null) {
+                item.Discount_Percent__c = Decimal.valueOf(String.valueOf(m.get('Discount_Percent__c')));
+            }
+            toUpdate.add(item);
+        }
+        if (!toUpdate.isEmpty()) {
+            update toUpdate;
+        }
+    }
 }

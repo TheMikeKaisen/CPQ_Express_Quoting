@@ -6,6 +6,9 @@ import getPhaseList from '@salesforce/apex/QuoteLineItemController.getPhaseList'
 import savePhaseList from '@salesforce/apex/QuoteLineItemController.savePhaseList';
 import updateLineItem from '@salesforce/apex/QuoteLineItemController.updateLineItem';
 import deleteLineItems from '@salesforce/apex/QuoteLineItemController.deleteLineItems';
+import batchUpdateLineItems from '@salesforce/apex/QuoteLineItemController.batchUpdateLineItems';
+import getDiscountPolicy from '@salesforce/apex/QuoteController.getDiscountPolicy';
+import submitForApproval from '@salesforce/apex/QuoteController.submitForApproval';
 
 export default class ProvusQuoteLineItems extends LightningElement {
 
@@ -32,6 +35,19 @@ export default class ProvusQuoteLineItems extends LightningElement {
     @track activePopoverId = null;
     @track popoverType = null; // 'unitPrice' or 'totalPrice'
 
+    // ── Discount policy & pending changes ──────────────────────────────────
+    // Map of { [itemId]: { Discount_Percent__c: newValue } }
+    @track pendingChanges = {};
+    discountPolicy = { maxDiscountResourceRole: 100, maxDiscountProduct: 100, maxDiscountAddon: 100 };
+
+    @wire(getDiscountPolicy)
+    wiredPolicy({ data }) {
+        if (data) this.discountPolicy = data;
+    }
+
+    get hasPendingChanges() { return Object.keys(this.pendingChanges).length > 0; }
+
+    // ── Wired results ─────────────────────────────────────────────────────
     wiredItemsResult = undefined;
     wiredPhaseListResult = undefined;
 
@@ -100,6 +116,7 @@ export default class ProvusQuoteLineItems extends LightningElement {
         // Root items (no phase)
         const rootItems = this.lineItems.filter(i => !i.Phase__c);
         rootItems.forEach(item => {
+            const isPending = !!(this.pendingChanges[item.Id]);
             rows.push({
                 isItem: true,
                 isPhase: false,
@@ -109,9 +126,10 @@ export default class ProvusQuoteLineItems extends LightningElement {
                     isUpPopoverOpen: this.activePopoverId === item.Id && this.popoverType === 'unitPrice',
                     isTpPopoverOpen: this.activePopoverId === item.Id && this.popoverType === 'totalPrice',
                     // Combined lock logic
-                    durationDisabledOrLocked: item.Billing_Unit__c === 'Each' || this.isLocked
+                    durationDisabledOrLocked: item.Billing_Unit__c === 'Each' || this.isLocked,
+                    hasPendingDiscount: isPending
                 },
-                rowClass: 'item-row root-item'
+                rowClass: isPending ? 'item-row root-item pending-discount' : 'item-row root-item'
             });
         });
 
@@ -141,6 +159,7 @@ export default class ProvusQuoteLineItems extends LightningElement {
 
             if (!isCollapsed) {
                 children.forEach(item => {
+                    const isPending = !!(this.pendingChanges[item.Id]);
                     rows.push({
                         isItem: true,
                         isPhase: false,
@@ -150,9 +169,10 @@ export default class ProvusQuoteLineItems extends LightningElement {
                             isUpPopoverOpen: this.activePopoverId === item.Id && this.popoverType === 'unitPrice',
                             isTpPopoverOpen: this.activePopoverId === item.Id && this.popoverType === 'totalPrice',
                             // Combined lock logic
-                            durationDisabledOrLocked: item.Billing_Unit__c === 'Each' || this.isLocked
+                            durationDisabledOrLocked: item.Billing_Unit__c === 'Each' || this.isLocked,
+                            hasPendingDiscount: isPending
                         },
-                        rowClass: 'item-row nested-item'
+                        rowClass: isPending ? 'item-row nested-item pending-discount' : 'item-row nested-item'
                     });
                 });
             }
@@ -429,7 +449,7 @@ export default class ProvusQuoteLineItems extends LightningElement {
             }
         }
 
-        // Validate Discount — 0 to 100 (whole percentage, e.g. 10 = 10%)
+        // Validate Discount — 0 to 100
         if (field === 'Discount_Percent__c') {
             const discount = parseFloat(value);
             if (isNaN(discount) || discount < 0 || discount > 100) {
@@ -441,6 +461,35 @@ export default class ProvusQuoteLineItems extends LightningElement {
                 const item = this.lineItems.find(i => i.Id === itemId);
                 if (item) event.target.value = item.Discount_Percent__c || 0;
                 return;
+            }
+
+            // ── Policy check: hold as pending if above limit for item type ──
+            const item = this.lineItems.find(i => i.Id === itemId);
+            const itemType = item ? item.Item_Type__c : '';
+            let maxAllowed = 100;
+            if (itemType === 'Resource Role') maxAllowed = this.discountPolicy.maxDiscountResourceRole || 100;
+            else if (itemType === 'Product')  maxAllowed = this.discountPolicy.maxDiscountProduct      || 100;
+            else if (itemType === 'Add-on')   maxAllowed = this.discountPolicy.maxDiscountAddon        || 100;
+
+            if (discount > maxAllowed) {
+                // Store as pending — do NOT auto-save yet
+                this.pendingChanges = {
+                    ...this.pendingChanges,
+                    [itemId]: { Id: itemId, Discount_Percent__c: discount }
+                };
+                // Update local display optimistically so user sees the entered value
+                this.lineItems = this.lineItems.map(i =>
+                    i.Id === itemId
+                        ? { ...i, Discount_Percent__c: discount, hasPendingDiscount: true }
+                        : i
+                );
+                return; // do NOT call updateLineItem
+            }
+
+            // Discount is within allowed range — remove any pending change for this item
+            if (this.pendingChanges[itemId]) {
+                const { [itemId]: _removed, ...rest } = this.pendingChanges;
+                this.pendingChanges = rest;
             }
         }
 
@@ -463,6 +512,38 @@ export default class ProvusQuoteLineItems extends LightningElement {
             .then(() => { if (this.wiredItemsResult) return refreshApex(this.wiredItemsResult); })
             .then(() => { this.dispatchEvent(new CustomEvent('lineitemsupdated')); })
             .catch(error => console.error('Update error:', error));
+    }
+
+    // ── Submit pending high-discount changes then submit quote for approval ─
+    handleSubmitWithPending() {
+        const pendingItems = Object.values(this.pendingChanges);
+        if (pendingItems.length === 0) return;
+
+        batchUpdateLineItems({ itemsJson: JSON.stringify(pendingItems) })
+            .then(() => submitForApproval({ quoteId: this.quoteId }))
+            .then(() => {
+                this.pendingChanges = {};
+                this.dispatchEvent(new ShowToastEvent({
+                    title: 'Submitted',
+                    message: 'Pending discounts saved and quote submitted for approval.',
+                    variant: 'success'
+                }));
+                if (this.wiredItemsResult) refreshApex(this.wiredItemsResult);
+                this.dispatchEvent(new CustomEvent('lineitemsupdated'));
+            })
+            .catch(error => {
+                this.dispatchEvent(new ShowToastEvent({
+                    title: 'Error',
+                    message: error.body ? error.body.message : 'Failed to submit.',
+                    variant: 'error'
+                }));
+            });
+    }
+
+    // ── Discard held pending discount changes ─────────────────────────────
+    handleDiscardPending() {
+        this.pendingChanges = {};
+        if (this.wiredItemsResult) refreshApex(this.wiredItemsResult);
     }
 
     // ── Add Phase / Add Item ──────────────────────────────────────────────

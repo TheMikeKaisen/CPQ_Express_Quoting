@@ -43,6 +43,12 @@ export default class ProvusSettings extends LightningElement {
     @track companySaveError = '';
     @track logoUploadError  = '';
 
+    // ── Discount Policy state ─────────────────────────────────────────────
+    @track discountPolicy = { resourceRole: 100, product: 100, addon: 100 };
+    @track isSavingPolicy  = false;
+    @track policySaveOk    = false;
+    @track policySaveError = '';
+
     wiredCompanyResult = undefined;
 
     @wire(getCompanySettings)
@@ -63,6 +69,12 @@ export default class ProvusSettings extends LightningElement {
             };
             this.logoBase64  = d.logoBase64 || '';
             this.logoPreview = d.logoBase64 || null;
+            // load policy thresholds — stored as strings in the map
+            this.discountPolicy = {
+                resourceRole: d.maxDiscountResourceRole != null ? parseFloat(d.maxDiscountResourceRole) : 100,
+                product:      d.maxDiscountProduct      != null ? parseFloat(d.maxDiscountProduct)      : 100,
+                addon:        d.maxDiscountAddon        != null ? parseFloat(d.maxDiscountAddon)        : 100
+            };
         }
     }
 
@@ -168,16 +180,20 @@ export default class ProvusSettings extends LightningElement {
         this.companySaveError = '';
 
         saveCompanySettings({
-            companyName: this.companyForm.companyName,
-            email:       this.companyForm.email,
-            phone:       this.companyForm.phone,
-            website:     this.companyForm.website,
-            address:     this.companyForm.address,
-            city:        this.companyForm.city,
-            state:       this.companyForm.state,
-            zipCode:     this.companyForm.zipCode,
-            country:     this.companyForm.country,
-            logoBase64:  this.logoBase64 || ''
+            companyName:             this.companyForm.companyName,
+            email:                   this.companyForm.email,
+            phone:                   this.companyForm.phone,
+            website:                 this.companyForm.website,
+            address:                 this.companyForm.address,
+            city:                    this.companyForm.city,
+            state:                   this.companyForm.state,
+            zipCode:                 this.companyForm.zipCode,
+            country:                 this.companyForm.country,
+            logoBase64:              this.logoBase64 || '',
+            // pass current policy values so they are preserved on company save
+            maxDiscountResourceRole: this.discountPolicy.resourceRole,
+            maxDiscountProduct:      this.discountPolicy.product,
+            maxDiscountAddon:        this.discountPolicy.addon
         })
         .then(() => {
             this.companySaveOk = true;
@@ -194,6 +210,45 @@ export default class ProvusSettings extends LightningElement {
         if (this.wiredCompanyResult) refreshApex(this.wiredCompanyResult);
         this.companySaveError = '';
         this.logoUploadError  = '';
+    }
+
+    // ── Discount Policy handlers ──────────────────────────────────────────
+    handleDiscountPolicyChange(event) {
+        const field = event.currentTarget.dataset.field;
+        const raw   = parseFloat(event.target.value);
+        const val   = isNaN(raw) ? 100 : Math.min(100, Math.max(0, raw));
+        this.discountPolicy = { ...this.discountPolicy, [field]: val };
+    }
+
+    handleSaveDiscountPolicy() {
+        this.isSavingPolicy  = true;
+        this.policySaveOk    = false;
+        this.policySaveError = '';
+
+        saveCompanySettings({
+            companyName:             this.companyForm.companyName || '',
+            email:                   this.companyForm.email       || '',
+            phone:                   this.companyForm.phone       || '',
+            website:                 this.companyForm.website     || '',
+            address:                 this.companyForm.address     || '',
+            city:                    this.companyForm.city        || '',
+            state:                   this.companyForm.state       || '',
+            zipCode:                 this.companyForm.zipCode     || '',
+            country:                 this.companyForm.country     || '',
+            logoBase64:              this.logoBase64              || '',
+            maxDiscountResourceRole: this.discountPolicy.resourceRole,
+            maxDiscountProduct:      this.discountPolicy.product,
+            maxDiscountAddon:        this.discountPolicy.addon
+        })
+        .then(() => {
+            this.policySaveOk = true;
+            setTimeout(() => { this.policySaveOk = false; }, 3000);
+            if (this.wiredCompanyResult) refreshApex(this.wiredCompanyResult);
+        })
+        .catch(err => {
+            this.policySaveError = err.body ? err.body.message : 'Error saving discount policy.';
+        })
+        .finally(() => { this.isSavingPolicy = false; });
     }
 
     // ── Nav click ─────────────────────────────────────────────────────────
